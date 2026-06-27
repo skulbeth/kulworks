@@ -182,6 +182,11 @@ export default function CardCalculator() {
           may apply. Final pricing depends on files, finishing, and quantity, so send your
           project for an exact quote.
         </p>
+        <p className="mt-2 text-xs text-muted/70">
+          Estimates assume print-ready files that need no adjustment (when we are not
+          designing the layouts). If any edits are needed, we will always let you know
+          before we start the project.
+        </p>
       </div>
     </div>
   );
