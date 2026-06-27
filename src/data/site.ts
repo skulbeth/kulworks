@@ -16,8 +16,10 @@ export const site = {
     "Kulworks is a San Antonio multi-craft maker studio. Custom UV card printing, UV-printed board game tiles, FDM and resin 3D printing, and 3D modeling and design, all made in-house.",
   founder: "Sam Kulbeth",
 
-  // ---- Contact (TODO: replace placeholders with real details) ----
-  email: "hello@kulworks.com",
+  // ---- Contact ----
+  // Forwarded via Squarespace Email Forwarding -> Sam's inbox.
+  email: "contact@kulworks.com",
+  quotesEmail: "quotes@kulworks.com",
   // E.164 format for schema, e.g. "+1-210-555-0123". Leave as null until you have one.
   telephone: null as string | null,
 

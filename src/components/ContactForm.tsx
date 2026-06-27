@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { services } from "@/data/services";
+import { site } from "@/data/site";
 
 // ===========================================================================
 // TODO: paste your Formspree form ID here (https://formspree.io).
@@ -146,7 +147,7 @@ function FormInner() {
       {status === "error" && (
         <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
           Something went wrong sending your message. Please email{" "}
-          <a href="mailto:hello@kulworks.com" className="underline">hello@kulworks.com</a> instead.
+          <a href={`mailto:${site.email}`} className="underline">{site.email}</a> instead.
         </p>
       )}
 

@@ -5,6 +5,7 @@ import ContactForm from "@/components/ContactForm";
 import JsonLd from "@/components/JsonLd";
 import SocialLinks from "@/components/SocialLinks";
 import { breadcrumbSchema } from "@/lib/structured-data";
+import { site } from "@/data/site";
 
 export const metadata: Metadata = {
   title: "Get a Quote",
@@ -40,11 +41,16 @@ export default function ContactPage() {
             <div className="rounded-2xl border border-border bg-surface p-6">
               <h3 className="font-bold">Other ways to reach me</h3>
               <ul className="mt-3 space-y-2 text-muted">
-                {/* TODO: replace with real details */}
                 <li>
-                  Email:{" "}
-                  <a href="mailto:hello@kulworks.com" className="text-blue hover:underline">
-                    hello@kulworks.com
+                  General:{" "}
+                  <a href={`mailto:${site.email}`} className="text-blue hover:underline">
+                    {site.email}
+                  </a>
+                </li>
+                <li>
+                  Quotes:{" "}
+                  <a href={`mailto:${site.quotesEmail}`} className="text-blue hover:underline">
+                    {site.quotesEmail}
                   </a>
                 </li>
               </ul>

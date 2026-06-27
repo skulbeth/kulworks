@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SocialLinks from "@/components/SocialLinks";
+import { site } from "@/data/site";
 
 const year = 2026; // static-export safe; bump as needed
 
@@ -31,8 +32,8 @@ export default function Footer() {
           <ul className="mt-3 space-y-2 text-sm text-muted">
             {/* TODO: replace with real contact details */}
             <li>
-              <a href="mailto:hello@kulworks.com" className="hover:text-blue">
-                hello@kulworks.com
+              <a href={`mailto:${site.email}`} className="hover:text-blue">
+                {site.email}
               </a>
             </li>
             <li>Find us at game conventions</li>
