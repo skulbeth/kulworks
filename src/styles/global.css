@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   Kulworks design tokens. Edit these to retheme the whole site.
+   Ported from Role to Reign: dark base, gold + blue accents, emerald CTAs.
+   ========================================================================= */
+:root {
+  --color-background: #0b0b0b; /* near-black page base */
+  --color-surface: #161616; /* card / panel */
+  --color-surface-2: #1f1f1f; /* raised card */
+  --color-border: #2d2d2d;
+
+  --color-foreground: #ffffff; /* primary text */
+  --color-muted: #cbd5e1; /* secondary text (slate-300) */
+
+  --color-gold: #fcd34d; /* signature highlight (amber-300) */
+  --color-gold-glow: rgba(255, 182, 54, 0.85);
+  --color-blue: #93c5fd; /* links / subheads (blue-300) */
+
+  --color-primary: #10b981; /* CTA fill (emerald-500) */
+  --color-primary-hover: #34d399; /* CTA hover (emerald-400) */
+  --color-secondary: #059669; /* emerald-600 */
+
+  --color-scroll-bg: #313131;
+  --color-scroll-fg: #7e7e7e;
+}
+
+/* Custom scrollbar to match Role to Reign */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-scroll-fg) var(--color-scroll-bg);
+}
+*::-webkit-scrollbar {
+  width: 12px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--color-scroll-bg);
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-scroll-fg);
+  border-radius: 12px;
+  border: 3px solid var(--color-scroll-bg);
+}
+
+@layer base {
+  body {
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-baloo), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Gold gradient text (used on hero accents), echoing Role to Reign */
+  .text-gold-sheen {
+    background-image: var(--tw-gradient, none);
+    background: linear-gradient(90deg, var(--color-gold), #fde68a, var(--color-gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-glow-gold {
+    text-shadow: 0 0 12px var(--color-gold-glow);
+  }
+
+  /* Reveal-on-scroll helper toggled by IntersectionObserver (see RevealOnScroll) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    will-change: opacity, transform;
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
