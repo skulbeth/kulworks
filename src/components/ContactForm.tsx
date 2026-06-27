@@ -149,11 +149,25 @@ function FormInner() {
           name="reference"
           type="text"
           className={field}
-          placeholder="Paste a link to artwork or references (or mention you'll email files)."
+          placeholder="Paste a link to your artwork or references."
         />
         <p className="mt-1.5 text-xs text-muted">
-          Have files? Mention it here and I&apos;ll reply with an upload link.
+          Have a lot of files? Use the shared folder option below.
         </p>
+      </div>
+
+      <div className="flex items-start gap-3 rounded-lg border border-border bg-surface2 px-4 py-3">
+        <input
+          id="driveFolder"
+          name="driveFolder"
+          type="checkbox"
+          value="yes"
+          className="mt-0.5 h-4 w-4 accent-primary"
+        />
+        <label htmlFor="driveFolder" className="text-sm text-muted">
+          Set me up a shared Google Drive folder to exchange files. We&apos;ll send you
+          the link to drop in artwork and project files.
+        </label>
       </div>
 
       {status === "error" && (
