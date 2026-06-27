@@ -72,12 +72,11 @@ export const pricing: PriceGroup[] = [
     name: "Resin / SLA 3D Printing",
     intro: "High-detail miniatures and small parts, printed in Elegoo tough resin.",
     items: [
-      { label: "Resin (charged at 100% solid infill)", price: "$0.10 / gram" },
+      { label: "Setup and cleanup", price: "$15" },
       { label: "Print time", price: "$3 / hour" },
-      { label: "Setup and cleanup", price: "$5" },
-      { label: "Minimum order", price: "$10" },
+      { label: "Resin and materials (100% solid infill)", price: "Estimated, ~$0.10 / gram" },
     ],
-    note: "Resin is priced by solid volume (no discount for hollowing), plus machine time and cleanup. A small miniature typically lands around $12 to $20.",
+    note: "Resin is priced by solid volume (no discount for hollowing): a flat $15 setup and cleanup fee, plus $3 per print hour, plus estimated material cost. Final price by quote.",
   },
   {
     name: "UV Tile Printing",
