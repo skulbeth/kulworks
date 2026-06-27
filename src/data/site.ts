@@ -12,10 +12,10 @@ export const site = {
   // While true: visitors only see the "coming soon" landing, site navigation is
   // hidden, and the whole site is set to noindex.
   //
-  // Currently env-aware: OFF in local dev (`npm run dev`) so you can preview the
-  // full site, ON in production builds (Vercel) so the live site shows the
-  // landing. When you're ready to launch for real, change this to `false`.
-  constructionMode: process.env.NODE_ENV === "production",
+  // While true, only the "coming soon" landing shows (nav hidden, whole site
+  // noindex). Set to false to launch the full site. To preview the full site
+  // locally without launching, temporarily use: process.env.NODE_ENV !== "production".
+  constructionMode: true,
 
   name: "Kulworks",
   legalName: "Kulworks",
