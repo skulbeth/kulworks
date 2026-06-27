@@ -26,8 +26,8 @@ export default function AboutPage() {
         <Container className="py-16">
           <SectionHeading
             eyebrow="About"
-            title="A maker studio, end to end"
-            intro="Kulworks exists to take an idea all the way to a finished, physical thing you can hold, without bouncing between vendors."
+            title="A San Antonio maker studio, end to end"
+            intro="Kulworks takes an idea all the way to a finished, physical thing you can hold, without bouncing between vendors or sending it overseas."
           />
         </Container>
       </section>
@@ -38,22 +38,23 @@ export default function AboutPage() {
             <Placeholder label="Maker / studio portrait" ratio="aspect-[4/3]" />
             <div className="space-y-4 text-lg text-muted">
               <p>
-                Kulworks is a multi-craft maker studio. We design and produce in-house
-                across several materials: printing custom cards, UV-printing board game
-                tiles, and 3D printing in both filament and resin, plus the 3D modeling
-                and design work behind all of it.
+                Kulworks is a San Antonio maker studio. Card printing is what we do most,
+                and we work across materials: custom UV cards, UV-printed board game tiles,
+                FDM and resin 3D printing, plus the design work behind all of it. Everything
+                is made in-house, right here, not sent overseas.
               </p>
               <p>
-                Working across crafts means a project doesn&apos;t get handed off and lost
-                in translation. The same studio that lays out your cards prints them, and the
-                same hands that model a part print it. That keeps quality high and
-                turnaround quick, whether it&apos;s a single prototype or a short run.
+                Working across crafts under one roof means a project doesn&apos;t get handed
+                off and lost in translation. We design the card structure, fill it with your
+                content, and go straight to print, so quality and timing stay in our hands,
+                whether it&apos;s a single prototype or a short run.
               </p>
               <p>
-                We build our own games too, like{" "}
-                <span className="font-semibold text-foreground">Role to Reign</span>, so
-                we&apos;re not only printing your project. We&apos;re making the same
-                kinds of things we&apos;d want for ourselves.
+                We build our own games too.{" "}
+                <span className="font-semibold text-foreground">Role to Reign</span>, our
+                fantasy-inspired game, has 750 world and character-building cards, all
+                designed and printed by us. So we&apos;re not just printing your project,
+                we&apos;re making the same kinds of things we&apos;d want ourselves.
               </p>
             </div>
           </div>
@@ -64,8 +65,8 @@ export default function AboutPage() {
         <Container className="py-16">
           <div className="grid gap-6 sm:grid-cols-3">
             {[
-              { h: "In-house", p: "Design through production under one roof, with no outsourcing." },
-              { h: "Multi-material", p: "Cards, tiles, filament, and resin, matched to the job." },
+              { h: "Local and US-made", p: "Designed and made in San Antonio, never sent overseas." },
+              { h: "In-house, end to end", p: "Design through production under one roof, with no outsourcing." },
               { h: "Maker-credible", p: "We design and ship our own games, not only other people's." },
             ].map((b) => (
               <div key={b.h} className="rounded-2xl border border-border bg-surface p-6">

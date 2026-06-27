@@ -68,6 +68,17 @@ export default async function CardSubPage({
                     <p className="mt-2 text-lg text-muted">{s.body}</p>
                   </div>
                 ))}
+                {page.link && (
+                  <a
+                    href={page.link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-sm font-bold text-blue hover:underline"
+                  >
+                    {page.link.label}
+                    <span aria-hidden>↗</span>
+                  </a>
+                )}
               </div>
               <div className="space-y-6">
                 <Placeholder label={`${page.navLabel} sample`} ratio="aspect-[4/3]" />
@@ -99,7 +110,11 @@ export default async function CardSubPage({
             Share your details and I&apos;ll come back with options and a quote.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Button href="/contact/?type=card-printing" variant="gold" size="lg">
+            <Button
+              href={`/contact/?type=${page.slug === "card-design" ? "card-design" : "card-printing"}`}
+              variant="gold"
+              size="lg"
+            >
               Get a Quote
             </Button>
             <Button href="/services/card-printing/" variant="ghost" size="lg">

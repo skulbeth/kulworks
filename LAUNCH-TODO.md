@@ -98,6 +98,18 @@ List the business (same NAP) on the directories that feed local search:
 
 ---
 
+## 5b. Media: photos, gifs, and video (ties into images above)
+
+- [ ] Capture a short **gif or video of each batch of equipment** in action, one per
+  section (card printer, UV flatbed for tiles, FDM printers, resin printers, the
+  design/Shapr3D workflow). Show the machines actually running.
+- [ ] Shoot **example pieces / finished work** for each service to showcase in the
+  portfolio and on each service page (printed decks, boxes, tiles, FDM and resin
+  prints, models).
+- [ ] Get example shots of the **custom 3D-printed card boxes and sleeve tiers**.
+- [ ] Drop stills into `public/images/<section>/` and set `src`; gifs/video can go in
+  `public/` and be embedded on the relevant section once captured.
+
 ## 6. Content growth (the big opportunity, ongoing)
 
 The card-printing cluster is scaffolded under `/services/card-printing/` (hub + focused

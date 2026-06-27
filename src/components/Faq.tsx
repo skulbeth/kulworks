@@ -20,6 +20,16 @@ export default function FaqSection({ items = defaultFaqs }: { items?: Faq[] }) {
             </span>
           </summary>
           <p className="mt-3 text-muted">{f.a}</p>
+          {f.bullets && (
+            <ul className="mt-3 space-y-2 text-muted">
+              {f.bullets.map((b) => (
+                <li key={b} className="flex gap-2">
+                  <span aria-hidden className="mt-0.5 text-gold">•</span>
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </details>
       ))}
     </div>

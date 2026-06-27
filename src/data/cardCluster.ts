@@ -32,6 +32,8 @@ export interface CardPage {
   /** Optional spec/option bullets. */
   specs?: string[];
   keywords?: string[];
+  /** Optional outbound link shown on the page (e.g. a tool we design with). */
+  link?: { label: string; href: string };
 }
 
 const CITY = "San Antonio";
@@ -48,13 +50,13 @@ export const cardHub = {
 export const cardPages: CardPage[] = [
   {
     slug: "poker-cards",
-    navLabel: "Poker & Playing Cards",
+    navLabel: "Poker Size Playing Cards",
     cardBlurb: "Standard-size custom decks for games, clubs, and keepsakes.",
-    title: `Custom Poker & Playing Card Printing in ${CITY}`,
+    title: `Poker Size Playing Card Printing in ${CITY}`,
     metaDescription:
-      "Custom poker and playing card printing with your own backs and faces. Standard poker size, single decks to short runs, made in San Antonio.",
+      "Poker size playing card printing with your own backs and faces. The standard size, single decks to short runs, made in San Antonio.",
     eyebrow: "Card printing",
-    h1: "Custom Poker & Playing Card Printing",
+    h1: "Poker Size Playing Card Printing",
     intro:
       "Standard poker-size cards are the classic choice, and they cover most projects: branded decks, club cards, party favors, and full custom games. We print your art on both backs and faces with clean, durable color.",
     sections: [
@@ -75,7 +77,7 @@ export const cardPages: CardPage[] = [
       "Standard poker size (about 2.5 x 3.5 in / 63 x 88 mm)",
       "Custom backs and custom or standard faces",
       "Single decks through short runs",
-      "Ask about rounded corners, finishes, and tuck boxes",
+      "Optional rounded corners, finishes, and tuck boxes",
     ],
     keywords: [
       "custom poker cards San Antonio",
@@ -149,7 +151,7 @@ export const cardPages: CardPage[] = [
       "Poker or tarot size",
       "Single prototype decks and small batches",
       "Fast turnaround for iteration",
-      "We can print on-site at game conventions",
+      "Card design at conventions, with quick turnaround and delivery",
     ],
     keywords: [
       "board game prototype printing",
@@ -193,6 +195,124 @@ export const cardPages: CardPage[] = [
       "sports team card printing",
       "school team trading cards",
     ],
+  },
+  {
+    slug: "giant-cards",
+    navLabel: "Giant & Jumbo Cards",
+    cardBlurb: "Oversized cards for events, demos, and visibility.",
+    title: `Custom Giant & Jumbo Card Printing in ${CITY}`,
+    metaDescription:
+      "Custom giant and jumbo card printing in San Antonio. Oversized cards for events, demos, teaching, and accessibility, with full custom artwork.",
+    eyebrow: "Card printing",
+    h1: "Custom Giant & Jumbo Card Printing",
+    intro:
+      "Giant cards turn heads. Oversized decks are great for events, demos, photo booths, teaching, and anyone who needs cards that are easy to see from across a room or easier to handle.",
+    sections: [
+      {
+        h: "Built to be seen",
+        body: "Big format means your artwork reads from a distance, which is perfect for trade shows, store displays, parties, and group activities.",
+      },
+      {
+        h: "Useful, not just novelty",
+        body: "Oversized cards also help with teaching a game to a crowd and with accessibility for players who find standard cards hard to handle.",
+      },
+      {
+        h: "Your art, full size",
+        body: "We print full custom faces and backs at the larger size with the same durable color and clean cuts.",
+      },
+    ],
+    specs: [
+      "Oversized, commonly around 3.5 x 5 in (89 x 127 mm) or larger",
+      "Full custom faces and backs",
+      "Single decks through short runs",
+      "Great for events, demos, and accessibility",
+    ],
+    keywords: [
+      "giant card printing",
+      "jumbo playing cards custom",
+      "oversized cards San Antonio",
+    ],
+  },
+  {
+    slug: "boxes-and-upgrades",
+    navLabel: "Custom Card Boxes & Other Upgrades",
+    cardBlurb: "Custom 3D-printed card boxes, sleeves, and other upgrades, in tiers.",
+    title: `Custom Card Boxes & Other Upgrades in ${CITY}`,
+    metaDescription:
+      "Custom 3D-printed card boxes, sleeve upgrades, and other finishing options for your deck, offered in tiers. Designed and made in-house in San Antonio.",
+    eyebrow: "Card printing",
+    h1: "Custom Card Boxes & Other Upgrades",
+    intro:
+      "Finish your deck the right way. Because we print cards and run our own 3D printers, we can package and upgrade your deck in-house, from the box it lives in to the sleeves that protect it. Pick the tier that fits your project and budget.",
+    sections: [
+      {
+        h: "Custom 3D-printed card boxes",
+        body: "We 3D print rigid card boxes built to fit your deck. We use an adjustable in-house design, so putting your logo or name on the outside is quick and affordable, and reorders or rebrands are easy. A real box turns a stack of cards into a finished product people want to keep.",
+      },
+      {
+        h: "Sleeve upgrades",
+        body: "Protect the cards and upgrade how the deck feels in hand. We offer sleeve options at different levels so you can match the durability and finish to the project.",
+      },
+      {
+        h: "Tiered to your budget",
+        body: "Mix and match the box and sleeve level that fits. Tell us the project and we will quote the tier that makes sense.",
+      },
+    ],
+    specs: [
+      "Tier 1 (Essentials): standard tuck box and basic sleeves",
+      "Tier 2 (Standard): custom-printed box and premium sleeves",
+      "Tier 3 (Premium): custom 3D-printed rigid box, top sleeves, and a fitted insert",
+      "Pricing is quote-based; mix box and sleeve tiers as needed",
+    ],
+    keywords: [
+      "custom card box printing",
+      "3D printed card box",
+      "card sleeve upgrades San Antonio",
+    ],
+  },
+  {
+    slug: "card-design",
+    navLabel: "Card Design & Fast Prototyping",
+    cardBlurb: "We design your cards fast and prototype them locally before a run.",
+    title: `Custom Card Design & Fast Prototyping in ${CITY}`,
+    metaDescription:
+      "Custom card design and fast prototyping in San Antonio. We lay out and design your cards quickly, then prototype a deck locally so you can test before a full run.",
+    eyebrow: "Card printing",
+    h1: "Custom Card Design & Fast Prototyping",
+    intro:
+      "This is something we do really well. We design and lay out custom cards fast using Dextrous, a professional card-design tool, which means you can go from a concept to a print-ready deck quickly, and prototype it locally before committing to a full run.",
+    sections: [
+      {
+        h: "Designed fast",
+        body: "We focus on the card design, layout, and structure. Using Dextrous, turning your concept, card data, and artwork into clean, consistent, print-ready cards is quick. Less waiting, faster iteration.",
+      },
+      {
+        h: "You bring the art, we do the design",
+        body: "You provide the artwork, or we can point you to artists and organic 3D modelers when you need content. Either way, we handle the layout and structure that turns it into a finished deck.",
+      },
+      {
+        h: "Prototype before you commit",
+        body: "Since the design step is fast and it's all done locally, we can get a prototype deck in your hands quickly. Hold it, play it, and refine the design before you order a larger run.",
+      },
+      {
+        h: "Built for designers",
+        body: "Dextrous makes it easy to manage a deck full of unique cards and keep everything consistent, which is ideal for game and card designers iterating toward a final version.",
+      },
+    ],
+    specs: [
+      "Fast, professional card design, layout, and structure",
+      "Local prototype decks so you can test before a run",
+      "Great for designers iterating on a game",
+      "You provide artwork, or we point you to artists and 3D modelers",
+      "At conventions: on-the-spot design with quick turnaround and delivery, sometimes next day",
+    ],
+    keywords: [
+      "custom card design San Antonio",
+      "fast card prototyping",
+      "card game design service",
+      "card design at conventions",
+    ],
+    link: { label: "We design in Dextrous", href: "https://www.dextrous.com.au/" },
   },
 ];
 

@@ -15,15 +15,27 @@ const isConfigured = !FORMSPREE_ENDPOINT.includes("REPLACE_WITH_YOUR_FORM_ID");
 
 type Status = "idle" | "submitting" | "success" | "error";
 
+// Selectable project types: the main services, plus Card Design right after
+// UV Card Printing (card design lives in the card-printing area, not as its own
+// top-level service, but people should be able to request it directly).
+const PROJECT_TYPES = services.flatMap((s) =>
+  s.id === "card-printing"
+    ? [
+        { id: s.id, name: s.name },
+        { id: "card-design", name: "Card Design & Prototyping" },
+      ]
+    : [{ id: s.id, name: s.name }]
+);
+
 function FormInner() {
   const params = useSearchParams();
   const [projectType, setProjectType] = useState("");
   const [status, setStatus] = useState<Status>("idle");
 
-  // Pre-select the project type from ?type=<service-id> (the "Request this" CTAs).
+  // Pre-select the project type from ?type=<id> (the "Request this" CTAs).
   useEffect(() => {
     const t = params.get("type");
-    if (t && services.some((s) => s.id === t)) setProjectType(t);
+    if (t && PROJECT_TYPES.some((p) => p.id === t)) setProjectType(t);
   }, [params]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -96,7 +108,7 @@ function FormInner() {
         </div>
         <div>
           <label className={label} htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" required className={field} placeholder="you@email.com" />
+          <input id="email" name="email" type="email" required className={field} placeholder="Your email" />
         </div>
       </div>
 
@@ -111,8 +123,8 @@ function FormInner() {
           required
         >
           <option value="" disabled>Choose a service…</option>
-          {services.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
+          {PROJECT_TYPES.map((p) => (
+            <option key={p.id} value={p.id}>{p.name}</option>
           ))}
           <option value="other">Something else</option>
         </select>
@@ -145,7 +157,7 @@ function FormInner() {
       </div>
 
       {status === "error" && (
-        <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-600">
           Something went wrong sending your message. Please email{" "}
           <a href={`mailto:${site.email}`} className="underline">{site.email}</a> instead.
         </p>

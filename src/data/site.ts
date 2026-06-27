@@ -10,8 +10,12 @@
 export const site = {
   // ---- Launch switch ----
   // While true: visitors only see the "coming soon" landing, site navigation is
-  // hidden, and the whole site is set to noindex. Flip to false to go fully live.
-  constructionMode: true,
+  // hidden, and the whole site is set to noindex.
+  //
+  // Currently env-aware: OFF in local dev (`npm run dev`) so you can preview the
+  // full site, ON in production builds (Vercel) so the live site shows the
+  // landing. When you're ready to launch for real, change this to `false`.
+  constructionMode: process.env.NODE_ENV === "production",
 
   name: "Kulworks",
   legalName: "Kulworks",
@@ -25,8 +29,9 @@ export const site = {
   // Forwarded via Squarespace Email Forwarding -> Sam's inbox.
   email: "contact@kulworks.com",
   quotesEmail: "quotes@kulworks.com",
-  // E.164 format for schema, e.g. "+1-210-555-0123". Leave as null until you have one.
-  telephone: null as string | null,
+  // E.164 for schema; `telephoneDisplay` is the human-friendly version shown on the page.
+  telephone: "+1-210-570-3328",
+  telephoneDisplay: "(210) 570-3328",
 
   // ---- Location / service area (San Antonio first) ----
   // Home-based or no public storefront? Leave streetAddress empty and rely on

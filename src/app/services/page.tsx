@@ -60,6 +60,16 @@ export default function ServicesPage() {
                   <h2 className="mt-3 text-2xl font-extrabold sm:text-3xl">{s.name}</h2>
                   <p className="mt-2 font-semibold text-gold">{s.tagline}</p>
                   <p className="mt-4 text-lg text-muted">{s.details}</p>
+                  {s.highlights && (
+                    <ul className="mt-4 space-y-2 text-muted">
+                      {s.highlights.map((h) => (
+                        <li key={h} className="flex gap-2">
+                          <span aria-hidden className="mt-0.5 text-gold">✓</span>
+                          <span>{h}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                   <div className="mt-6 flex flex-wrap gap-3">
                     <Button href={`/contact/?type=${s.id}`} variant="primary">
                       Request {s.name}

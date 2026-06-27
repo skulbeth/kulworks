@@ -1,0 +1,80 @@
+// Pricing shown on /pricing/. These are starting points, not final quotes.
+// Numbers reflect Sam's rates + market research (modestly under US market,
+// leaning on the local / US-made / in-house advantage). Resin and UV-tile
+// pricing stay quote-by-project until they're researched/costed separately.
+
+export interface PriceItem {
+  label: string;
+  price: string;
+}
+
+export interface PriceGroup {
+  name: string;
+  intro?: string;
+  items: PriceItem[];
+  note?: string;
+}
+
+export const pricingIntro =
+  "Honest starting prices, in USD. Final pricing depends on quantity, size, finishing, and delivery, so send your project for an exact quote.";
+
+export const pricing: PriceGroup[] = [
+  {
+    name: "Card Printing",
+    intro: "Poker-size cards. No minimums, so a single deck is fine. Larger sizes scale up.",
+    items: [
+      { label: "Setup fee (one-time, per project)", price: "$25" },
+      { label: "Per card, poker size (print-ready files)", price: "$0.10 to $0.15" },
+      { label: "Larger sizes (tarot, giant)", price: "About 2 to 3x per size step up" },
+      { label: "Delivery", price: "Varies by order and location" },
+    ],
+    note: "Per-card pricing assumes print-ready, correctly designed files. Need the cards designed? See Card Design below.",
+  },
+  {
+    name: "Card Design",
+    intro: "We design the structure and layout; you provide the content and artwork.",
+    items: [
+      { label: "Single card, front and back layout", price: "$80" },
+      { label: "Further iterations", price: "$45 / hour" },
+      { label: "Whole deck or project", price: "Flat rate by agreement" },
+    ],
+  },
+  {
+    name: "Card Boxes & Sleeves",
+    intro: "Finish the deck. Custom 3D-printed boxes made in-house, plus sleeves.",
+    items: [
+      { label: "Custom card box (with your logo or text)", price: "$8 to $10 each" },
+      { label: "Standard sleeves", price: "$6 / 100" },
+      { label: "Premium sleeves", price: "$14 / 100" },
+    ],
+    note: "Boxes use an adjustable in-house design, so rebranding is quick and bulk orders get better per-unit pricing. Custom artwork prep, if needed, is billed at the design rate.",
+  },
+  {
+    name: "3D Modeling & Design",
+    intro: "Custom models in Shapr3D for printable parts and pieces.",
+    items: [
+      { label: "Modeling", price: "$20 / hour" },
+      { label: "Project rate", price: "By agreement" },
+      { label: "Iterations", price: "Negotiable" },
+    ],
+  },
+  {
+    name: "FDM / Filament 3D Printing",
+    intro: "Functional parts, props, and components.",
+    items: [
+      { label: "Material", price: "$0.15 / gram" },
+      { label: "Setup fee (per part)", price: "$5" },
+      { label: "Minimum order", price: "$10" },
+    ],
+    note: "A rough guide: a 100-gram part runs about $20. Final price depends on material, size, and finishing.",
+  },
+  {
+    name: "Resin Printing & UV Tile Printing",
+    intro: "High-detail resin pieces and UV-printed tiles vary a lot by size and material.",
+    items: [
+      { label: "Resin (SLA) printing", price: "Quote by project" },
+      { label: "UV-printed board game tiles", price: "Quote by project" },
+    ],
+    note: "Send the size, material, and quantity and we will quote it.",
+  },
+];

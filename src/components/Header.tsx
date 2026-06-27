@@ -4,10 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { site } from "@/data/site";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const navLinks = [
   { href: "/services/", label: "Services" },
   { href: "/portfolio/", label: "Portfolio" },
+  { href: "/guides/", label: "Guides & FAQ" },
+  { href: "/pricing/", label: "Pricing" },
   { href: "/who-its-for/", label: "Who It's For" },
   { href: "/about/", label: "About" },
 ];
@@ -78,19 +81,25 @@ export default function Header() {
               Get a Quote
             </Link>
           </li>
+          <li>
+            <ThemeToggle />
+          </li>
         </ul>
 
-        {/* Mobile toggle */}
-        <button
+        {/* Mobile controls */}
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
           type="button"
-          className="inline-flex items-center justify-center rounded-lg border border-border p-2 md:hidden"
+          className="inline-flex items-center justify-center rounded-lg border border-border p-2"
           aria-expanded={open}
           aria-controls="mobile-menu"
           aria-label="Toggle menu"
           onClick={() => setOpen((v) => !v)}
         >
           <span className="text-xl leading-none">{open ? "✕" : "☰"}</span>
-        </button>
+          </button>
+        </div>
       </nav>
 
       {/* Mobile menu */}

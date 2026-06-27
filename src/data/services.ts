@@ -18,6 +18,8 @@ export interface Service {
   description: string;
   /** Longer copy for the Services page. */
   details: string;
+  /** Optional scannable bullet points shown under the details on the Services page. */
+  highlights?: string[];
   /** Emoji used as a lightweight icon placeholder (swap for an SVG/image later). */
   icon: string;
   /** Set true for the lead service (gets extra prominence). */
@@ -32,9 +34,16 @@ export const services: Service[] = [
     name: "UV Card Printing",
     tagline: "Custom decks, prototypes to finished runs.",
     description:
-      "Custom playing, poker, and game cards in sizes from standard poker up to tarot, with your own card backs and faces.",
+      "Custom playing, poker, and game cards in sizes from standard poker up to tarot, with your own card backs and faces. We can even design the cards for you.",
     details:
-      "This is our flagship craft. We print crisp, durable UV cards with custom backs and faces, in sizes from standard poker up to larger tarot cards. That covers everything from one prototype deck to trading-style cards for a club or a branded deck for a venue. One-off jobs and short runs are both fine, prototypes turn around fast, and we can print cards on-site at game conventions.",
+      "Custom card printing is our flagship craft. We print crisp, durable UV cards with custom backs and faces, in sizes from standard poker up to larger tarot cards.",
+    highlights: [
+      "Prototypes, one-off decks, and short runs, all with fast turnaround",
+      "Custom backs and faces, from poker (2.5 x 3.5 in / 63 x 88 mm) up to tarot (2.75 x 4.75 in / 70 x 121 mm)",
+      "We design the card structure, fill it with your content, and go straight to print, the whole process under one roof",
+      "Custom 3D-printed card boxes and sleeve upgrades, offered in tiers",
+      "Card design at conventions, with quick turnaround and delivery, sometimes next day",
+    ],
     icon: "🃏",
     lead: true,
   },
@@ -45,7 +54,13 @@ export const services: Service[] = [
     description:
       "UV flatbed printing on small board game tiles and components, with sharp full-color art bonded straight to the surface.",
     details:
-      "UV flatbed printing lays vivid, durable color directly onto small tiles and game components. It works well for modular boards, terrain tiles, tokens, and custom pieces that need to survive real play. Bring your artwork or let us prep it for you.",
+      "UV flatbed printing lays vivid, durable color directly onto small tiles and game components.",
+    highlights: [
+      "Sharp, full-color art bonded straight to the surface",
+      "Great for modular boards, terrain tiles, and tokens",
+      "Built to survive real play",
+      "Bring your artwork or let us prep it for you",
+    ],
     icon: "🟧",
   },
   {
@@ -55,7 +70,13 @@ export const services: Service[] = [
     description:
       "FDM printing for parts, props, and functional components, with sturdy prints in a range of materials and sizes.",
     details:
-      "Filament (FDM) printing is our workhorse for functional parts, props, jigs, and larger components. A range of materials and finishes to match the job, whether it's a one-off prop or a batch of replacement pieces.",
+      "Filament (FDM) printing is our workhorse for functional parts, props, and larger components.",
+    highlights: [
+      "Parts, props, jigs, and replacement pieces",
+      "A range of materials and finishes to match the job",
+      "One-off prints or batches",
+      "Sturdy prints in a range of sizes",
+    ],
     icon: "⚙️",
   },
   {
@@ -65,7 +86,13 @@ export const services: Service[] = [
     description:
       "SLA resin printing for high-detail miniatures and small parts where crisp detail matters most.",
     details:
-      "Resin (SLA) printing captures fine features that filament can't, which makes it the right choice for miniatures, intricate small parts, and display pieces. It suits tabletop minis and showpiece components.",
+      "Resin (SLA) printing captures fine features that filament can't.",
+    highlights: [
+      "High detail for miniatures and intricate small parts",
+      "Great for tabletop minis and display pieces",
+      "Crisp features and smooth finishes",
+      "Single pieces or small batches",
+    ],
     icon: "🐉",
   },
   {
@@ -73,9 +100,15 @@ export const services: Service[] = [
     name: "3D Modeling & Design",
     tagline: "Custom models in Shapr3D + design support.",
     description:
-      "Custom 3D models designed in Shapr3D, plus the design support behind your print job, including card layout and tile artwork prep.",
+      "Custom 3D models designed in Shapr3D, plus the design support behind your print job, including card layout and tile artwork prep. Because we handle the design, we can tweak and update it as your game develops and grows.",
     details:
-      "We design custom 3D models in Shapr3D and handle the design work that supports everything else: card layouts, tile artwork prep, and getting files print-ready before they go to the printer.",
+      "We design custom 3D models in Shapr3D and handle the design work behind everything else.",
+    highlights: [
+      "Custom 3D models designed in Shapr3D",
+      "Card layouts, tile artwork prep, and print-ready files",
+      "We tweak and make changes as needed",
+      "Keeps evolving as your game develops and grows",
+    ],
     icon: "✏️",
     link: { label: "See my models on MakerWorld", href: "https://makerworld.com/en/@skulbeth" },
   },

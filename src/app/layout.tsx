@@ -31,10 +31,14 @@ const vinque = localFont({
 
 const SITE_URL = "https://kulworks.com";
 
-// Matches the dark theme so mobile browser chrome (address bar) blends in.
+// Light is the default theme; these set the mobile browser chrome accordingly.
+// (Browsers also honor the two theme-color values below by color scheme.)
 export const viewport: Viewport = {
-  themeColor: "#0b0b0b",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf9f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0b0b" },
+  ],
+  colorScheme: "light dark",
 };
 
 export const metadata: Metadata = {
@@ -99,7 +103,20 @@ export default function RootLayout({
       className={`${baloo.variable} ${dumbledoor.variable} ${vinque.variable}`}
     >
       <body className="font-sans bg-background text-foreground min-h-screen flex flex-col">
+        {/* Apply saved theme before paint (default light, no flash). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{if(localStorage.getItem('theme')==='dark'){document.documentElement.setAttribute('data-theme','dark');}}catch(e){}})();",
+          }}
+        />
         <JsonLd data={siteGraph()} />
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:font-bold focus:text-black"
+        >
+          Skip to content
+        </a>
         <Header />
         <main id="main" className="flex-1">
           {children}

@@ -22,7 +22,7 @@ const config: Config = {
         secondary: "var(--color-secondary)",
       },
       fontFamily: {
-        // Body + UI (rounded, friendly) — the default everywhere.
+        // Body + UI (rounded, friendly), the default everywhere.
         sans: ["var(--font-baloo)", "system-ui", "sans-serif"],
         // Brand wordmark only (clean-studio choice).
         display: ["var(--font-dumbledoor)", "serif"],

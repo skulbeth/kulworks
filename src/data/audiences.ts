@@ -10,19 +10,14 @@ export interface Audience {
 
 export const audiences: Audience[] = [
   {
-    title: "Sports Teams & Clubs",
-    blurb: "Custom decks and trading-style cards your team will actually want to keep.",
+    title: "Sports Teams",
+    blurb: "Player trading cards, team sets, and season keepsakes for rec leagues, travel teams, and athletic clubs.",
     icon: "🏅",
   },
   {
-    title: "School Sport Teams",
-    blurb: "Roster cards, fundraisers, and keepsakes for the season.",
-    icon: "🎒",
-  },
-  {
-    title: "Club Sport Teams",
-    blurb: "Branded card sets and components for clubs of any size.",
-    icon: "⚽",
+    title: "Schools & Clubs",
+    blurb: "Fundraisers, group branding, and custom cards for schools, student clubs, and community organizations.",
+    icon: "🏫",
   },
   {
     title: "Game & Card Designers",
@@ -36,7 +31,7 @@ export const audiences: Audience[] = [
   },
   {
     title: "Our Own Games",
-    blurb: "Like Role to Reign. Proof we build what we'd use ourselves.",
+    blurb: "Like Role to Reign, our own fantasy-inspired game with 750 world and character-building cards, all designed and printed by us.",
     icon: "👑",
     href: "https://roletoreign.com",
   },
@@ -46,14 +41,19 @@ export const audiences: Audience[] = [
     icon: "💍",
   },
   {
+    title: "Work Parties",
+    blurb: "Office parties, team-building, and company events. Custom decks and pieces that make the day.",
+    icon: "💼",
+  },
+  {
+    title: "Events & Celebrations",
+    blurb: "Weddings, family reunions, holidays, or any event you can dream up. If you can think of it, we can make cards for it.",
+    icon: "🎉",
+  },
+  {
     title: "Photographers",
     blurb: "Turn your shots into premium printed cards and keepsakes.",
     icon: "📸",
-  },
-  {
-    title: "School Clubs",
-    blurb: "Custom cards and 3D pieces for clubs, projects, and fundraisers.",
-    icon: "🏫",
   },
   {
     title: "Local Activities & Market Sellers",
@@ -67,7 +67,7 @@ export const audiences: Audience[] = [
   },
   {
     title: "Convention Attendees",
-    blurb: "We take projects to game cons and can print cards right there.",
+    blurb: "We bring card design to game cons, with quick turnaround and delivery, sometimes next day at the con.",
     icon: "🎪",
   },
 ];

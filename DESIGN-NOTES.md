@@ -9,23 +9,32 @@ All tokens live as CSS variables in [`src/styles/global.css`](src/styles/global.
 and are mapped to Tailwind in [`tailwind.config.ts`](tailwind.config.ts). Change a
 value once and it updates everywhere.
 
+## Themes (light default + dark)
+
+The site ships with **two themes**, switched by a toggle in the header (and on the
+construction landing). **Light is the default** (`:root`); **dark is opt-in** via
+`<html data-theme="dark">` (the original Role to Reign look). The choice is saved to
+`localStorage('theme')` and applied before paint by an inline script in `layout.tsx`,
+so there is no flash. Accents shift between themes so contrast stays readable.
+
 ## Colors
 
-| Token | Value | Use |
-|---|---|---|
-| `background` | `#0b0b0b` | Page base (near-black) |
-| `surface` | `#161616` | Cards / panels |
-| `surface2` | `#1f1f1f` | Raised cards, inputs |
-| `border` | `#2d2d2d` | Hairline borders |
-| `foreground` | `#ffffff` | Primary text |
-| `muted` | `#cbd5e1` | Secondary text (slate-300) |
-| `gold` | `#fcd34d` | Signature highlight (amber-300); glow `rgba(255,182,54,.85)` |
-| `blue` | `#93c5fd` | Links, subheads, active nav |
-| `primary` | `#10b981` | CTA fill (emerald-500) |
-| `primary-hover` | `#34d399` | CTA hover (emerald-400) |
-| `secondary` | `#059669` | Emerald-600 |
+| Token | Light (default) | Dark | Use |
+|---|---|---|---|
+| `background` | `#faf9f7` | `#0b0b0b` | Page base |
+| `surface` | `#ffffff` | `#161616` | Cards / panels |
+| `surface2` | `#f1efe9` | `#1f1f1f` | Raised cards, inputs |
+| `border` | `#e5e2da` | `#2d2d2d` | Hairline borders |
+| `foreground` | `#1b1b1b` | `#ffffff` | Primary text |
+| `muted` | `#4b5563` | `#cbd5e1` | Secondary text |
+| `gold` | `#b45309` | `#fcd34d` | Signature highlight (deep amber on light so it reads on white) |
+| `blue` | `#2563eb` | `#93c5fd` | Links, subheads, active nav |
+| `primary` | `#10b981` | `#10b981` | CTA fill (emerald, same in both) |
+| `primary-hover` | `#059669` | `#34d399` | CTA hover |
+| `secondary` | `#047857` | `#059669` | Emerald accent |
 
-Signature combo: **gold + blue on near-black**, emerald for action.
+Signature combo: **gold + blue accents with emerald for action**, on a light or
+near-black base depending on theme.
 
 ## Typography
 

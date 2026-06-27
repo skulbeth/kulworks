@@ -53,7 +53,14 @@ export default function ContactPage() {
                     {site.quotesEmail}
                   </a>
                 </li>
+                <li>
+                  Phone:{" "}
+                  <a href={`tel:${site.telephone}`} className="text-blue hover:underline">
+                    {site.telephoneDisplay}
+                  </a>
+                </li>
               </ul>
+              <p className="mt-3 text-sm text-muted">We usually reply within one business day.</p>
               <div className="mt-4">
                 <p className="text-sm font-semibold">Follow along</p>
                 <SocialLinks className="mt-2" />
@@ -63,8 +70,9 @@ export default function ContactPage() {
             <div className="rounded-2xl border border-gold/40 bg-gold/5 p-6">
               <h3 className="font-bold text-gold">Catch me at a convention</h3>
               <p className="mt-2 text-muted">
-                I take projects to game conventions and can even print cards on-site. Going to a
-                con? Mention it in your message and we can plan around it.
+                I take projects to game conventions and can design cards right there, with quick
+                turnaround and delivery, sometimes even next day at the con. Going to one? Mention
+                it in your message and we can plan around it.
               </p>
             </div>
 

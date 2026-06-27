@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Container from "@/components/Container";
 import Button from "@/components/Button";
 import SectionHeading from "@/components/SectionHeading";
@@ -6,9 +7,6 @@ import AudienceCard from "@/components/AudienceCard";
 import RevealOnScroll from "@/components/RevealOnScroll";
 import Placeholder from "@/components/Placeholder";
 import Carousel from "@/components/Carousel";
-import FaqSection from "@/components/Faq";
-import JsonLd from "@/components/JsonLd";
-import { faqSchema } from "@/lib/structured-data";
 import ComingSoon from "@/components/ComingSoon";
 import { site } from "@/data/site";
 import { services } from "@/data/services";
@@ -18,7 +16,8 @@ export default function HomePage() {
   // Temporary holding page. Flip site.constructionMode to false to show the real home.
   if (site.constructionMode) return <ComingSoon />;
 
-  const leadFirst = [...services].sort((a, b) => (b.lead ? 1 : 0) - (a.lead ? 1 : 0));
+  const leadService = services.find((s) => s.lead) ?? services[0];
+  const otherServices = services.filter((s) => s.id !== leadService.id);
   const audienceHighlights = audiences.slice(0, 6);
 
   // Swap these for real photos: drop files in /public/images/studio/ and set `src`.
@@ -43,9 +42,9 @@ export default function HomePage() {
               <span className="text-gold text-glow-gold">Cards, tiles, and 3D</span>, designed and made in-house.
             </h1>
             <p className="mt-6 max-w-3xl text-lg text-muted sm:text-xl">
-              Kulworks turns your idea into a finished, physical product. We do custom UV
-              card printing, UV-printed game tiles, 3D printing, and the design work behind
-              all of it.
+              Kulworks is a San Antonio maker studio. We turn your idea into a finished,
+              physical product: custom UV card printing, UV-printed game tiles, 3D printing,
+              and the design work behind all of it.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/contact/" variant="primary" size="lg">
@@ -80,6 +79,32 @@ export default function HomePage() {
         </Container>
       </section>
 
+      {/* ===== Why Kulworks (the edge) ===== */}
+      <section className="border-b border-border bg-surface/30">
+        <Container className="py-16">
+          <RevealOnScroll>
+            <SectionHeading
+              eyebrow="Why Kulworks"
+              title="What sets us apart"
+              intro="A local, in-house studio, not an overseas print broker."
+            />
+          </RevealOnScroll>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { h: "Local and US-made", p: "Designed and made in San Antonio, start to finish. No overseas shipping or middlemen." },
+              { h: "Everything in-house", p: "Design and production under one roof, so quality and timing stay in our hands." },
+              { h: "Fast custom design", p: "We design and lay out your cards quickly, then prototype before you commit to a full run." },
+              { h: "No minimums", p: "From a single prototype deck to a full run. Order exactly what you need." },
+            ].map((f) => (
+              <div key={f.h} className="rounded-2xl border border-border bg-surface p-6">
+                <h3 className="font-bold text-gold">{f.h}</h3>
+                <p className="mt-2 text-sm text-muted">{f.p}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+
       {/* ===== Services overview ===== */}
       <section className="border-b border-border">
         <Container className="py-16">
@@ -90,14 +115,61 @@ export default function HomePage() {
               intro="Card printing is what we do most. If it needs designing, printing, or making, there's a good chance we can help."
             />
           </RevealOnScroll>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {leadFirst.map((s) => (
-              <ServiceCard key={s.id} service={s} featured={s.lead} />
+          {/* Flagship: card printing, given the most room */}
+          <div className="mt-10">
+            <ServiceCard service={leadService} featured />
+          </div>
+          {/* The rest */}
+          <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-gold">
+            We also offer
+          </p>
+          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {otherServices.map((s) => (
+              <ServiceCard key={s.id} service={s} />
             ))}
           </div>
           <div className="mt-8">
             <Button href="/services/" variant="ghost">All services in detail →</Button>
           </div>
+        </Container>
+      </section>
+
+      {/* ===== How it works ===== */}
+      <section className="border-b border-border bg-surface/30">
+        <Container className="py-16">
+          <RevealOnScroll>
+            <SectionHeading
+              eyebrow="How it works"
+              title="From idea to finished product"
+              intro="A simple path from your first message to cards (or prints) in hand."
+            />
+          </RevealOnScroll>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { n: "1", h: "Tell us about it", p: "Send your project, quantities, sizes, and timeline through the quote form." },
+              { n: "2", h: "We quote and plan", p: "We reply with options and a price, then lock the scope with you." },
+              { n: "3", h: "Finalize the files", p: "Bring your artwork or let us design and prep it, then get it print-ready." },
+              { n: "4", h: "We make it in-house", p: "We print, 3D print, and finish your project, then get it to you." },
+            ].map((s) => (
+              <div key={s.n} className="rounded-2xl border border-border bg-surface p-6">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold/15 font-extrabold text-gold">
+                  {s.n}
+                </div>
+                <h3 className="mt-4 font-bold">{s.h}</h3>
+                <p className="mt-2 text-sm text-muted">{s.p}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-muted">
+            We do the card{" "}
+            <Link
+              href="/services/card-printing/card-design/"
+              className="font-semibold text-blue hover:underline"
+            >
+              design and prototyping
+            </Link>{" "}
+            ourselves. Bring your own artwork, or we can point you to artists and 3D modelers.
+          </p>
         </Container>
       </section>
 
@@ -141,22 +213,6 @@ export default function HomePage() {
             <Button href="/portfolio/" variant="ghost">Browse the full gallery →</Button>
           </div>
         </Container>
-      </section>
-
-      {/* ===== FAQ (useful content + topical depth for SEO) ===== */}
-      <section className="border-b border-border bg-surface/30">
-        <Container className="py-16">
-          <RevealOnScroll>
-            <SectionHeading
-              eyebrow="FAQ"
-              title="Common questions"
-              intro="Quick answers on card printing, sizes, prototypes, and how to get a quote."
-              center
-            />
-          </RevealOnScroll>
-          <FaqSection />
-        </Container>
-        <JsonLd data={faqSchema()} />
       </section>
 
       {/* ===== Closing CTA ===== */}

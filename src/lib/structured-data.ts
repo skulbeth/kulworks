@@ -6,8 +6,9 @@
 
 import { site, absUrl, sameAsUrls } from "@/data/site";
 import { services } from "@/data/services";
-import { faqs } from "@/data/faq";
+import { faqs, Faq } from "@/data/faq";
 import { cardHub, cardPages, CardPage } from "@/data/cardCluster";
+import { Guide } from "@/data/guides";
 
 // Stable @id anchors so the graph nodes can reference each other.
 const ORG_ID = `${site.url}/#organization`;
@@ -169,6 +170,23 @@ export function cardServiceSchema(page: CardPage) {
   };
 }
 
+/** Article (BlogPosting) schema for a guide. */
+export function guideArticleSchema(guide: Guide) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: guide.title,
+    description: guide.description,
+    datePublished: guide.datePublished,
+    dateModified: guide.datePublished,
+    author: { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+    mainEntityOfPage: absUrl(`/guides/${guide.slug}/`),
+    url: absUrl(`/guides/${guide.slug}/`),
+    inLanguage: "en-US",
+  };
+}
+
 /** Breadcrumbs for a page. Pass ordered [{name, path}] from Home to current. */
 export function breadcrumbSchema(trail: { name: string; path: string }[]) {
   return {
@@ -188,14 +206,17 @@ export function breadcrumbSchema(trail: { name: string; path: string }[]) {
  * note Google deprecated FAQ rich results in 2026, so this is for semantic
  * clarity, not a SERP rich-result payoff.
  */
-export function faqSchema(items: { q: string; a: string }[] = faqs) {
+export function faqSchema(items: Faq[] = faqs) {
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     mainEntity: items.map((f) => ({
       "@type": "Question",
       name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.bullets ? `${f.a} ${f.bullets.join("; ")}` : f.a,
+      },
     })),
   };
 }
