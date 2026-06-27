@@ -17,25 +17,42 @@ Check items off as you go. Most code placeholders live in
 
 ## 1. Must-do before launch (blockers)
 
-- [ ] **Fill business details (NAP)** in [`src/data/site.ts`](src/data/site.ts):
-  - [ ] `telephone` (E.164 format, e.g. `+1-210-555-0123`)
-  - [ ] `address.postalCode` (and `streetAddress` only if you have a public storefront)
-  - [ ] Confirm `geo` latitude/longitude match your real location
-  - NAP = Name, Address, Phone. Keep these IDENTICAL everywhere online (site, Google,
-    directories). Inconsistent NAP is one of the most common local-SEO killers.
+- [x] **Phone** in `site.ts` (210-570-3328), shown on Contact and in schema.
+- [x] **Real emails** (contact@ / quotes@kulworks.com), wired through `site.ts`.
+- [ ] **Postal code + geo** in [`src/data/site.ts`](src/data/site.ts): set `address.postalCode`
+  (and `streetAddress` only if you have a public storefront), and confirm `geo` lat/long.
+  Fills out the LocalBusiness schema for San Antonio search. NAP must stay IDENTICAL
+  everywhere online (site, Google, directories).
 - [ ] **Contact form (Formspree)**: create a form at https://formspree.io and paste the
   endpoint into [`src/components/ContactForm.tsx`](src/components/ContactForm.tsx)
-  (replace `REPLACE_WITH_YOUR_FORM_ID`). Until then the form is in demo mode.
-- [ ] **Real email**: replace `hello@kulworks.com` in `site.ts` (it flows everywhere).
+  (replace `REPLACE_WITH_YOUR_FORM_ID`). Until then the form is in demo mode (won't send).
 - [ ] **Social handles**: replace `REPLACE_WITH_HANDLE` in `site.ts` for Instagram,
-  YouTube, TikTok. Placeholder links show in the footer but are kept out of the
-  schema until filled.
-- [ ] **OG share image**: add `public/images/og-default.png` (1200x630) so links
-  preview nicely on social and in chats.
-- [ ] **Real photos**: drop card/print/3D photos into `public/images/portfolio/<category>/`
-  and the studio shots into `public/images/studio/`, then set `src` in the data files.
-  Good photos help conversions and image search.
+  YouTube, TikTok (or have Claude drop the icons if you're not using them yet).
+- [ ] **OG share image**: add `public/images/og-default.png` (1200x630) for link previews.
+- [ ] **Real photos** (see the Content fill-in map below).
 - [ ] **Proofread the copy** on every page so it sounds like you.
+- [ ] **UV tile pricing**: still "Quote by project" in `pricing.ts`. Set it cost-plus
+  (your material + time) when ready.
+
+---
+
+## 1b. Content fill-in map (where everything lives)
+
+The site is data-driven, so you rarely touch component code. To fill things in:
+
+- **Services** (names, taglines, descriptions, bullet highlights): [`src/data/services.ts`](src/data/services.ts)
+- **Card pages** (poker, tarot, giant, prototypes, trading, boxes, card-design): [`src/data/cardCluster.ts`](src/data/cardCluster.ts)
+- **Audiences** ("Who it's for" cards): [`src/data/audiences.ts`](src/data/audiences.ts)
+- **Portfolio items** (title, category, image, alt): [`src/data/portfolio.ts`](src/data/portfolio.ts)
+- **Guides / articles**: [`src/data/guides.ts`](src/data/guides.ts)
+- **FAQ**: [`src/data/faq.ts`](src/data/faq.ts)
+- **Pricing**: [`src/data/pricing.ts`](src/data/pricing.ts)
+- **Business info, contact, socials, the launch switch**: [`src/data/site.ts`](src/data/site.ts)
+- **Page-specific copy** (hero, About story): the matching file under `src/app/`
+
+**Images:** drop files in `public/images/{portfolio/<category>, studio, services, hero}/`,
+then set `src` on the data item (portfolio) or pass `src=` to a `<Placeholder>`. Add
+`public/images/og-default.png` for share previews.
 
 ---
 
@@ -131,6 +148,10 @@ sub-pages). Keep feeding it:
 - [x] Structured data (Organization, WebSite, LocalBusiness/ProfessionalService with
   geo + service area, Service, BreadcrumbList, FAQ) via JSON-LD
 - [x] `sitemap.xml` and `robots.txt` auto-generated on build
-- [x] FAQ section with real Q&A (content depth)
-- [x] Mobile-responsive, semantic HTML, image alt text
-- [x] Card-printing content cluster scaffolding
+- [x] Light + dark theme with a toggle (light default, no flash)
+- [x] Pricing page with researched rates (card printing, design, 3D, FDM, resin, boxes, sleeves)
+- [x] Phone + contact/quotes emails wired through `site.ts`
+- [x] Guides + FAQ merged into one page; nav trimmed to 6
+- [x] Card-printing content cluster (hub + 7 sub-pages) and Card Design (Dextrous) page
+- [x] Favicon, skip-to-content link, San Antonio in hero, About refreshed
+- [x] Mobile-responsive, semantic HTML, image alt text, scannable service bullets
