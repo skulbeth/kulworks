@@ -3,6 +3,7 @@ import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
 import Button from "@/components/Button";
 import JsonLd from "@/components/JsonLd";
+import CardCalculator from "@/components/CardCalculator";
 import { pricing, pricingIntro } from "@/data/pricing";
 import { breadcrumbSchema } from "@/lib/structured-data";
 
@@ -26,6 +27,20 @@ export default function PricingPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <SectionHeading eyebrow="Pricing" title="What it costs" intro={pricingIntro} />
+        </Container>
+      </section>
+
+      {/* Card cost estimator */}
+      <section className="border-b border-border bg-surface/30">
+        <Container className="py-16">
+          <SectionHeading
+            eyebrow="Estimator"
+            title="Estimate your card order"
+            intro="A quick ballpark for card printing. Adjust the options to see a live estimate."
+          />
+          <div className="mt-10">
+            <CardCalculator />
+          </div>
         </Container>
       </section>
 

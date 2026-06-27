@@ -23,9 +23,11 @@ Check items off as you go. Most code placeholders live in
   (and `streetAddress` only if you have a public storefront), and confirm `geo` lat/long.
   Fills out the LocalBusiness schema for San Antonio search. NAP must stay IDENTICAL
   everywhere online (site, Google, directories).
-- [ ] **Contact form (Formspree)**: create a form at https://formspree.io and paste the
-  endpoint into [`src/components/ContactForm.tsx`](src/components/ContactForm.tsx)
-  (replace `REPLACE_WITH_YOUR_FORM_ID`). Until then the form is in demo mode (won't send).
+- [ ] **Connect the contact-form backend** (currently demo mode, won't send). Pick one,
+  then it's a drop-in endpoint swap in [`src/components/ContactForm.tsx`](src/components/ContactForm.tsx):
+  - **Web3Forms** (recommended): free, unlimited, supports file attachments on the free tier.
+  - **Formspree**: free 50/month, no attachments unless paid (Drive-folder opt-in covers files).
+  - Google Forms only if you'd drop the custom on-brand form (off-brand Google page).
 - [ ] **Social handles**: replace `REPLACE_WITH_HANDLE` in `site.ts` for Instagram,
   YouTube, TikTok (or have Claude drop the icons if you're not using them yet).
 - [ ] **OG share image**: add `public/images/og-default.png` (1200x630) for link previews.
