@@ -6,6 +6,15 @@ Check items off as you go. Most code placeholders live in
 
 ---
 
+## 0. Flip the launch switch (when ready)
+
+- [ ] The site is currently in **construction mode**: `constructionMode: true` in
+  [`src/data/site.ts`](src/data/site.ts). This shows only the "coming soon" landing
+  (no nav) and sets the whole site to **noindex**. The inner pages still work by
+  direct URL for previewing.
+- [ ] When everything below is done, set `constructionMode: false`, commit, and push.
+  That restores the full home page + navigation and makes the site indexable.
+
 ## 1. Must-do before launch (blockers)
 
 - [ ] **Fill business details (NAP)** in [`src/data/site.ts`](src/data/site.ts):

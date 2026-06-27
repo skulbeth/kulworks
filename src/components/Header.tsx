@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { site } from "@/data/site";
 
 const navLinks = [
   { href: "/services/", label: "Services" },
@@ -17,6 +18,9 @@ export default function Header() {
 
   const isActive = (href: string) =>
     pathname === href || (href !== "/" && pathname?.startsWith(href));
+
+  // While under construction, the landing (home) shows no navigation.
+  if (site.constructionMode && pathname === "/") return null;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">

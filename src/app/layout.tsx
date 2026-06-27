@@ -6,6 +6,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import JsonLd from "@/components/JsonLd";
 import { siteGraph } from "@/lib/structured-data";
+import { site } from "@/data/site";
 
 // Body + UI font (rounded, friendly). Matches Role to Reign.
 const baloo = Baloo_2({
@@ -76,10 +77,16 @@ export const metadata: Metadata = {
       "One studio, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
     images: ["/images/og-default.png"],
   },
+  // While under construction the whole site is noindex; flips to indexable when
+  // site.constructionMode is set to false.
   robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+    index: !site.constructionMode,
+    follow: !site.constructionMode,
+    googleBot: {
+      index: !site.constructionMode,
+      follow: !site.constructionMode,
+      "max-image-preview": "large",
+    },
   },
 };
 

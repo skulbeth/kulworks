@@ -8,6 +8,11 @@
 // =============================================================================
 
 export const site = {
+  // ---- Launch switch ----
+  // While true: visitors only see the "coming soon" landing, site navigation is
+  // hidden, and the whole site is set to noindex. Flip to false to go fully live.
+  constructionMode: true,
+
   name: "Kulworks",
   legalName: "Kulworks",
   url: "https://kulworks.com",

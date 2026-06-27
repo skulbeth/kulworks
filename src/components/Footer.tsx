@@ -1,10 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import SocialLinks from "@/components/SocialLinks";
 import { site } from "@/data/site";
 
 const year = 2026; // static-export safe; bump as needed
 
 export default function Footer() {
+  const pathname = usePathname();
+  // While under construction, the landing (home) shows no footer/nav.
+  if (site.constructionMode && pathname === "/") return null;
+
   return (
     <footer className="border-t border-border bg-surface/40">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3 lg:px-8">

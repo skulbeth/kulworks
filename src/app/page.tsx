@@ -9,10 +9,15 @@ import Carousel from "@/components/Carousel";
 import FaqSection from "@/components/Faq";
 import JsonLd from "@/components/JsonLd";
 import { faqSchema } from "@/lib/structured-data";
+import ComingSoon from "@/components/ComingSoon";
+import { site } from "@/data/site";
 import { services } from "@/data/services";
 import { audiences } from "@/data/audiences";
 
 export default function HomePage() {
+  // Temporary holding page. Flip site.constructionMode to false to show the real home.
+  if (site.constructionMode) return <ComingSoon />;
+
   const leadFirst = [...services].sort((a, b) => (b.lead ? 1 : 0) - (a.lead ? 1 : 0));
   const audienceHighlights = audiences.slice(0, 6);
 
