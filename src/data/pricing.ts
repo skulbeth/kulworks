@@ -45,7 +45,7 @@ export const pricing: PriceGroup[] = [
     items: [
       { label: "Custom card box (with your logo or text)", price: "$8 to $10 each" },
       { label: "Standard sleeves", price: "$6 / 100" },
-      { label: "Premium sleeves", price: "$14 / 100" },
+      { label: "Premium matte sleeves (Dragon Shield grade)", price: "$11 / 100" },
     ],
     note: "Boxes use an adjustable in-house design, so rebranding is quick and bulk orders get better per-unit pricing. Custom artwork prep, if needed, is billed at the design rate.",
   },
@@ -69,12 +69,20 @@ export const pricing: PriceGroup[] = [
     note: "A rough guide: a 100-gram part runs about $20. Final price depends on material, size, and finishing.",
   },
   {
-    name: "Resin Printing & UV Tile Printing",
-    intro: "High-detail resin pieces and UV-printed tiles vary a lot by size and material.",
+    name: "Resin / SLA 3D Printing",
+    intro: "High-detail miniatures and small parts, printed in Elegoo tough resin.",
     items: [
-      { label: "Resin (SLA) printing", price: "Quote by project" },
-      { label: "UV-printed board game tiles", price: "Quote by project" },
+      { label: "Resin (charged at 100% solid infill)", price: "$0.10 / gram" },
+      { label: "Print time", price: "$3 / hour" },
+      { label: "Setup and cleanup", price: "$5" },
+      { label: "Minimum order", price: "$10" },
     ],
-    note: "Send the size, material, and quantity and we will quote it.",
+    note: "Resin is priced by solid volume (no discount for hollowing), plus machine time and cleanup. A small miniature typically lands around $12 to $20.",
+  },
+  {
+    name: "UV Tile Printing",
+    intro: "UV-printed board game tiles and components.",
+    items: [{ label: "Custom UV-printed tiles and tokens", price: "Quote by project" }],
+    note: "Send the size, art, and quantity and we will quote it.",
   },
 ];
