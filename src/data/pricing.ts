@@ -21,21 +21,21 @@ export const pricingIntro =
 export const pricing: PriceGroup[] = [
   {
     name: "Card Printing",
-    intro: "Poker-size cards. No minimums, so a single deck is fine. Larger sizes scale up.",
+    intro: "Poker-size cards. No minimums, so a single deck, or even a single card, is fine. Larger sizes scale up.",
     items: [
       { label: "Setup fee (one-time, per project)", price: "$25" },
       { label: "Per card, poker size (print-ready files)", price: "$0.10 to $0.15" },
       { label: "Larger sizes (tarot, giant)", price: "About 2 to 3x per size step up" },
       { label: "Delivery", price: "Varies by order and location" },
     ],
-    note: "Per-card pricing assumes print-ready, correctly designed files. Need the cards designed? See Card Design below.",
+    note: "Per-card pricing assumes print-ready, correctly designed files. Need the cards designed? See Card Design.",
   },
   {
     name: "Card Design",
     intro: "We design the structure and layout; you provide the content and artwork.",
     items: [
-      { label: "Single card, front and back layout", price: "$80" },
-      { label: "Further iterations", price: "$45 / hour" },
+      { label: "Single card layout, front and back (one template all your cards share)", price: "$80" },
+      { label: "Further iterations", price: "$20 / hour, or by project" },
       { label: "Whole deck or project", price: "Flat rate by agreement" },
     ],
   },
