@@ -44,7 +44,8 @@ export const pricing: PriceGroup[] = [
     name: "Card Boxes & Sleeves",
     intro: "Finish the deck. Custom 3D-printed boxes made in-house, plus sleeves.",
     items: [
-      { label: "Custom card box (with your logo or text)", price: "$8 to $10 each" },
+      { label: "Custom 3D-printed box (deck under 100 cards)", price: "$9" },
+      { label: "Larger decks (100+ cards)", price: "$18 per 100 cards" },
       { label: "Standard sleeves", price: "$6 / 100" },
       { label: "Premium matte sleeves (Dragon Shield grade)", price: "$11 / 100" },
     ],

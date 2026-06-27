@@ -21,7 +21,8 @@ const SIZE_OPTIONS = [
 
 const SETUP_FEE = 25; // one-time per project
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
-const BOX_EACH = 9; // custom 3D-printed box, per deck
+const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
+const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
 const SLEEVE_PER_100: Record<string, number> = { standard: 6, premium: 11 };
 
 const usd = (n: number) =>
@@ -43,7 +44,12 @@ export default function CardCalculator() {
   const printing = totalCards * SIZE_RATES[size];
   const layoutCount = (frontLayout ? 1 : 0) + (backLayout ? 1 : 0);
   const design = layoutCount * LAYOUT_FEE;
-  const boxes = addBox ? deckCount * BOX_EACH : 0;
+  // Box: $9 for a deck under 100 cards, otherwise $18 per 100 cards (by total).
+  const boxes = addBox
+    ? totalCards < 100
+      ? BOX_BASE
+      : (totalCards / 100) * BOX_PER_100
+    : 0;
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
   const total = SETUP_FEE + printing + design + boxes + sleeveCost;
@@ -56,7 +62,7 @@ export default function CardCalculator() {
     { label: "Setup fee", value: SETUP_FEE, show: true },
     { label: `Printing (${totalCards} cards)`, value: printing, show: true },
     { label: `Card layouts (${layoutCount})`, value: design, show: layoutCount > 0 },
-    { label: `Custom boxes (${deckCount})`, value: boxes, show: addBox },
+    { label: "Custom 3D-printed box", value: boxes, show: addBox },
     {
       label: `Sleeves (${sleevePacks} x 100)`,
       value: sleeveCost,
@@ -148,7 +154,7 @@ export default function CardCalculator() {
               checked={addBox}
               onChange={(e) => setAddBox(e.target.checked)}
             />
-            <span>Add a custom box per deck ({usd(BOX_EACH)} each)</span>
+            <span>Add a custom 3D-printed box ({usd(BOX_BASE)}, or {usd(BOX_PER_100)} per 100 cards for big decks)</span>
           </label>
         </div>
       </div>
