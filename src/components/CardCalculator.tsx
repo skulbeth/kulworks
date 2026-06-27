@@ -162,7 +162,7 @@ export default function CardCalculator() {
       {/* Estimate */}
       <div className="flex flex-col rounded-xl border border-border bg-surface2 p-6">
         <p className="text-sm font-bold uppercase tracking-widest text-muted">
-          Estimated total
+          Estimated production total
         </p>
         <p className="mt-1 text-4xl font-extrabold text-gold">{usd(total)}</p>
 
@@ -178,8 +178,9 @@ export default function CardCalculator() {
         </ul>
 
         <p className="mt-auto pt-5 text-xs text-muted/70">
-          Estimate only. Does not include delivery, and final pricing depends on files,
-          finishing, and quantity. Send your project for an exact quote.
+          Estimated production total. Shipping costs may vary, and local delivery charges
+          may apply. Final pricing depends on files, finishing, and quantity, so send your
+          project for an exact quote.
         </p>
       </div>
     </div>
