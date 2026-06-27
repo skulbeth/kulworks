@@ -298,6 +298,10 @@ export const cardPages: CardPage[] = [
         h: "Built for designers",
         body: "Dextrous makes it easy to manage a deck full of unique cards and keep everything consistent, which is ideal for game and card designers iterating toward a final version.",
       },
+      {
+        h: "Manage your content in a shared sheet",
+        body: "Want us to design and manage the card content too? Once the layouts are done, we set up a shared Google Sheet for your card text and data. You add content to the sheet and it updates the cards in Dextrous, so adding cards or making changes is quick. Ideal for decks with lots of unique cards.",
+      },
     ],
     specs: [
       "Fast, professional card design, layout, and structure",

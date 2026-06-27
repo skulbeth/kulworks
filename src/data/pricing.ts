@@ -34,10 +34,11 @@ export const pricing: PriceGroup[] = [
     name: "Card Design",
     intro: "We design the structure and layout; you provide the content and artwork.",
     items: [
-      { label: "Single card layout, front and back (one template all your cards share)", price: "$80" },
+      { label: "Card layout design, per side (front or back)", price: "$40" },
       { label: "Further iterations", price: "$20 / hour, or by project" },
       { label: "Whole deck or project", price: "Flat rate by agreement" },
     ],
+    note: "A front and a back layout is $80 total, and the layout is a template all your cards share. Want us to manage the content too? Once the layouts are done, we can set up a shared Google Sheet that updates the cards as you fill it in.",
   },
   {
     name: "Card Boxes & Sleeves",

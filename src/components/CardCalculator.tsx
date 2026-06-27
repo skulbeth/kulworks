@@ -20,7 +20,7 @@ const SIZE_OPTIONS = [
 ];
 
 const SETUP_FEE = 25; // one-time per project
-const DESIGN_FEE = 80; // one card layout (template all cards share)
+const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
 const BOX_EACH = 9; // custom 3D-printed box, per deck
 const SLEEVE_PER_100: Record<string, number> = { standard: 6, premium: 11 };
 
@@ -31,7 +31,8 @@ export default function CardCalculator() {
   const [size, setSize] = useState("poker");
   const [cardsPerDeck, setCardsPerDeck] = useState(54);
   const [decks, setDecks] = useState(1);
-  const [needDesign, setNeedDesign] = useState(false);
+  const [frontLayout, setFrontLayout] = useState(false);
+  const [backLayout, setBackLayout] = useState(false);
   const [addBox, setAddBox] = useState(false);
   const [sleeves, setSleeves] = useState("none");
 
@@ -40,7 +41,8 @@ export default function CardCalculator() {
   const totalCards = cpd * deckCount;
 
   const printing = totalCards * SIZE_RATES[size];
-  const design = needDesign ? DESIGN_FEE : 0;
+  const layoutCount = (frontLayout ? 1 : 0) + (backLayout ? 1 : 0);
+  const design = layoutCount * LAYOUT_FEE;
   const boxes = addBox ? deckCount * BOX_EACH : 0;
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
@@ -53,7 +55,7 @@ export default function CardCalculator() {
   const rows: { label: string; value: number; show: boolean }[] = [
     { label: "Setup fee", value: SETUP_FEE, show: true },
     { label: `Printing (${totalCards} cards)`, value: printing, show: true },
-    { label: "Card design", value: design, show: needDesign },
+    { label: `Card layouts (${layoutCount})`, value: design, show: layoutCount > 0 },
     { label: `Custom boxes (${deckCount})`, value: boxes, show: addBox },
     {
       label: `Sleeves (${sleevePacks} x 100)`,
@@ -120,16 +122,26 @@ export default function CardCalculator() {
         </div>
 
         <div className="space-y-2">
+          <p className="text-sm font-semibold">Card design ({usd(LAYOUT_FEE)} per layout)</p>
           <label className="flex items-center gap-3 text-sm">
             <input
               type="checkbox"
               className="h-4 w-4 accent-primary"
-              checked={needDesign}
-              onChange={(e) => setNeedDesign(e.target.checked)}
+              checked={frontLayout}
+              onChange={(e) => setFrontLayout(e.target.checked)}
             />
-            <span>Need card design ({usd(DESIGN_FEE)} per layout)</span>
+            <span>Design the front layout</span>
           </label>
           <label className="flex items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-primary"
+              checked={backLayout}
+              onChange={(e) => setBackLayout(e.target.checked)}
+            />
+            <span>Design the back layout</span>
+          </label>
+          <label className="flex items-center gap-3 pt-1 text-sm">
             <input
               type="checkbox"
               className="h-4 w-4 accent-primary"
