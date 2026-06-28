@@ -32,8 +32,8 @@ export default function CardCalculator() {
   const [size, setSize] = useState("poker");
   const [cardsPerDeck, setCardsPerDeck] = useState(54);
   const [decks, setDecks] = useState(1);
-  const [frontLayout, setFrontLayout] = useState(false);
-  const [backLayout, setBackLayout] = useState(false);
+  const [frontLayouts, setFrontLayouts] = useState(0);
+  const [backLayouts, setBackLayouts] = useState(0);
   const [addBox, setAddBox] = useState(false);
   const [sleeves, setSleeves] = useState("none");
 
@@ -42,8 +42,17 @@ export default function CardCalculator() {
   const totalCards = cpd * deckCount;
 
   const printing = totalCards * SIZE_RATES[size];
-  const layoutCount = (frontLayout ? 1 : 0) + (backLayout ? 1 : 0);
+
+  // Bulk discount on printing (setup fee always stays).
+  const bulkRate =
+    totalCards >= 800 ? 0.125 : totalCards >= 500 ? 0.1 : totalCards >= 250 ? 0.05 : 0;
+  const bulkDiscount = printing * bulkRate;
+
+  // Design: $40 per layout, for as many distinct front and back layouts as needed.
+  const layoutCount =
+    Math.max(0, Math.floor(frontLayouts) || 0) + Math.max(0, Math.floor(backLayouts) || 0);
   const design = layoutCount * LAYOUT_FEE;
+
   // Box: $9 for a deck under 100 cards, otherwise $18 per 100 cards (by total).
   const boxes = addBox
     ? totalCards < 100
@@ -52,7 +61,7 @@ export default function CardCalculator() {
     : 0;
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
-  const total = SETUP_FEE + printing + design + boxes + sleeveCost;
+  const total = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost;
 
   const inputCls =
     "w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-foreground focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
@@ -61,6 +70,11 @@ export default function CardCalculator() {
   const rows: { label: string; value: number; show: boolean }[] = [
     { label: "Setup fee", value: SETUP_FEE, show: true },
     { label: `Printing (${totalCards} cards)`, value: printing, show: true },
+    {
+      label: `Bulk discount (${Math.round(bulkRate * 100)}%)`,
+      value: -bulkDiscount,
+      show: bulkRate > 0,
+    },
     { label: `Card layouts (${layoutCount})`, value: design, show: layoutCount > 0 },
     { label: "Custom 3D-printed box", value: boxes, show: addBox },
     {
@@ -127,36 +141,51 @@ export default function CardCalculator() {
           </select>
         </div>
 
-        <div className="space-y-2">
-          <p className="text-sm font-semibold">Card design ({usd(LAYOUT_FEE)} per layout)</p>
-          <label className="flex items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-primary"
-              checked={frontLayout}
-              onChange={(e) => setFrontLayout(e.target.checked)}
-            />
-            <span>Design the front layout</span>
-          </label>
-          <label className="flex items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-primary"
-              checked={backLayout}
-              onChange={(e) => setBackLayout(e.target.checked)}
-            />
-            <span>Design the back layout</span>
-          </label>
-          <label className="flex items-center gap-3 pt-1 text-sm">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-primary"
-              checked={addBox}
-              onChange={(e) => setAddBox(e.target.checked)}
-            />
-            <span>Add a custom 3D-printed box ({usd(BOX_BASE)}, or {usd(BOX_PER_100)} per 100 cards for big decks)</span>
-          </label>
+        <div>
+          <p className={labelCls}>Card design ({usd(LAYOUT_FEE)} per layout)</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-xs text-muted" htmlFor="calc-front">
+                Front layouts
+              </label>
+              <input
+                id="calc-front"
+                type="number"
+                min={0}
+                className={inputCls}
+                value={frontLayouts}
+                onChange={(e) => setFrontLayouts(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs text-muted" htmlFor="calc-back">
+                Back layouts
+              </label>
+              <input
+                id="calc-back"
+                type="number"
+                min={0}
+                className={inputCls}
+                value={backLayouts}
+                onChange={(e) => setBackLayouts(Number(e.target.value))}
+              />
+            </div>
+          </div>
+          <p className="mt-1.5 text-xs text-muted">
+            How many distinct card layouts you need us to design (leave at 0 if your files
+            are print-ready).
+          </p>
         </div>
+
+        <label className="flex items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 accent-primary"
+            checked={addBox}
+            onChange={(e) => setAddBox(e.target.checked)}
+          />
+          <span>Add a custom 3D-printed box ({usd(BOX_BASE)}, or {usd(BOX_PER_100)} per 100 cards for big decks)</span>
+        </label>
       </div>
 
       {/* Estimate */}
