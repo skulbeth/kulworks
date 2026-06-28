@@ -23,7 +23,7 @@ const SETUP_FEE = 25; // one-time per project
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
-const SLEEVE_PER_100: Record<string, number> = { standard: 6, premium: 11 };
+const SLEEVE_PER_100: Record<string, number> = { standard: 10, premium: 15 };
 const TAX_RATE = 0.0825; // San Antonio sales tax
 
 const usd = (n: number) =>
@@ -158,8 +158,8 @@ export default function CardCalculator() {
             onChange={(e) => setSleeves(e.target.value)}
           >
             <option value="none">No sleeves</option>
-            <option value="standard">Standard ($6 / 100)</option>
-            <option value="premium">Premium ($11 / 100)</option>
+            <option value="standard">Standard ($10 / 100)</option>
+            <option value="premium">Premium ($15 / 100)</option>
           </select>
         </div>
 

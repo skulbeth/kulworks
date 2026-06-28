@@ -47,8 +47,8 @@ export const pricing: PriceGroup[] = [
     items: [
       { label: "Custom 3D-printed box (deck under 100 cards)", price: "$9" },
       { label: "Larger decks (100+ cards)", price: "$18 per 100 cards" },
-      { label: "Standard sleeves", price: "$6 / 100" },
-      { label: "Premium matte sleeves (Dragon Shield grade)", price: "$11 / 100" },
+      { label: "Standard sleeves", price: "$10 / 100" },
+      { label: "Premium matte sleeves (Dragon Shield grade)", price: "$15 / 100" },
     ],
     note: "Boxes use an adjustable in-house design, so rebranding is quick and bulk orders get better per-unit pricing. Custom artwork prep, if needed, is billed at the design rate.",
   },
