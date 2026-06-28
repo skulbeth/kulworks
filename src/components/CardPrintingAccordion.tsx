@@ -81,7 +81,7 @@ export default function CardPrintingAccordion() {
                         ))}
                       </ul>
                     )}
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1">
+                    <div className="flex flex-wrap items-center justify-between gap-x-5 gap-y-3 pt-1">
                       <Link
                         href={`/services/card-printing/${p.slug}/`}
                         className="text-sm font-bold text-blue hover:underline"
