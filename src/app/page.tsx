@@ -163,7 +163,7 @@ export default function HomePage() {
           <p className="mt-8 text-center text-muted">
             We do the card{" "}
             <Link
-              href="/services/card-printing/card-design/"
+              href="/services/card-printing/#card-design"
               className="font-semibold text-blue hover:underline"
             >
               design and prototyping

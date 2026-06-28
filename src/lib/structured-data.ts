@@ -149,7 +149,7 @@ export function cardHubServiceSchema() {
         itemOffered: {
           "@type": "Service",
           name: p.h1,
-          url: absUrl(`/services/card-printing/${p.slug}/`),
+          url: absUrl(`/services/card-printing/#${p.slug}`),
         },
       })),
     },
