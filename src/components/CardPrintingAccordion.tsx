@@ -86,7 +86,7 @@ export default function CardPrintingAccordion() {
                         href={`/services/card-printing/${p.slug}/`}
                         className="text-sm font-bold text-blue hover:underline"
                       >
-                        Need more? Read more here →
+                        ← Need more? Read more here
                       </Link>
                       <Link
                         href={`/contact/?type=${p.slug === "card-design" ? "card-design" : "card-printing"}`}
