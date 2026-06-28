@@ -24,6 +24,7 @@ const LAYOUT_FEE = 40; // per layout we design (front or back); each is a templa
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
 const SLEEVE_PER_100: Record<string, number> = { standard: 6, premium: 11 };
+const TAX_RATE = 0.0825; // San Antonio sales tax
 
 const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -61,7 +62,9 @@ export default function CardCalculator() {
     : 0;
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
-  const total = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost;
+  const subtotal = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost;
+  const tax = subtotal * TAX_RATE;
+  const total = subtotal + tax;
 
   const inputCls =
     "w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-foreground focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
@@ -191,7 +194,7 @@ export default function CardCalculator() {
       {/* Estimate */}
       <div className="flex flex-col rounded-xl border border-border bg-surface2 p-6">
         <p className="text-sm font-bold uppercase tracking-widest text-muted">
-          Estimated production total
+          Estimated total
         </p>
         <p className="mt-1 text-4xl font-extrabold text-gold">{usd(total)}</p>
 
@@ -206,10 +209,21 @@ export default function CardCalculator() {
             ))}
         </ul>
 
+        <div className="mt-3 space-y-2 border-t border-border pt-3 text-sm">
+          <div className="flex justify-between gap-4 text-muted">
+            <span>Subtotal (production)</span>
+            <span className="font-semibold text-foreground">{usd(subtotal)}</span>
+          </div>
+          <div className="flex justify-between gap-4 text-muted">
+            <span>Estimated tax (8.25%)</span>
+            <span className="font-semibold text-foreground">{usd(tax)}</span>
+          </div>
+        </div>
+
         <p className="mt-auto pt-5 text-xs text-muted/70">
-          Estimated production total. Shipping costs may vary, and local delivery charges
-          may apply. Final pricing depends on files, finishing, and quantity, so send your
-          project for an exact quote.
+          Production subtotal plus estimated 8.25% sales tax. Shipping and any local
+          delivery are not included and may vary. Final pricing depends on files,
+          finishing, and quantity, so send your project for an exact quote.
         </p>
         <p className="mt-2 text-xs text-muted/70">
           Estimates assume print-ready files that need no adjustment (when we are not
