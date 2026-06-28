@@ -50,8 +50,9 @@ export default function CardCalculator() {
   const bulkDiscount = printing * bulkRate;
 
   // Design: $40 per layout, for as many distinct front and back layouts as needed.
-  const layoutCount =
-    Math.max(0, Math.floor(frontLayouts) || 0) + Math.max(0, Math.floor(backLayouts) || 0);
+  const frontN = Math.max(0, Math.floor(frontLayouts) || 0);
+  const backN = Math.max(0, Math.floor(backLayouts) || 0);
+  const layoutCount = frontN + backN;
   const design = layoutCount * LAYOUT_FEE;
 
   // Box: $9 for a deck under 100 cards, otherwise $18 per 100 cards (by total).
@@ -65,6 +66,24 @@ export default function CardCalculator() {
   const subtotal = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost;
   const tax = subtotal * TAX_RATE;
   const total = subtotal + tax;
+
+  // Hand the configured estimate to the quote form (prefills type + details).
+  const quoteTypes = layoutCount > 0 ? "card-printing,card-design" : "card-printing";
+  const summary = [
+    "Card printing estimate from the website calculator:",
+    `- Size: ${SIZE_OPTIONS.find((o) => o.id === size)?.label}`,
+    `- Quantity: ${deckCount} deck(s) x ${cpd} cards = ${totalCards} cards`,
+    layoutCount > 0
+      ? `- Design: ${frontN} front + ${backN} back layout(s)`
+      : "- Files: print-ready (no design)",
+    addBox ? "- Custom 3D-printed box: yes" : "- Custom box: no",
+    sleeves !== "none" ? `- Sleeves: ${sleeves}` : "- Sleeves: none",
+    bulkRate > 0 ? `- Bulk discount applied: ${Math.round(bulkRate * 100)}%` : null,
+    `- Estimated total (incl. 8.25% tax): ${usd(total)}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const quoteHref = `/contact/?type=${quoteTypes}&details=${encodeURIComponent(summary)}`;
 
   const inputCls =
     "w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-foreground focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
@@ -219,6 +238,13 @@ export default function CardCalculator() {
             <span className="font-semibold text-foreground">{usd(tax)}</span>
           </div>
         </div>
+
+        <a
+          href={quoteHref}
+          className="mt-5 inline-flex w-full items-center justify-center rounded-full bg-primary px-6 py-3 font-bold text-black transition-all hover:bg-primary-hover hover:shadow-glow"
+        >
+          Request this estimate
+        </a>
 
         <p className="mt-auto pt-5 text-xs text-muted/70">
           Production subtotal plus estimated 8.25% sales tax. Shipping and any local

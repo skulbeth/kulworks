@@ -27,16 +27,40 @@ const PROJECT_TYPES = services.flatMap((s) =>
     : [{ id: s.id, name: s.name }]
 );
 
+// All selectable project types, including the "Something else" catch-all.
+const TYPE_OPTIONS = [...PROJECT_TYPES, { id: "other", name: "Something else" }];
+
 function FormInner() {
   const params = useSearchParams();
-  const [projectType, setProjectType] = useState("");
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
 
-  // Pre-select the project type from ?type=<id> (the "Request this" CTAs).
+  // Pre-fill from the URL: ?type=card-printing,card-design and ?details=<summary>
+  // (used by the "Request this" CTAs and the card cost estimator).
   useEffect(() => {
     const t = params.get("type");
-    if (t && PROJECT_TYPES.some((p) => p.id === t)) setProjectType(t);
+    if (t) {
+      const valid = t
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => TYPE_OPTIONS.some((o) => o.id === s));
+      if (valid.length) setSelectedTypes(valid);
+    }
+    const d = params.get("details");
+    if (d) setMessage(d);
   }, [params]);
+
+  const toggleType = (id: string) =>
+    setSelectedTypes((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+
+  function resetForm(form: HTMLFormElement) {
+    form.reset();
+    setSelectedTypes([]);
+    setMessage("");
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,8 +69,7 @@ function FormInner() {
     if (!isConfigured) {
       // Demo mode: no endpoint set yet.
       setStatus("success");
-      form.reset();
-      setProjectType("");
+      resetForm(form);
       return;
     }
 
@@ -59,8 +82,7 @@ function FormInner() {
       });
       if (res.ok) {
         setStatus("success");
-        form.reset();
-        setProjectType("");
+        resetForm(form);
       } else {
         setStatus("error");
       }
@@ -112,23 +134,24 @@ function FormInner() {
         </div>
       </div>
 
-      <div>
-        <label className={label} htmlFor="projectType">Project type</label>
-        <select
-          id="projectType"
-          name="projectType"
-          className={field}
-          value={projectType}
-          onChange={(e) => setProjectType(e.target.value)}
-          required
-        >
-          <option value="" disabled>Choose a service…</option>
-          {PROJECT_TYPES.map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
+      <fieldset>
+        <legend className={label}>What do you need? (select all that apply)</legend>
+        <div className="grid gap-2 rounded-lg border border-border bg-surface2 p-4 sm:grid-cols-2">
+          {TYPE_OPTIONS.map((p) => (
+            <label key={p.id} className="flex items-center gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4 shrink-0 accent-primary"
+                checked={selectedTypes.includes(p.id)}
+                onChange={() => toggleType(p.id)}
+              />
+              <span>{p.name}</span>
+            </label>
           ))}
-          <option value="other">Something else</option>
-        </select>
-      </div>
+        </div>
+        {/* Submitted as a single, readable field */}
+        <input type="hidden" name="projectType" value={selectedTypes.join(", ")} />
+      </fieldset>
 
       <div>
         <label className={label} htmlFor="message">Project details</label>
@@ -138,6 +161,8 @@ function FormInner() {
           required
           rows={6}
           className={field}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           placeholder="Tell me about your project: quantities, sizes, timeline, and anything else that helps me quote it."
         />
       </div>
