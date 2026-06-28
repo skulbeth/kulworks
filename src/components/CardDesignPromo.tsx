@@ -23,7 +23,7 @@ export default function CardDesignPromo() {
             too, then prototype it fast. Either way, you get finished, print-ready cards.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
-            <Button href="/services/card-printing/#card-design" variant="gold" size="lg">
+            <Button href="/services/card-printing/card-design/" variant="gold" size="lg">
               See card design
             </Button>
             <Button href="/contact/?type=card-design" variant="ghost" size="lg">

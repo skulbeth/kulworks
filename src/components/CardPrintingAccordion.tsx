@@ -69,14 +69,8 @@ export default function CardPrintingAccordion() {
                     </span>
                   </summary>
 
-                  <div className="mt-5 space-y-5 border-t border-border pt-5">
-                    <p className="text-lg text-muted">{p.intro}</p>
-                    {p.sections.map((s) => (
-                      <div key={s.h}>
-                        <h4 className="font-bold text-gold">{s.h}</h4>
-                        <p className="mt-1 text-muted">{s.body}</p>
-                      </div>
-                    ))}
+                  <div className="mt-5 space-y-4 border-t border-border pt-5">
+                    <p className="text-muted">{p.intro}</p>
                     {p.specs && (
                       <ul className="space-y-1.5 text-muted">
                         {p.specs.map((spec) => (
@@ -87,20 +81,16 @@ export default function CardPrintingAccordion() {
                         ))}
                       </ul>
                     )}
-                    {p.link && (
-                      <a
-                        href={p.link.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-sm font-bold text-blue hover:underline"
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1">
+                      <Link
+                        href={`/services/card-printing/${p.slug}/`}
+                        className="text-sm font-bold text-blue hover:underline"
                       >
-                        {p.link.label} <span aria-hidden>↗</span>
-                      </a>
-                    )}
-                    <div>
+                        Need more? Read more here →
+                      </Link>
                       <Link
                         href={`/contact/?type=${p.slug === "card-design" ? "card-design" : "card-printing"}`}
-                        className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-bold text-black transition-all hover:bg-primary-hover hover:shadow-glow"
+                        className="inline-flex items-center justify-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-black transition-all hover:bg-primary-hover hover:shadow-glow"
                       >
                         Get a quote
                       </Link>
