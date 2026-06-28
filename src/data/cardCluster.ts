@@ -77,7 +77,7 @@ export const cardPages: CardPage[] = [
       "Standard poker size (about 2.5 x 3.5 in / 63 x 88 mm)",
       "Custom backs and custom or standard faces",
       "Single decks through short runs",
-      "Optional rounded corners, finishes, and tuck boxes",
+      "Rounded corners (our only corner option right now), plus tuck boxes",
     ],
     keywords: [
       "custom poker cards San Antonio",

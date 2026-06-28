@@ -61,6 +61,10 @@ export const faqs: Faq[] = [
     a: "Poker cards are the standard size (about 2.5 by 3.5 inches). Bridge cards are a bit narrower, which makes a large hand easier to hold. Tarot cards are larger overall, giving artwork more room. We print all three, plus giant and oracle decks.",
   },
   {
+    q: "Do you offer square or rounded corners?",
+    a: "Right now all of our cards come with rounded corners. Square corners are not available yet.",
+  },
+  {
     q: "Can you design the cards for me if I don't have artwork?",
     a: "Yes. Our design service can lay out your cards, prep artwork for print, and get the files press-ready, so you can come to us with just an idea or with finished art.",
   },

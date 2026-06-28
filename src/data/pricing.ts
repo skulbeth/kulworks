@@ -29,7 +29,7 @@ export const pricing: PriceGroup[] = [
       { label: "Bulk discount (on printing)", price: "5% at 250 cards, 10% at 500, 12.5% at 800" },
       { label: "Delivery", price: "Varies by order and location" },
     ],
-    note: "Per-card pricing assumes print-ready, correctly designed files. Need the cards designed? See Card Design.",
+    note: "Per-card pricing assumes print-ready, correctly designed files. Need the cards designed? See Card Design. All cards currently come with rounded corners (square corners not available yet).",
   },
   {
     name: "Card Design",

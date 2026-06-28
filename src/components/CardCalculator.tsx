@@ -248,8 +248,9 @@ export default function CardCalculator() {
 
         <p className="mt-auto pt-5 text-xs text-muted/70">
           Production subtotal plus estimated 8.25% sales tax. Shipping and any local
-          delivery are not included and may vary. Final pricing depends on files,
-          finishing, and quantity, so send your project for an exact quote.
+          delivery are not included and may vary. Cards come with rounded corners. Final
+          pricing depends on files, finishing, and quantity, so send your project for an
+          exact quote.
         </p>
         <p className="mt-2 text-xs text-muted/70">
           Estimates assume print-ready files that need no adjustment (when we are not
