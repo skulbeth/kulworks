@@ -5,14 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { services } from "@/data/services";
 import { site } from "@/data/site";
 
-// ===========================================================================
-// TODO: paste your Formspree form ID here (https://formspree.io).
-// Create a form, copy the endpoint, and replace the placeholder below.
-// While this is the placeholder, the form runs in "demo mode" and won't send.
-// ===========================================================================
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID";
-const isConfigured = !FORMSPREE_ENDPOINT.includes("REPLACE_WITH_YOUR_FORM_ID");
-
 type Status = "idle" | "submitting" | "success" | "error";
 
 // Selectable project types: the main services, plus Card Design right after
@@ -65,20 +57,29 @@ function FormInner() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
-
-    if (!isConfigured) {
-      // Demo mode: no endpoint set yet.
-      setStatus("success");
-      resetForm(form);
-      return;
-    }
+    const fd = new FormData(form);
 
     setStatus("submitting");
     try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
+      const res = await fetch("/api/quote/", {
         method: "POST",
-        headers: { Accept: "application/json" },
-        body: new FormData(form),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: fd.get("name"),
+          email: fd.get("email"),
+          projectType: fd.get("projectType"),
+          message: fd.get("message"),
+          reference: fd.get("reference"),
+          driveFolder: fd.get("driveFolder") === "yes",
+          company_website: fd.get("company_website"), // honeypot
+          sessionId: (() => {
+            try {
+              return sessionStorage.getItem("kw_sid");
+            } catch {
+              return null;
+            }
+          })(),
+        }),
       });
       if (res.ok) {
         setStatus("success");
@@ -101,9 +102,7 @@ function FormInner() {
         <div className="text-4xl">✅</div>
         <h3 className="mt-3 text-xl font-bold">Thanks, your request is in!</h3>
         <p className="mt-2 text-muted">
-          {isConfigured
-            ? "I'll get back to you shortly with next steps and a quote."
-            : "Demo mode: connect a Formspree endpoint to receive real submissions."}
+          I&apos;ll get back to you shortly with next steps and a quote.
         </p>
         <button
           onClick={() => setStatus("idle")}
@@ -117,11 +116,15 @@ function FormInner() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {!isConfigured && (
-        <p className="rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm text-gold">
-          Demo mode: set your Formspree endpoint in <code>ContactForm.tsx</code> to go live.
-        </p>
-      )}
+      {/* Honeypot: hidden from humans; bots that fill it are silently dropped. */}
+      <input
+        type="text"
+        name="company_website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="hidden"
+      />
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { site } from "@/data/site";
 import { services } from "@/data/services";
 import { audiences } from "@/data/audiences";
@@ -25,19 +26,26 @@ export default function ComingSoon() {
 
 
       <div className="relative mx-auto w-full max-w-4xl">
-        {/* Wordmark */}
-        <div className="flex items-center justify-center gap-2 text-gold">
-          <svg
-            viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor"
-            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden
-          >
-            <path d="M3 10.5 12 3l9 7.5" />
-            <path d="M5 9.5V21h14V9.5" />
-            <path d="M9.5 21v-6h5v6" />
-          </svg>
-          <span className="font-display text-4xl tracking-wide text-glow-gold sm:text-5xl">
-            Kulworks
-          </span>
+        {/* Logo */}
+        <div className="flex items-center justify-center">
+          {/* Light theme logo (default) */}
+          <Image
+            src="/images/kulworks-logo-light-transparent.png"
+            alt="Kulworks"
+            width={714}
+            height={181}
+            priority
+            className="logo-light h-16 w-auto sm:h-20"
+          />
+          {/* Dark theme logo (shown when data-theme="dark") */}
+          <Image
+            src="/images/kulworks-logo-dark.png"
+            alt="Kulworks"
+            width={3320}
+            height={834}
+            priority
+            className="logo-dark h-16 w-auto sm:h-20"
+          />
         </div>
 
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.25em] text-gold">
@@ -110,10 +118,10 @@ export default function ComingSoon() {
         <div className="mt-10">
           <p className="text-muted">Want to talk about a project before we launch?</p>
           <a
-            href={`mailto:${site.quotesEmail}`}
+            href={`mailto:${site.email}`}
             className="mt-3 inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 font-bold text-black transition-all hover:bg-primary-hover hover:shadow-glow"
           >
-            Email {site.quotesEmail}
+            Email {site.email}
           </a>
         </div>
 

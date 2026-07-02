@@ -119,6 +119,17 @@ body {
     text-shadow: 0 0 12px var(--color-gold-glow);
   }
 
+  /* Theme-aware logo: light variant by default, dark variant under data-theme="dark" */
+  .logo-dark {
+    display: none;
+  }
+  :root[data-theme="dark"] .logo-light {
+    display: none;
+  }
+  :root[data-theme="dark"] .logo-dark {
+    display: block;
+  }
+
   /* Reveal-on-scroll helper toggled by IntersectionObserver (see RevealOnScroll) */
   .reveal {
     opacity: 0;

@@ -1,0 +1,232 @@
+// Kulworks database schema.
+// Supabase Auth owns the `auth` schema (logins); Prisma owns these `public` tables.
+// Edit a model here, then run `npm run db:migrate` to apply it to the database.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // pooled (pgbouncer), used for app queries
+  directUrl = env("DIRECT_URL") // direct connection, used for migrations
+}
+
+// ── Team members who can log into /admin. `id` matches the Supabase auth user id ──
+enum Role {
+  OWNER
+  STAFF
+}
+
+model Profile {
+  id         String     @id // = Supabase auth.users.id (uuid)
+  email      String     @unique
+  name       String?
+  role       Role       @default(STAFF)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  activities Activity[]
+}
+
+// ── A customer/prospect (CRM contact record) ──
+model Client {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  phone       String?
+  company     String?
+  street      String?
+  city        String?
+  state       String?
+  postalCode  String?
+  country     String?
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submissions Submission[]
+  projects    Project[]
+  activities  Activity[]
+
+  @@index([createdAt])
+}
+
+// ── A quote request submitted through the site contact form (raw, immutable) ──
+enum SubmissionStatus {
+  NEW
+  CONTACTED
+  QUOTED
+  WON
+  LOST
+}
+
+model Submission {
+  id          String           @id @default(cuid())
+  name        String
+  email       String
+  projectType String? // comma-joined selected service types
+  message     String
+  reference   String? // link to artwork / references
+  driveFolder Boolean          @default(false)
+  estimate    String? // calculator estimate summary, if any
+  status      SubmissionStatus @default(NEW)
+  sessionId   String? // anonymous session id, to correlate with page views
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  client      Client?          @relation(fields: [clientId], references: [id])
+  clientId    String?
+  project     Project?         @relation(fields: [projectId], references: [id])
+  projectId   String?
+
+  @@index([email])
+  @@index([createdAt])
+  @@index([status])
+}
+
+// ── A tracked job (BPM pipeline) ──
+enum ProjectStage {
+  LEAD
+  QUOTED
+  APPROVED
+  IN_PRODUCTION
+  DELIVERED
+  CLOSED
+  LOST
+}
+
+model Project {
+  id       String       @id @default(cuid())
+  title    String
+  stage    ProjectStage @default(LEAD)
+  client   Client       @relation(fields: [clientId], references: [id])
+  clientId String
+
+  // Scope
+  requested    String? // what the client asked for
+  deliverables String? // what we'll provide
+
+  // Card / print specs
+  cardCount  Int?
+  cardSize   String?
+  quantity   Int?
+  finish     String?
+  specsNotes String?
+
+  // Money (USD, stored as plain numbers for simple display)
+  quotedAmount Float?
+  finalAmount  Float?
+  materialCost Float?
+  devHours     Float?
+  depositPaid  Float? // legacy single field — superseded by itemized Payment records
+
+  // Dates
+  dueDate      DateTime?
+  startDate    DateTime?
+  deliveryDate DateTime?
+
+  // Shipping
+  shipStreet     String?
+  shipCity       String?
+  shipState      String?
+  shipPostalCode String?
+
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  submissions Submission[]
+  activities  Activity[]
+  payments    Payment[]
+
+  @@index([stage])
+  @@index([dueDate])
+  @@index([createdAt])
+}
+
+// ── Payments received on a project (each has a method + amount) ──
+enum PaymentMethod {
+  CASH
+  CARD
+  PAYPAL
+  VENMO
+  ZELLE
+  CHECK
+  BANK_TRANSFER
+  OTHER
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  amount    Float
+  method    PaymentMethod @default(OTHER)
+  note      String?
+  paidAt    DateTime      @default(now())
+  createdAt DateTime      @default(now())
+  project   Project       @relation(fields: [projectId], references: [id])
+  projectId String
+
+  @@index([projectId])
+  @@index([paidAt])
+}
+
+// ── Timeline of communication + events (CRM history + future reminders) ──
+enum ActivityType {
+  NOTE
+  EMAIL_SENT
+  EMAIL_RECEIVED
+  CALL
+  MEETING
+  STATUS_CHANGE
+  PAYMENT
+  REMINDER
+}
+
+model Activity {
+  id         String       @id @default(cuid())
+  type       ActivityType @default(NOTE)
+  body       String
+  occurredAt DateTime     @default(now())
+  createdAt  DateTime     @default(now())
+
+  client    Client?  @relation(fields: [clientId], references: [id])
+  clientId  String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+  author    Profile? @relation(fields: [authorId], references: [id])
+  authorId  String?
+
+  // For future auto-reminders / Google Calendar sync
+  remindAt DateTime?
+  done     Boolean   @default(false)
+
+  @@index([occurredAt])
+  @@index([remindAt])
+  @@index([projectId])
+  @@index([clientId])
+}
+
+// ── Newsletter subscribers (we own the list; also synced to a Resend Audience) ──
+model Subscriber {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  source          String?
+  consent         Boolean   @default(true)
+  unsubscribedAt  DateTime?
+  resendContactId String?
+  createdAt       DateTime  @default(now())
+
+  @@index([createdAt])
+}
+
+// ── Cookieless page-view analytics ──
+model PageView {
+  id        String   @id @default(cuid())
+  path      String
+  referrer  String?
+  country   String?
+  city      String?
+  device    String?
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}

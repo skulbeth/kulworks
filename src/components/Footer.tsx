@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SocialLinks from "@/components/SocialLinks";
+import NewsletterSignup from "@/components/NewsletterSignup";
 import { site } from "@/data/site";
 
 const year = 2026; // static-export safe; bump as needed
@@ -46,6 +47,16 @@ export default function Footer() {
             </li>
             <li>Find us at game conventions</li>
           </ul>
+
+          <h3 className="mt-6 text-sm font-bold uppercase tracking-widest text-muted">
+            Newsletter
+          </h3>
+          <p className="mt-2 text-sm text-muted">
+            Occasional updates on new services and deals.
+          </p>
+          <div className="mt-3">
+            <NewsletterSignup />
+          </div>
         </div>
       </div>
 

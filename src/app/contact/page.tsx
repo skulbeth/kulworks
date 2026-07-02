@@ -42,15 +42,9 @@ export default function ContactPage() {
               <h3 className="font-bold">Other ways to reach me</h3>
               <ul className="mt-3 space-y-2 text-muted">
                 <li>
-                  General:{" "}
+                  Email:{" "}
                   <a href={`mailto:${site.email}`} className="text-blue hover:underline">
                     {site.email}
-                  </a>
-                </li>
-                <li>
-                  Quotes:{" "}
-                  <a href={`mailto:${site.quotesEmail}`} className="text-blue hover:underline">
-                    {site.quotesEmail}
                   </a>
                 </li>
                 <li>

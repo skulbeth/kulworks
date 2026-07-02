@@ -1,0 +1,75 @@
+"use client";
+
+import { useState } from "react";
+
+// Newsletter email capture. Saves to the Subscriber table via /api/subscribe.
+// (Sending newsletters happens from Resend later.)
+export default function NewsletterSignup() {
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setStatus("submitting");
+    setError(null);
+    try {
+      const res = await fetch("/api/subscribe/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: fd.get("email"),
+          source: "footer",
+          company_website: fd.get("company_website"), // honeypot
+        }),
+      });
+      if (res.ok) {
+        setStatus("success");
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setStatus("error");
+        setError(data.error ?? "Something went wrong.");
+      }
+    } catch {
+      setStatus("error");
+      setError("Something went wrong.");
+    }
+  }
+
+  if (status === "success") {
+    return (
+      <p className="text-sm font-semibold text-green-600">
+        Thanks — you&apos;re on the list! 🎉
+      </p>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex max-w-sm flex-col gap-2 sm:flex-row">
+      <input
+        type="text"
+        name="company_website"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="hidden"
+      />
+      <input
+        type="email"
+        name="email"
+        required
+        placeholder="you@email.com"
+        aria-label="Email address"
+        className="flex-1 rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-blue focus:outline-none"
+      />
+      <button
+        type="submit"
+        disabled={status === "submitting"}
+        className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-primary-hover disabled:opacity-60"
+      >
+        {status === "submitting" ? "…" : "Subscribe"}
+      </button>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+    </form>
+  );
+}

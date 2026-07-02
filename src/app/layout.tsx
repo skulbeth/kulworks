@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "@/styles/global.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SiteFrame from "@/components/SiteFrame";
 import JsonLd from "@/components/JsonLd";
 import { siteGraph } from "@/lib/structured-data";
 import { site } from "@/data/site";
@@ -101,6 +102,10 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${baloo.variable} ${dumbledoor.variable} ${vinque.variable}`}
+      // The pre-paint theme script below sets data-theme on <html>, so the
+      // client differs from server-rendered HTML by design. Suppress the
+      // expected attribute mismatch on this element only.
+      suppressHydrationWarning
     >
       <body className="font-sans bg-background text-foreground min-h-screen flex flex-col">
         {/* Apply saved theme before paint (default light, no flash). */}
@@ -117,11 +122,9 @@ export default function RootLayout({
         >
           Skip to content
         </a>
-        <Header />
-        <main id="main" className="flex-1">
+        <SiteFrame header={<Header />} footer={<Footer />}>
           {children}
-        </main>
-        <Footer />
+        </SiteFrame>
       </body>
     </html>
   );

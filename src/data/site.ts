@@ -28,7 +28,6 @@ export const site = {
   // ---- Contact ----
   // Forwarded via Squarespace Email Forwarding -> Sam's inbox.
   email: "contact@kulworks.com",
-  quotesEmail: "quotes@kulworks.com",
   // E.164 for schema; `telephoneDisplay` is the human-friendly version shown on the page.
   telephone: "+1-210-570-3328",
   telephoneDisplay: "(210) 570-3328",

@@ -8,14 +8,15 @@ const nextConfig = {
   // Pin the workspace root so Next doesn't pick up a stray parent lockfile.
   turbopack: { root: __dirname },
 
-  // Static export so the site can be hosted anywhere (Netlify, Vercel, GitHub Pages, S3, etc.).
-  // The contact form posts client-side to Formspree, so no server is required.
-  output: "export",
+  // Runs as a server app on Vercel (NOT a static export) so we can use API routes,
+  // server-side auth, and database queries. Marketing pages are still pre-rendered.
+  // Note: the site must now be hosted on a Node/Vercel runtime, not a pure static
+  // host (GitHub Pages, plain S3).
 
-  // next/image optimization needs a server; static export uses plain <img> output instead.
+  // Keep <img> output unoptimized for now (unchanged behavior).
   images: { unoptimized: true },
 
-  // Emit /about/index.html instead of /about.html — friendlier for static hosts like GitHub Pages.
+  // Emit /about/index.html style URLs — keeps existing trailing-slash URLs stable.
   trailingSlash: true,
 };
 
