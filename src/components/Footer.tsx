@@ -62,7 +62,10 @@ export default function Footer() {
 
       <div className="border-t border-border">
         <div className="mx-auto w-full max-w-6xl px-4 py-5 text-center text-xs text-muted sm:px-6 lg:px-8">
-          © {year} Kulworks. All rights reserved.
+          © {year} Kulworks. All rights reserved. ·{" "}
+          <Link href="/privacy/" className="hover:text-blue">
+            Privacy Policy
+          </Link>
         </div>
       </div>
     </footer>

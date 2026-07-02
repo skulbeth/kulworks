@@ -3,6 +3,7 @@
 // from Vercel's edge headers (present in production only). Bots are skipped.
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -16,6 +17,11 @@ function deviceFromUA(ua: string): string {
 
 export async function POST(request: Request) {
   try {
+    // Cap per-IP tracking to curb bloat/abuse (a real browsing session stays well under).
+    if (!(await rateLimit(`track:${clientIp(request)}`, 60, 60_000))) {
+      return NextResponse.json({ ok: true });
+    }
+
     const ua = request.headers.get("user-agent") ?? "";
     if (BOT.test(ua)) return NextResponse.json({ ok: true });
 

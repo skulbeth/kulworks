@@ -220,6 +220,15 @@ model Subscriber {
   @@index([createdAt])
 }
 
+// ── Rate limiting for public endpoints (key = "route:ip") ──
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
 // ── Cookieless page-view analytics ──
 model PageView {
   id        String   @id @default(cuid())

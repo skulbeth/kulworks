@@ -117,6 +117,33 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       email quota).
 - [x] **Admin error boundary** — friendly "try again" instead of a crash on transient errors.
 
+## 🧭 Approved roadmap (Sam wants all of these — build in chunks)
+
+**Tier 1 — before fully public**
+- [ ] **1. Admin password reset** — "Forgot password?" on login → Supabase reset email →
+      /admin/reset to set new password. (Needs: allow the reset redirect URL in Supabase
+      Auth settings; optionally brand the email via Supabase SMTP = Resend.)
+- [ ] **2. Bot protection (Cloudflare Turnstile)** on /contact + newsletter. (Needs: Sam's
+      Cloudflare Turnstile site key + secret. Build no-op until keys set.)
+- [ ] **3. Privacy policy page** + footer link.
+- [ ] **4. Rate limiting** on /api/quote, /api/subscribe, /api/track (DB-based; no new service).
+
+**Tier 2 — high value**
+- [ ] **5. File uploads for artwork** — Supabase Storage; upload on quote form + shown in admin.
+- [ ] **6. Archived / restore view** — see + restore soft-deleted items.
+- [ ] **7. Team invite UI + audit log** — invite teammates from admin; log who changed what.
+- [ ] **8. Automated status emails** — e.g., stage → "Delivered" emails the customer.
+- [ ] **9. Error monitoring** — capture server errors (DB error log in admin now; Sentry optional later).
+
+**Tier 3 — bigger**
+- [ ] **10. Quote & invoice generation** *(DISCUSS FIRST)* — build a nice quote in admin →
+      PDF/email. Sam wants **auto-send invoice from admin**. Payment via **Square (has acct),
+      PayPal (will set up), Venmo, or Zelle** — likely payment *links/requests* rather than
+      embedded checkout. Circle back to choose provider + flow.
+- [ ] **11. Newsletter v2** — segmentation/tags, images, sent-log, open/click stats (scoped above).
+- [ ] **12. Google Calendar sync** — due/delivery dates + reminders.
+- [ ] **13. Scheduled data backup/export** — weekly export cron (Supabase free tier backups are limited).
+
 ## 🧹 Housekeeping
 
 - [x] **Committed + pushed** — all work on branch `feat/backend-crm` (Vercel preview built).

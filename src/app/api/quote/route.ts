@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { site } from "@/data/site";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 // Prisma needs the Node.js runtime (not Edge).
 export const runtime = "nodejs";
@@ -20,6 +21,13 @@ function isEmail(v: string): boolean {
 }
 
 export async function POST(request: Request) {
+  if (!(await rateLimit(`quote:${clientIp(request)}`, 5, 60_000))) {
+    return NextResponse.json(
+      { ok: false, error: "Too many requests — please wait a moment and try again." },
+      { status: 429 }
+    );
+  }
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
