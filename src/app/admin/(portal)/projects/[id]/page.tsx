@@ -2,7 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtDateTime, fmtMoney, toDateInput } from "@/lib/format";
-import { updateProject, deletePayment, deleteProject, deleteActivity } from "../../_actions";
+import {
+  updateProject,
+  deletePayment,
+  deleteProject,
+  deleteActivity,
+  sendProjectUpdate,
+} from "../../_actions";
 import {
   TextField,
   TextArea,
@@ -154,6 +160,32 @@ export default async function ProjectDetailPage({
             ))
           )}
         </ul>
+      </section>
+
+      {/* Send progress update to the customer (manual, only on click) */}
+      <section className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="mb-3 text-lg font-bold">
+          Send progress update to {project.client.name}
+        </h2>
+        <form action={sendProjectUpdate} className="space-y-3">
+          <input type="hidden" name="projectId" value={project.id} />
+          <textarea
+            name="message"
+            required
+            rows={4}
+            placeholder="e.g. Your cards are printed and shipping today!"
+            className="w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm focus:border-blue focus:outline-none"
+          />
+          <ConfirmButton
+            message={`Email this update to ${project.client.email}?`}
+            className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"
+          >
+            Send update
+          </ConfirmButton>
+        </form>
+        <p className="mt-2 text-xs text-muted">
+          Only sends when you click — nothing goes out automatically. Logged in Activity below.
+        </p>
       </section>
 
       {/* Activity */}

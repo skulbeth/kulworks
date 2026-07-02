@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { addSubscriberToAudience } from "@/lib/email";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { logError } from "@/lib/log-error";
 
 export const runtime = "nodejs";
 
@@ -59,7 +60,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[/api/subscribe] failed:", err);
+    await logError(err, "/api/subscribe");
     return NextResponse.json({ ok: false, error: "Something went wrong." }, { status: 500 });
   }
 }

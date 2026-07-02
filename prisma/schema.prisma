@@ -221,6 +221,17 @@ model Subscriber {
   @@index([createdAt])
 }
 
+// ── Error log: server-side errors captured for visibility ──
+model ErrorLog {
+  id        String   @id @default(cuid())
+  message   String
+  context   String? // where it happened, e.g. "/api/quote"
+  stack     String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 // ── Audit log: who did what in the admin ──
 model AuditLog {
   id         String   @id @default(cuid())

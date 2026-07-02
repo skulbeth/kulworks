@@ -142,6 +142,7 @@ export async function updateProject(formData: FormData) {
   const stage = s(formData, "stage");
   const dueDate = date(formData, "dueDate");
   const title = s(formData, "title") ?? "Untitled project";
+  const existing = await prisma.project.findUnique({ where: { id }, select: { stage: true } });
 
   await prisma.project.update({
     where: { id },
@@ -169,6 +170,18 @@ export async function updateProject(formData: FormData) {
       notes: s(formData, "notes"),
     },
   });
+
+  // Log a timestamped stage change to the project's history.
+  if (stage && existing && stage !== existing.stage && PROJECT_STAGES.includes(stage)) {
+    await prisma.activity.create({
+      data: {
+        type: "STATUS_CHANGE",
+        body: `Stage → ${stage.replace(/_/g, " ")}`,
+        projectId: id,
+        authorId: profile.id,
+      },
+    });
+  }
 
   // Keep the due-date auto-reminder in sync.
   await syncAutoReminder(id, title, dueDate);
@@ -421,6 +434,39 @@ export async function sendClientEmail(formData: FormData) {
   await logAudit(profile.email, "email.client", client.email);
   revalidateAdmin();
   redirect(`/admin/clients/${clientId}/`);
+}
+
+// ── Manual progress update to a project's client (only when Sam chooses) ──
+export async function sendProjectUpdate(formData: FormData) {
+  const { profile } = await requireProfile();
+  const projectId = s(formData, "projectId");
+  const message = s(formData, "message");
+  if (!projectId || !message) return;
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: { client: true },
+  });
+  if (!project) return;
+
+  await sendMail({
+    to: project.client.email,
+    replyTo: site.email,
+    subject: `Update on your Kulworks project: ${project.title}`,
+    text: `Hi ${project.client.name},\n\n${message}\n\n— Kulworks`,
+  });
+  await prisma.activity.create({
+    data: {
+      type: "EMAIL_SENT",
+      body: `Progress update to ${project.client.email}:\n\n${message}`,
+      projectId,
+      clientId: project.clientId,
+      authorId: profile.id,
+    },
+  });
+  await logAudit(profile.email, "email.project-update", project.client.email);
+  revalidateAdmin();
+  redirect(`/admin/projects/${projectId}/`);
 }
 
 // ── Newsletter: compose + send a broadcast to the Resend Audience ──

@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { logError } from "@/lib/log-error";
 
 export const runtime = "nodejs";
 
@@ -45,7 +46,8 @@ export async function POST(request: Request) {
       },
     });
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (err) {
+    await logError(err, "/api/track");
     // Never let analytics break a page load.
     return NextResponse.json({ ok: true });
   }

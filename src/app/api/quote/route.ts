@@ -8,6 +8,7 @@ import { site } from "@/data/site";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { driveConfigured, createClientFolder } from "@/lib/google-drive";
+import { logError } from "@/lib/log-error";
 
 // Prisma needs the Node.js runtime (not Edge).
 export const runtime = "nodejs";
@@ -175,7 +176,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[/api/quote] failed to save submission:", err);
+    await logError(err, "/api/quote");
     return NextResponse.json(
       { ok: false, error: "Something went wrong saving your request." },
       { status: 500 }

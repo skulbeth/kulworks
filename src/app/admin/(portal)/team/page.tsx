@@ -14,9 +14,10 @@ export default async function TeamPage({
   const { profile } = await requireProfile();
   const isOwner = profile.role === "OWNER";
 
-  const [members, audit] = await Promise.all([
+  const [members, audit, errors] = await Promise.all([
     prisma.profile.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
+    prisma.errorLog.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
   ]);
 
   const field =
@@ -111,6 +112,26 @@ export default async function TeamPage({
               </tbody>
             </table>
           </div>
+        )}
+      </section>
+
+      {/* System errors */}
+      <section>
+        <h2 className="mb-3 text-lg font-bold">System errors</h2>
+        {errors.length === 0 ? (
+          <p className="text-muted">No errors logged — all clear. ✅</p>
+        ) : (
+          <ul className="space-y-2">
+            {errors.map((e) => (
+              <li key={e.id} className="rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-3 text-sm">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-semibold text-red-600">{e.context ?? "error"}</span>
+                  <span className="text-xs text-muted">{fmtDateTime(e.createdAt)}</span>
+                </div>
+                <p className="mt-0.5 text-muted">{e.message}</p>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </div>
