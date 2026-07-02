@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   endOfToday.setHours(23, 59, 59, 999);
 
   const due = await prisma.activity.findMany({
-    where: { type: "REMINDER", done: false, remindAt: { not: null, lte: endOfToday } },
+    where: { type: "REMINDER", done: false, deletedAt: null, remindAt: { not: null, lte: endOfToday } },
     orderBy: { remindAt: "asc" },
     include: { project: true, client: true },
   });

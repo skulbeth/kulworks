@@ -70,6 +70,7 @@ model Submission {
   estimate    String? // calculator estimate summary, if any
   status      SubmissionStatus @default(NEW)
   sessionId   String? // anonymous session id, to correlate with page views
+  deletedAt   DateTime? // soft delete — archived, never hard-deleted
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
   client      Client?          @relation(fields: [clientId], references: [id])
@@ -135,6 +136,7 @@ model Project {
   submissions Submission[]
   activities  Activity[]
   payments    Payment[]
+  deletedAt   DateTime? // soft delete — archived, never hard-deleted
 
   @@index([stage])
   @@index([dueDate])
@@ -162,6 +164,7 @@ model Payment {
   createdAt DateTime      @default(now())
   project   Project       @relation(fields: [projectId], references: [id])
   projectId String
+  deletedAt DateTime? // soft delete — archived, never hard-deleted
 
   @@index([projectId])
   @@index([paidAt])
@@ -194,8 +197,9 @@ model Activity {
   authorId  String?
 
   // For future auto-reminders / Google Calendar sync
-  remindAt DateTime?
-  done     Boolean   @default(false)
+  remindAt  DateTime?
+  done      Boolean   @default(false)
+  deletedAt DateTime? // soft delete — archived, never hard-deleted
 
   @@index([occurredAt])
   @@index([remindAt])

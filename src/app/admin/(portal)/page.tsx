@@ -11,22 +11,26 @@ export default async function DashboardPage() {
   const now = new Date();
   const [newSubs, activeProjects, clientCount, reminders, upcoming, recentSubs] =
     await Promise.all([
-      prisma.submission.count({ where: { status: "NEW" } }),
-      prisma.project.count({ where: { stage: { in: [...ACTIVE_STAGES] } } }),
+      prisma.submission.count({ where: { status: "NEW", deletedAt: null } }),
+      prisma.project.count({ where: { stage: { in: [...ACTIVE_STAGES] }, deletedAt: null } }),
       prisma.client.count(),
       prisma.activity.findMany({
-        where: { type: "REMINDER", done: false, remindAt: { not: null } },
+        where: { type: "REMINDER", done: false, remindAt: { not: null }, deletedAt: null },
         orderBy: { remindAt: "asc" },
         take: 12,
         include: { project: true, client: true },
       }),
       prisma.project.findMany({
-        where: { stage: { in: [...ACTIVE_STAGES] }, dueDate: { not: null } },
+        where: { stage: { in: [...ACTIVE_STAGES] }, dueDate: { not: null }, deletedAt: null },
         orderBy: { dueDate: "asc" },
         take: 8,
         include: { client: true },
       }),
-      prisma.submission.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
+      prisma.submission.findMany({
+        where: { deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      }),
     ]);
 
   return (

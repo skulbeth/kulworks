@@ -39,10 +39,11 @@ const stageLabel: Record<string, string> = {
 
 export default async function ProjectsPage() {
   const projects = await prisma.project.findMany({
+    where: { deletedAt: null },
     orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],
     include: {
       client: true,
-      activities: { orderBy: { occurredAt: "desc" }, take: 20 },
+      activities: { where: { deletedAt: null }, orderBy: { occurredAt: "desc" }, take: 20 },
     },
   });
 

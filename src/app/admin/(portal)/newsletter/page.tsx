@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sendBroadcast } from "../_actions";
+import ConfirmButton from "../_components/ConfirmButton";
 
 export const dynamic = "force-dynamic";
 
@@ -60,12 +61,13 @@ export default async function NewsletterPage({
         </label>
 
         <div className="flex items-center gap-3">
-          <button
+          <ConfirmButton
             disabled={!configured || activeCount === 0}
+            message={`Send this newsletter to ${activeCount} subscriber${activeCount === 1 ? "" : "s"} right now? This can't be undone.`}
             className="rounded-full bg-primary px-6 py-3 font-bold text-black hover:bg-primary-hover disabled:opacity-50"
           >
             Send to {activeCount} subscriber{activeCount === 1 ? "" : "s"}
-          </button>
+          </ConfirmButton>
           {(!configured || activeCount === 0) && (
             <span className="text-sm text-muted">
               {activeCount === 0 ? "No subscribers yet." : "Audience not configured."}

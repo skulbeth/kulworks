@@ -52,6 +52,12 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Light anti-flood: same email within 60s → treat as duplicate; don't re-save/re-email.
+    const recentDup = await prisma.submission.findFirst({
+      where: { email, createdAt: { gte: new Date(Date.now() - 60_000) } },
+    });
+    if (recentDup) return NextResponse.json({ ok: true });
+
     // Dedupe the person by email; keep a stable Client record they hang submissions off of.
     const client = await prisma.client.upsert({
       where: { email },

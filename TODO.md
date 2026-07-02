@@ -83,6 +83,16 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       physical mailing address (PO box OK) — ties to the empty address in site.ts.
 - [ ] *(Later)* decide single vs double opt-in (default: single w/ clear consent).
 
+### Newsletter v2 — extend in-house (Sam chose this 2026-07-02)
+- [ ] **Subscriber tags/groups** + "send to group" selector (customer/prospect/interest).
+- [ ] **Segmented sending** — Broadcasts only hit a whole Audience, so subset sends go via
+      the email API to a filtered list + our OWN unsubscribe link + `/api/unsubscribe` handler.
+- [ ] **Sent-newsletter log** in admin (track what went out, when, to whom).
+- [ ] **Rich composer w/ images** — needs image hosting (Supabase Storage).
+- [ ] **Pull open/click/bounce stats** from Resend API into the admin.
+- [ ] **Optionally collect name/interest at signup** so there's data to segment on.
+      (Age is impractical to collect; better levers: customer-vs-prospect, interest, location.)
+
 ## 📊 Page analytics (feeds the same DB + dashboard)
 
 - [x] **Custom pageview tracker** — `/api/track` + cookieless `PageTracker` beacon (non-admin
@@ -93,10 +103,23 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       "pages viewed before submitting."
 - [ ] *(Optional)* Enable Vercel Web Analytics as a free accuracy backstop (one line).
 
+## 🛡️ Hardening (added after smoke testing)
+
+- [x] **Comprehensive smoke test** — `scripts/smoke-test.mjs` (npm-runnable via node): 21/21
+      pass — every endpoint (valid/invalid/spam/auth), route guards, all DB mutations.
+- [x] **Soft delete everywhere** — Submission/Project/Activity/Payment get `deletedAt`;
+      "delete" archives (hidden from all views) and NEVER hard-deletes. All read queries
+      filter `deletedAt: null`. (Future: an "Archived" view / restore.)
+- [x] **Admin delete/archive buttons** — submissions, projects (+ cascade archive of its
+      payments/activities), activities, payments — all with confirm dialogs.
+- [x] **Newsletter send confirmation** — send now requires a confirm ("send to N?").
+- [x] **Quote anti-flood** — same email within 60s is treated as a duplicate (protects DB +
+      email quota).
+- [x] **Admin error boundary** — friendly "try again" instead of a crash on transient errors.
+
 ## 🧹 Housekeeping
 
-- [ ] **Commit + push uncommitted work** — layout.tsx, ComingSoon.tsx, Header.tsx,
-      site.ts, global.css + 2 untracked logo PNGs.
+- [x] **Committed + pushed** — all work on branch `feat/backend-crm` (Vercel preview built).
 
 ## ✅ Done
 

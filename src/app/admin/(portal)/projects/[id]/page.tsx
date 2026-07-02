@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtDateTime, fmtMoney, toDateInput } from "@/lib/format";
-import { updateProject, deletePayment } from "../../_actions";
+import { updateProject, deletePayment, deleteProject, deleteActivity } from "../../_actions";
 import {
   TextField,
   TextArea,
@@ -14,6 +14,7 @@ import {
 import AddActivity from "../../_components/AddActivity";
 import AddPayment from "../../_components/AddPayment";
 import SetReminder from "../../_components/SetReminder";
+import ConfirmButton from "../../_components/ConfirmButton";
 
 export const dynamic = "force-dynamic";
 
@@ -33,12 +34,12 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = await prisma.project.findUnique({
-    where: { id },
+  const project = await prisma.project.findFirst({
+    where: { id, deletedAt: null },
     include: {
       client: true,
-      activities: { orderBy: { occurredAt: "desc" } },
-      payments: { orderBy: { paidAt: "desc" } },
+      activities: { where: { deletedAt: null }, orderBy: { occurredAt: "desc" } },
+      payments: { where: { deletedAt: null }, orderBy: { paidAt: "desc" } },
     },
   });
   if (!project) notFound();
@@ -170,7 +171,15 @@ export default async function ProjectDetailPage({
               <li key={a.id} className="rounded-lg bg-surface2 px-3 py-2 text-sm">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold">{a.type.replace(/_/g, " ")}</span>
-                  <span className="text-xs text-muted">{fmtDateTime(a.occurredAt)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted">{fmtDateTime(a.occurredAt)}</span>
+                    <form action={deleteActivity}>
+                      <input type="hidden" name="id" value={a.id} />
+                      <button className="text-xs text-red-600 hover:underline" title="Delete">
+                        ×
+                      </button>
+                    </form>
+                  </div>
                 </div>
                 <p className="mt-0.5 whitespace-pre-wrap">{a.body}</p>
               </li>
@@ -178,6 +187,15 @@ export default async function ProjectDetailPage({
           )}
         </ul>
       </section>
+
+      <form action={deleteProject} className="border-t border-border pt-4">
+        <ConfirmButton
+          message="Delete this project and all its payments & activity? This cannot be undone."
+          className="text-sm font-semibold text-red-600 hover:underline"
+        >
+          Delete this project
+        </ConfirmButton>
+      </form>
     </div>
   );
 }

@@ -239,7 +239,7 @@ export async function deletePayment(formData: FormData) {
   await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
-  await prisma.payment.delete({ where: { id } });
+  await prisma.payment.update({ where: { id }, data: { deletedAt: new Date() } });
   revalidateAdmin();
 }
 
@@ -268,6 +268,38 @@ export async function completeReminder(formData: FormData) {
   if (!id) return;
   await prisma.activity.update({ where: { id }, data: { done: true } });
   revalidateAdmin();
+}
+
+// ── Soft deletes (archive — data is never hard-deleted, just hidden from views) ──
+export async function deleteSubmission(formData: FormData) {
+  await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  await prisma.submission.update({ where: { id }, data: { deletedAt: new Date() } });
+  revalidateAdmin();
+}
+
+export async function deleteActivity(formData: FormData) {
+  await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  await prisma.activity.update({ where: { id }, data: { deletedAt: new Date() } });
+  revalidateAdmin();
+}
+
+export async function deleteProject(formData: FormData) {
+  await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const now = new Date();
+  // Archive the project + its payments & activities; unlink submissions so they can
+  // be re-converted. Nothing is hard-deleted.
+  await prisma.payment.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
+  await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
+  await prisma.submission.updateMany({ where: { projectId: id }, data: { projectId: null } });
+  await prisma.project.update({ where: { id }, data: { deletedAt: now } });
+  revalidateAdmin();
+  redirect("/admin/projects/");
 }
 
 // ── Newsletter: compose + send a broadcast to the Resend Audience ──

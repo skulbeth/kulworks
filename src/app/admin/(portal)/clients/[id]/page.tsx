@@ -18,9 +18,9 @@ export default async function ClientDetailPage({
   const client = await prisma.client.findUnique({
     where: { id },
     include: {
-      projects: { orderBy: { createdAt: "desc" } },
-      submissions: { orderBy: { createdAt: "desc" } },
-      activities: { orderBy: { occurredAt: "desc" }, take: 50 },
+      projects: { where: { deletedAt: null }, orderBy: { createdAt: "desc" } },
+      submissions: { where: { deletedAt: null }, orderBy: { createdAt: "desc" } },
+      activities: { where: { deletedAt: null }, orderBy: { occurredAt: "desc" }, take: 50 },
     },
   });
   if (!client) notFound();

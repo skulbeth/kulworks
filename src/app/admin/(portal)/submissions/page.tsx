@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDateTime, fmtText } from "@/lib/format";
-import { updateSubmissionStatus, convertSubmissionToProject } from "../_actions";
+import {
+  updateSubmissionStatus,
+  convertSubmissionToProject,
+  deleteSubmission,
+} from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
   type ExplorerItem,
 } from "../_components/RecordExplorer";
+import ConfirmButton from "../_components/ConfirmButton";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +39,7 @@ export default async function SubmissionsPage({
 }) {
   const { open } = await searchParams;
   const submissions = await prisma.submission.findMany({
+    where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: { client: true },
   });
@@ -129,6 +135,15 @@ export default async function SubmissionsPage({
               </button>
             </form>
           )}
+          <form action={deleteSubmission} className="ml-auto">
+            <input type="hidden" name="id" value={s.id} />
+            <ConfirmButton
+              message="Delete this submission permanently?"
+              className="text-xs font-semibold text-red-600 hover:underline"
+            >
+              Delete
+            </ConfirmButton>
+          </form>
         </div>
       </div>
     ),
