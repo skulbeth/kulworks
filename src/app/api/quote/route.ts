@@ -156,7 +156,14 @@ export async function POST(request: Request) {
         await sendMail({
           to: process.env.NOTIFY_SMS,
           subject: "New Kulworks lead",
-          text: `New quote request from ${name}. Check your email.`,
+          text: [
+            `New lead: ${name}`,
+            projectType ? `Wants: ${projectType}` : null,
+            email,
+            message ? `"${message.slice(0, 100)}${message.length > 100 ? "…" : ""}"` : null,
+          ]
+            .filter(Boolean)
+            .join("\n"),
         });
       } catch (e) {
         console.error("[/api/quote] SMS ping failed:", e);
