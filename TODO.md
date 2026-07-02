@@ -162,6 +162,12 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       Add a `driveFolderUrl` to Submission. Build via Drive REST (no heavy googleapis dep).
 - [ ] **6. Archived / restore view** — see + restore soft-deleted items.
 - [ ] **7. Team invite UI + audit log** — invite teammates from admin; log who changed what.
+      (SHIPPED: invite-by-email + audit log. TODO enhancement below.)
+- [ ] **7b. Full admin management in the Team page** (requested 2026-07-02) — beyond invites:
+      **create an admin directly by setting their email + an initial password** (like
+      `admin:create`, but in the UI), and **edit existing admins** — change email, reset
+      password, change role (owner/staff), and remove/deactivate. Uses the Supabase admin
+      API (`createUser` / `updateUserById` / `deleteUser`) via the service key; OWNER-only.
 - [x] **8a. Customer auto-confirmation on quote submit** — KEEP ON (Sam confirmed). Live.
 - [ ] **8b. Manual customer progress updates** — as Sam advances a project's stage, a
       "Send update to customer" button that sends ONLY if he chooses (never automatic).
