@@ -18,7 +18,8 @@
     "admin:create": "dotenv -e .env.local -- node scripts/create-admin.mjs",
     "admin:check": "dotenv -e .env.local -- node scripts/check-login.mjs",
     "db:seed": "dotenv -e .env.local -- node scripts/seed-demo.mjs",
-    "email:test": "dotenv -e .env.local -- node scripts/test-email.mjs"
+    "email:test": "dotenv -e .env.local -- node scripts/test-email.mjs",
+    "google:auth": "dotenv -e .env.local -- node scripts/google-auth.mjs"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.5.3",

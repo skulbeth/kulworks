@@ -129,7 +129,11 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 - [ ] **4. Rate limiting** on /api/quote, /api/subscribe, /api/track (DB-based; no new service).
 
 **Tier 2 — high value**
-- [ ] **5. File uploads for artwork** — Supabase Storage; upload on quote form + shown in admin.
+- [ ] **5. Artwork intake → Google Drive auto-folder** (Sam chose this). When a customer
+      requests it, auto-create a folder in Sam's Drive (free 15GB), share the link, email it,
+      store the link on the submission. Needs: Google Cloud project + Drive API + OAuth client
+      (Sam sets up → client ID/secret) + a one-time authorize (refresh token via script).
+      Add a `driveFolderUrl` to Submission. Build via Drive REST (no heavy googleapis dep).
 - [ ] **6. Archived / restore view** — see + restore soft-deleted items.
 - [ ] **7. Team invite UI + audit log** — invite teammates from admin; log who changed what.
 - [x] **8a. Customer auto-confirmation on quote submit** — KEEP ON (Sam confirmed). Live.

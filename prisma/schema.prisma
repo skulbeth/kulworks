@@ -66,8 +66,9 @@ model Submission {
   projectType String? // comma-joined selected service types
   message     String
   reference   String? // link to artwork / references
-  driveFolder Boolean          @default(false)
-  estimate    String? // calculator estimate summary, if any
+  driveFolder    Boolean       @default(false)
+  driveFolderUrl String? // auto-created Google Drive folder link, if requested
+  estimate       String? // calculator estimate summary, if any
   status      SubmissionStatus @default(NEW)
   sessionId   String? // anonymous session id, to correlate with page views
   deletedAt   DateTime? // soft delete — archived, never hard-deleted

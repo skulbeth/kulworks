@@ -87,7 +87,22 @@ export default async function SubmissionsPage({
         </Field>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Reference / artwork">{fmtText(s.reference)}</Field>
-          <Field label="Wants shared Drive folder">{s.driveFolder ? "Yes" : "No"}</Field>
+          <Field label="Shared Drive folder">
+            {s.driveFolderUrl ? (
+              <a
+                href={s.driveFolderUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue hover:underline"
+              >
+                Open folder →
+              </a>
+            ) : s.driveFolder ? (
+              "Requested"
+            ) : (
+              "No"
+            )}
+          </Field>
           <Field label="Received">{fmtDateTime(s.createdAt)}</Field>
           <Field label="Linked client">
             {s.client ? `${s.client.name} <${s.client.email}>` : "—"}

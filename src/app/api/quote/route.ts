@@ -7,6 +7,7 @@ import { sendMail } from "@/lib/email";
 import { site } from "@/data/site";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { driveConfigured, createClientFolder } from "@/lib/google-drive";
 
 // Prisma needs the Node.js runtime (not Edge).
 export const runtime = "nodejs";
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
       update: {},
     });
 
-    await prisma.submission.create({
+    const submission = await prisma.submission.create({
       data: {
         name,
         email,
@@ -94,6 +95,37 @@ export async function POST(request: Request) {
         clientId: client.id,
       },
     });
+
+    // If they asked for a shared Drive folder and Drive is configured, auto-create one,
+    // email them the link, and save it on the submission. Non-blocking.
+    if (driveFolder && driveConfigured()) {
+      try {
+        const folderUrl = await createClientFolder(
+          `${name} — ${new Date().toISOString().slice(0, 10)}`
+        );
+        if (folderUrl) {
+          await prisma.submission.update({
+            where: { id: submission.id },
+            data: { driveFolderUrl: folderUrl },
+          });
+          await sendMail({
+            to: email,
+            replyTo: site.email,
+            subject: "Your Kulworks file-sharing folder",
+            text: [
+              `Hi ${name},`,
+              "",
+              "Here's a shared folder to drop your artwork and project files into:",
+              folderUrl,
+              "",
+              "— Kulworks",
+            ].join("\n"),
+          });
+        }
+      } catch (e) {
+        console.error("[/api/quote] drive folder failed:", e);
+      }
+    }
 
     // Notify Sam of the new request. Reply-To is the customer, so hitting Reply in
     // the inbox goes straight to them. Non-blocking — never fail the save on email.
