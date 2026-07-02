@@ -221,6 +221,17 @@ model Subscriber {
   @@index([createdAt])
 }
 
+// ── Audit log: who did what in the admin ──
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorEmail String
+  action     String // e.g. "archive.submission", "update.project", "email.client", "team.invite"
+  detail     String? // human-readable target, e.g. a name/title
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 // ── Rate limiting for public endpoints (key = "route:ip") ──
 model RateLimit {
   id        String   @id @default(cuid())

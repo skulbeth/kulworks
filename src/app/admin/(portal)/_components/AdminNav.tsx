@@ -12,6 +12,8 @@ const tabs = [
   { href: "/admin/subscribers/", label: "Subscribers" },
   { href: "/admin/newsletter/", label: "Newsletter" },
   { href: "/admin/analytics/", label: "Analytics" },
+  { href: "/admin/team/", label: "Team" },
+  { href: "/admin/archive/", label: "Archive" },
 ];
 
 const norm = (p: string) => p.replace(/\/+$/, "") || "/";

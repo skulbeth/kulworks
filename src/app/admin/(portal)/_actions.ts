@@ -6,7 +6,19 @@ import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
 import { resend, FROM, sendMail } from "@/lib/email";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { site } from "@/data/site";
+
+const SITE_URL = "https://kulworks.com";
+
+// Writes an audit-log entry. Best-effort — never blocks the action on failure.
+async function logAudit(actorEmail: string, action: string, detail?: string) {
+  try {
+    await prisma.auditLog.create({ data: { actorEmail, action, detail: detail ?? null } });
+  } catch {
+    /* ignore */
+  }
+}
 
 // ── form-value parsers ──
 function s(fd: FormData, k: string): string | null {
@@ -124,7 +136,7 @@ export async function convertSubmissionToProject(formData: FormData) {
 
 // ── Projects ──
 export async function updateProject(formData: FormData) {
-  await requireProfile();
+  const { profile } = await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
   const stage = s(formData, "stage");
@@ -161,6 +173,7 @@ export async function updateProject(formData: FormData) {
   // Keep the due-date auto-reminder in sync.
   await syncAutoReminder(id, title, dueDate);
 
+  await logAudit(profile.email, "update.project", title);
   revalidateAdmin();
   redirect(`/admin/projects/${id}/`);
 }
@@ -178,7 +191,7 @@ export async function createProjectForClient(formData: FormData) {
 
 // ── Clients ──
 export async function updateClient(formData: FormData) {
-  await requireProfile();
+  const { profile } = await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
   await prisma.client.update({
@@ -195,6 +208,7 @@ export async function updateClient(formData: FormData) {
       notes: s(formData, "notes"),
     },
   });
+  await logAudit(profile.email, "update.client", id);
   revalidateAdmin();
   redirect(`/admin/clients/${id}/`);
 }
@@ -274,10 +288,11 @@ export async function completeReminder(formData: FormData) {
 
 // ── Soft deletes (archive — data is never hard-deleted, just hidden from views) ──
 export async function deleteSubmission(formData: FormData) {
-  await requireProfile();
+  const { profile } = await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
   await prisma.submission.update({ where: { id }, data: { deletedAt: new Date() } });
+  await logAudit(profile.email, "archive.submission", id);
   revalidateAdmin();
 }
 
@@ -290,7 +305,7 @@ export async function deleteActivity(formData: FormData) {
 }
 
 export async function deleteProject(formData: FormData) {
-  await requireProfile();
+  const { profile } = await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
   const now = new Date();
@@ -300,8 +315,74 @@ export async function deleteProject(formData: FormData) {
   await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
   await prisma.submission.updateMany({ where: { projectId: id }, data: { projectId: null } });
   await prisma.project.update({ where: { id }, data: { deletedAt: now } });
+  await logAudit(profile.email, "archive.project", id);
   revalidateAdmin();
   redirect("/admin/projects/");
+}
+
+// ── Restore (un-archive) ──
+export async function restoreSubmission(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  await prisma.submission.update({ where: { id }, data: { deletedAt: null } });
+  await logAudit(profile.email, "restore.submission", id);
+  revalidateAdmin();
+}
+
+export async function restoreProject(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  await prisma.project.update({ where: { id }, data: { deletedAt: null } });
+  await prisma.payment.updateMany({ where: { projectId: id }, data: { deletedAt: null } });
+  await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: null } });
+  await logAudit(profile.email, "restore.project", id);
+  revalidateAdmin();
+}
+
+export async function restoreActivity(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  await prisma.activity.update({ where: { id }, data: { deletedAt: null } });
+  await logAudit(profile.email, "restore.activity", id);
+  revalidateAdmin();
+}
+
+export async function restorePayment(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  await prisma.payment.update({ where: { id }, data: { deletedAt: null } });
+  await logAudit(profile.email, "restore.payment", id);
+  revalidateAdmin();
+}
+
+// ── Team invites (OWNER only) ──
+export async function inviteTeammate(formData: FormData) {
+  const { profile } = await requireProfile();
+  if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
+  const email = s(formData, "email")?.toLowerCase();
+  const role = s(formData, "role") === "OWNER" ? "OWNER" : "STAFF";
+  if (!email) return;
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `${SITE_URL}/auth/callback?next=/admin/reset/`,
+  });
+  if (error || !data?.user) {
+    await logAudit(profile.email, "team.invite.failed", email);
+    redirect("/admin/team/?error=invite");
+  }
+  await prisma.profile.upsert({
+    where: { id: data.user.id },
+    create: { id: data.user.id, email, role: role as never },
+    update: { role: role as never },
+  });
+  await logAudit(profile.email, "team.invite", `${email} (${role})`);
+  revalidateAdmin();
+  redirect("/admin/team/?invited=1");
 }
 
 // ── Manual email to a client (optionally with a fresh Drive folder link) ──
@@ -337,6 +418,7 @@ export async function sendClientEmail(formData: FormData) {
       authorId: profile.id,
     },
   });
+  await logAudit(profile.email, "email.client", client.email);
   revalidateAdmin();
   redirect(`/admin/clients/${clientId}/`);
 }
