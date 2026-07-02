@@ -150,6 +150,19 @@ export async function POST(request: Request) {
       console.error("[/api/quote] notification email failed:", e);
     }
 
+    // Optional short SMS ping via a carrier email-to-SMS gateway (heads-up only).
+    if (process.env.NOTIFY_SMS) {
+      try {
+        await sendMail({
+          to: process.env.NOTIFY_SMS,
+          subject: "New Kulworks lead",
+          text: `New quote request from ${name}. Check your email.`,
+        });
+      } catch (e) {
+        console.error("[/api/quote] SMS ping failed:", e);
+      }
+    }
+
     // Auto-confirmation to the customer. Reply-To is Sam, so their reply reaches him.
     try {
       await sendMail({
