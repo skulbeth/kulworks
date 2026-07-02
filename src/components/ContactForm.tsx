@@ -102,7 +102,9 @@ function FormInner() {
         <div className="text-4xl">✅</div>
         <h3 className="mt-3 text-xl font-bold">Thanks, your request is in!</h3>
         <p className="mt-2 text-muted">
-          I&apos;ll get back to you shortly with next steps and a quote.
+          We&apos;ve sent a confirmation to your email — we&apos;ll respond as soon as we
+          can with next steps and any questions we may have to clarify your request before
+          sending a quote.
         </p>
         <button
           onClick={() => setStatus("idle")}

@@ -109,8 +109,9 @@ export async function POST(request: Request) {
         text: [
           `Hi ${name},`,
           "",
-          "Thanks for reaching out to Kulworks! We've received your request and will get",
-          "back to you shortly with next steps and a quote.",
+          "Thanks for reaching out to Kulworks! We've received your request and will",
+          "respond as soon as we can with next steps and any questions we may have to",
+          "clarify your request before sending a quote.",
           "",
           "For your records, here's what you sent:",
           "",
