@@ -115,6 +115,20 @@ export default async function TeamPage({
         )}
       </section>
 
+      {/* Backups */}
+      <section className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="mb-2 text-lg font-bold">Backups</h2>
+        <p className="mb-3 text-sm text-muted">
+          A full data backup is emailed to you every Monday. You can also download one now:
+        </p>
+        <a
+          href="/api/admin/backup/"
+          className="inline-block rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue"
+        >
+          Download backup (JSON)
+        </a>
+      </section>
+
       {/* System errors */}
       <section>
         <h2 className="mb-3 text-lg font-bold">System errors</h2>
