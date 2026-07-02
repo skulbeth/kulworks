@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
-import { resend, FROM } from "@/lib/email";
+import { resend, FROM, sendMail } from "@/lib/email";
+import { createClientFolder, driveConfigured } from "@/lib/google-drive";
+import { site } from "@/data/site";
 
 // ── form-value parsers ──
 function s(fd: FormData, k: string): string | null {
@@ -300,6 +302,43 @@ export async function deleteProject(formData: FormData) {
   await prisma.project.update({ where: { id }, data: { deletedAt: now } });
   revalidateAdmin();
   redirect("/admin/projects/");
+}
+
+// ── Manual email to a client (optionally with a fresh Drive folder link) ──
+export async function sendClientEmail(formData: FormData) {
+  const { profile } = await requireProfile();
+  const clientId = s(formData, "clientId");
+  const subject = s(formData, "subject");
+  let body = s(formData, "body");
+  if (!clientId || !subject || !body) return;
+
+  const client = await prisma.client.findUnique({ where: { id: clientId } });
+  if (!client) return;
+
+  let folderNote = "";
+  if (formData.get("includeDriveFolder") === "on" && driveConfigured()) {
+    const url = await createClientFolder(
+      `${client.name} — ${new Date().toISOString().slice(0, 10)}`
+    );
+    if (url) {
+      body += `\n\nShared folder to exchange files: ${url}`;
+      folderNote = " (Drive folder attached)";
+    }
+  }
+
+  await sendMail({ to: client.email, replyTo: site.email, subject, text: body });
+
+  // Timestamped record of what was sent.
+  await prisma.activity.create({
+    data: {
+      type: "EMAIL_SENT",
+      body: `Sent "${subject}"${folderNote}\n\n${body}`,
+      clientId,
+      authorId: profile.id,
+    },
+  });
+  revalidateAdmin();
+  redirect(`/admin/clients/${clientId}/`);
 }
 
 // ── Newsletter: compose + send a broadcast to the Resend Audience ──

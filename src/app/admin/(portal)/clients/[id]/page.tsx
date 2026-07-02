@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtDateTime } from "@/lib/format";
-import { updateClient, createProjectForClient } from "../../_actions";
+import { updateClient, createProjectForClient, sendClientEmail } from "../../_actions";
 import { TextField, TextArea, FieldGroup } from "../../_components/FormFields";
 import AddActivity from "../../_components/AddActivity";
 import SetReminder from "../../_components/SetReminder";
+import ConfirmButton from "../../_components/ConfirmButton";
 
 export const dynamic = "force-dynamic";
 
@@ -96,6 +97,40 @@ export default async function ClientDetailPage({
             ))}
           </ul>
         )}
+      </section>
+
+      {/* Send an email */}
+      <section className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="mb-3 text-lg font-bold">Send an email</h2>
+        <form action={sendClientEmail} className="space-y-3">
+          <input type="hidden" name="clientId" value={client.id} />
+          <input
+            name="subject"
+            required
+            placeholder="Subject"
+            className="w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm focus:border-blue focus:outline-none"
+          />
+          <textarea
+            name="body"
+            required
+            rows={6}
+            placeholder="Write your quote / message… (blank lines start new paragraphs)"
+            className="w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm focus:border-blue focus:outline-none"
+          />
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="includeDriveFolder" className="h-4 w-4 accent-primary" />
+            Create &amp; attach a shared Drive folder link
+          </label>
+          <ConfirmButton
+            message={`Send this email to ${client.email}?`}
+            className="rounded-full bg-primary px-6 py-3 font-bold text-black hover:bg-primary-hover"
+          >
+            Send email to {client.name}
+          </ConfirmButton>
+        </form>
+        <p className="mt-2 text-xs text-muted">
+          Sends from contact@kulworks.com (replies come to you), and logs it in the activity below.
+        </p>
       </section>
 
       {/* Activity */}
