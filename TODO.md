@@ -132,7 +132,11 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 - [ ] **5. File uploads for artwork** — Supabase Storage; upload on quote form + shown in admin.
 - [ ] **6. Archived / restore view** — see + restore soft-deleted items.
 - [ ] **7. Team invite UI + audit log** — invite teammates from admin; log who changed what.
-- [ ] **8. Automated status emails** — e.g., stage → "Delivered" emails the customer.
+- [x] **8a. Customer auto-confirmation on quote submit** — KEEP ON (Sam confirmed). Live.
+- [ ] **8b. Manual customer progress updates** — as Sam advances a project's stage, a
+      "Send update to customer" button that sends ONLY if he chooses (never automatic).
+      Every stage change + every sent update is timestamped → a dated progress history
+      on the project timeline. (Most records already carry created/updated timestamps.)
 - [ ] **9. Error monitoring** — capture server errors (DB error log in admin now; Sentry optional later).
 
 **Tier 3 — bigger**

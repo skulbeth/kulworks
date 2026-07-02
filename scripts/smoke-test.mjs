@@ -28,11 +28,12 @@ try {
   const q1 = await post("/api/quote/", {
     name: "Smoke Test", email: "kulworksdesign@gmail.com",
     projectType: "card-printing", message: "Smoke test — please ignore.", driveFolder: false,
+    turnstileToken: "test",
   });
   const qSaved = await prisma.submission.findFirst({ where: { email: "kulworksdesign@gmail.com" } });
   ok("quote: valid submit → 200 + saved + emails", q1.status === 200 && q1.json?.ok && !!qSaved, `status ${q1.status}`);
 
-  const q2 = await post("/api/quote/", { name: "x", email: "not-an-email", message: "hi" });
+  const q2 = await post("/api/quote/", { name: "x", email: "not-an-email", message: "hi", turnstileToken: "test" });
   ok("quote: invalid email → 400", q2.status === 400 && q2.json?.ok === false);
 
   const q3 = await post("/api/quote/", { name: "Bot", email: "bot-q@example.com", message: "x", company_website: "spam" });
@@ -40,12 +41,12 @@ try {
   ok("quote: honeypot → 200 + NOT saved", q3.status === 200 && q3Saved === 0);
 
   // ── 2. Newsletter subscribe ──
-  const s1 = await post("/api/subscribe/", { email: "smoke-sub@example.com", source: "smoke" });
+  const s1 = await post("/api/subscribe/", { email: "smoke-sub@example.com", source: "smoke", turnstileToken: "test" });
   const sRow = await prisma.subscriber.findUnique({ where: { email: "smoke-sub@example.com" } });
   ok("subscribe: valid → 200 + saved", s1.status === 200 && !!sRow);
   ok("subscribe: synced to Resend Audience (resendContactId)", !!sRow?.resendContactId, sRow?.resendContactId ?? "none");
 
-  await post("/api/subscribe/", { email: "smoke-sub@example.com", source: "smoke" });
+  await post("/api/subscribe/", { email: "smoke-sub@example.com", source: "smoke", turnstileToken: "test" });
   const sCount = await prisma.subscriber.count({ where: { email: "smoke-sub@example.com" } });
   ok("subscribe: dedupe (still 1 row)", sCount === 1, `count ${sCount}`);
 
@@ -53,7 +54,7 @@ try {
   const s3Count = await prisma.subscriber.count({ where: { email: "bot-sub@example.com" } });
   ok("subscribe: honeypot → 200 + NOT saved", s3.status === 200 && s3Count === 0);
 
-  const s4 = await post("/api/subscribe/", { email: "nope" });
+  const s4 = await post("/api/subscribe/", { email: "nope", turnstileToken: "test" });
   ok("subscribe: invalid email → 400", s4.status === 400);
 
   // ── 3. Analytics tracker ──

@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { services } from "@/data/services";
 import { site } from "@/data/site";
+import TurnstileWidget from "@/components/TurnstileWidget";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -27,6 +28,7 @@ function FormInner() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   // Pre-fill from the URL: ?type=card-printing,card-design and ?details=<summary>
   // (used by the "Request this" CTAs and the card cost estimator).
@@ -72,6 +74,7 @@ function FormInner() {
           reference: fd.get("reference"),
           driveFolder: fd.get("driveFolder") === "yes",
           company_website: fd.get("company_website"), // honeypot
+          turnstileToken,
           sessionId: (() => {
             try {
               return sessionStorage.getItem("kw_sid");
@@ -206,6 +209,8 @@ function FormInner() {
           <a href={`mailto:${site.email}`} className="underline">{site.email}</a> instead.
         </p>
       )}
+
+      <TurnstileWidget onToken={setTurnstileToken} />
 
       <button
         type="submit"

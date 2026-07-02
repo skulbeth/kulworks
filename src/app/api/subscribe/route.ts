@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { addSubscriberToAudience } from "@/lib/email";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 
@@ -28,6 +29,11 @@ export async function POST(request: Request) {
 
   // Honeypot — bots fill this hidden field.
   if (str(body.company_website)) return NextResponse.json({ ok: true });
+
+  // Bot protection (Cloudflare Turnstile) — no-op until configured.
+  if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
+    return NextResponse.json({ ok: false, error: "Verification failed." }, { status: 400 });
+  }
 
   const email = str(body.email).toLowerCase();
   if (!isEmail(email)) {

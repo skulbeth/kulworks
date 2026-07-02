@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { site } from "@/data/site";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 
 // Prisma needs the Node.js runtime (not Edge).
 export const runtime = "nodejs";
@@ -39,6 +40,14 @@ export async function POST(request: Request) {
   // (so the bot thinks it worked) but save nothing.
   if (str(body.company_website)) {
     return NextResponse.json({ ok: true });
+  }
+
+  // Bot protection (Cloudflare Turnstile) — no-op until configured.
+  if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
+    return NextResponse.json(
+      { ok: false, error: "Verification failed — please try again." },
+      { status: 400 }
+    );
   }
 
   const name = str(body.name);
