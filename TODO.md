@@ -1,6 +1,32 @@
 # Kulworks — To-Do
 
 Working list for launch + the custom backend build. Grouped by theme, not strict order.
+For how the whole system fits together, see **[ARCHITECTURE.md](ARCHITECTURE.md)**.
+
+---
+
+## ▶️ Resume here (pick up on any machine / next session)
+
+**Status:** Full custom backend is **built and shipped to production**, running behind the
+coming-soon gate (`constructionMode: true`). See the ✅ items below for everything done.
+
+**Next up (biggest remaining item):** **#10 Quotes & Invoices** — parked pending a decision
+on payment provider (Square / PayPal / Venmo / Zelle), quote-then-invoice vs. just-invoices,
+and whether to auto-email with a pay link. See the roadmap section below.
+
+**To run locally on a fresh clone:**
+1. `npm install`
+2. Get secrets — easiest: `npm i -g vercel && vercel login && vercel link && vercel env pull .env.local`
+   (or copy `.env.example` → `.env.local` and fill values from the Vercel dashboard).
+3. `npm run dev` → http://localhost:3002  (admin: `/admin/login/`)
+
+Everything (database, email, Drive) is cloud-hosted + env-driven, so a second machine
+connects to the **same live data** automatically. Migrations are already applied (they're
+in `prisma/migrations/`). Handy: `npm run db:studio` (browse DB), `npm run db:seed`,
+`node scripts/smoke-test.mjs` (with dev server up).
+
+**Deploy:** push to `main` → Vercel auto-deploys production. Keep `constructionMode: true`
+until the real launch (then flip to `false` after content/socials/address are ready).
 
 ---
 

@@ -20,6 +20,7 @@ const columns: ExplorerColumn[] = [
   { key: "created", label: "Received" },
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
+  { key: "phone", label: "Phone" },
   { key: "type", label: "Requested" },
   { key: "status", label: "Status" },
 ];
@@ -69,7 +70,7 @@ export default async function SubmissionsPage({
     subtitle: `${s.email}${s.projectType ? ` · ${s.projectType}` : ""}`,
     badge: s.status,
     badgeTone: statusTone[s.status] ?? "neutral",
-    search: [s.name, s.email, s.projectType, s.message, s.status]
+    search: [s.name, s.email, s.phone, s.projectType, s.message, s.status]
       .filter(Boolean)
       .join(" ")
       .toLowerCase(),
@@ -77,6 +78,7 @@ export default async function SubmissionsPage({
       created: fmtDateTime(s.createdAt),
       name: s.name,
       email: s.email,
+      phone: fmtText(s.phone),
       type: fmtText(s.projectType),
       status: s.status,
     },
@@ -86,6 +88,7 @@ export default async function SubmissionsPage({
           <p className="whitespace-pre-wrap">{s.message}</p>
         </Field>
         <div className="grid gap-3 sm:grid-cols-2">
+          <Field label="Phone">{fmtText(s.phone)}</Field>
           <Field label="Reference / artwork">{fmtText(s.reference)}</Field>
           <Field label="Shared Drive folder">
             {s.driveFolderUrl ? (

@@ -69,6 +69,7 @@ function FormInner() {
         body: JSON.stringify({
           name: fd.get("name"),
           email: fd.get("email"),
+          phone: fd.get("phone"),
           projectType: fd.get("projectType"),
           message: fd.get("message"),
           reference: fd.get("reference"),
@@ -140,6 +141,19 @@ function FormInner() {
           <label className={label} htmlFor="email">Email</label>
           <input id="email" name="email" type="email" required className={field} placeholder="Your email" />
         </div>
+      </div>
+
+      <div>
+        <label className={label} htmlFor="phone">
+          Phone <span className="font-normal text-muted">(optional)</span>
+        </label>
+        <input
+          id="phone"
+          name="phone"
+          type="tel"
+          className={field}
+          placeholder="So we can text or call about your project"
+        />
       </div>
 
       <fieldset>

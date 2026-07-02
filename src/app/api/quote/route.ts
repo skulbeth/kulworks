@@ -57,6 +57,7 @@ export async function POST(request: Request) {
   const projectType = str(body.projectType).slice(0, MAX.projectType);
   const message = str(body.message);
   const reference = str(body.reference).slice(0, MAX.reference) || null;
+  const phone = str(body.phone).slice(0, 40) || null;
   const driveFolder = body.driveFolder === true;
   const sessionId = str(body.sessionId).slice(0, 100) || null;
 
@@ -80,14 +81,15 @@ export async function POST(request: Request) {
     // Dedupe the person by email; keep a stable Client record they hang submissions off of.
     const client = await prisma.client.upsert({
       where: { email },
-      create: { name, email },
-      update: {},
+      create: { name, email, phone },
+      update: phone ? { phone } : {},
     });
 
     const submission = await prisma.submission.create({
       data: {
         name,
         email,
+        phone,
         projectType: projectType || null,
         message,
         reference,
@@ -138,6 +140,7 @@ export async function POST(request: Request) {
         text: [
           `Name: ${name}`,
           `Email: ${email}`,
+          `Phone: ${phone ?? "—"}`,
           `Project type: ${projectType || "—"}`,
           `Shared Drive folder requested: ${driveFolder ? "yes" : "no"}`,
           `Reference: ${reference ?? "—"}`,
@@ -160,6 +163,7 @@ export async function POST(request: Request) {
             `New lead: ${name}`,
             projectType ? `Wants: ${projectType}` : null,
             email,
+            phone,
             message ? `"${message.slice(0, 100)}${message.length > 100 ? "…" : ""}"` : null,
           ]
             .filter(Boolean)

@@ -63,6 +63,7 @@ model Submission {
   id          String           @id @default(cuid())
   name        String
   email       String
+  phone       String? // optional, customer-provided
   projectType String? // comma-joined selected service types
   message     String
   reference   String? // link to artwork / references
