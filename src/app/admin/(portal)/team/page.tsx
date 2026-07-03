@@ -4,8 +4,7 @@ import { fmtDate, fmtDateTime } from "@/lib/format";
 import ConfirmButton from "../_components/ConfirmButton";
 import TwoFactorSetup from "../_components/TwoFactorSetup";
 import {
-  inviteTeammate,
-  createAdmin,
+  addTeamMember,
   updateAdmin,
   resetAdminPassword,
   deactivateAdmin,
@@ -176,50 +175,33 @@ export default async function TeamPage({
         </ul>
       </section>
 
-      {/* Add / invite (owner only) */}
+      {/* Add a team member (owner only) */}
       {isOwner ? (
-        <div className="grid gap-4 md:grid-cols-2">
-          <section className="rounded-xl border border-border bg-surface p-4">
-            <h2 className="mb-3 text-lg font-bold">Add an admin</h2>
-            <form action={createAdmin} className="space-y-2">
-              <input name="name" placeholder="Name (optional)" className={`w-full ${field}`} />
-              <input name="email" type="email" required placeholder="their@email.com" className={`w-full ${field}`} />
-              <input name="phone" type="tel" required placeholder="Phone number" className={`w-full ${field}`} />
-              <input
-                name="password"
-                type="password"
-                minLength={8}
-                required
-                placeholder="Initial password (8+ characters)"
-                className={`w-full ${field}`}
-              />
-              <select name="role" defaultValue="STAFF" className={`w-full ${field}`}>
-                <option value="STAFF">Staff</option>
-                <option value="OWNER">Owner</option>
-              </select>
-              <button className={btn}>Create admin</button>
-            </form>
-            <p className="mt-2 text-xs text-muted">
-              Creates the login immediately with the password you set. Share it with them, and
-              they can change it under &quot;Change my password.&quot;
-            </p>
-          </section>
-
-          <section className="rounded-xl border border-border bg-surface p-4">
-            <h2 className="mb-3 text-lg font-bold">Or invite by email</h2>
-            <form action={inviteTeammate} className="space-y-2">
-              <input name="email" type="email" required placeholder="their@email.com" className={`w-full ${field}`} />
-              <select name="role" defaultValue="STAFF" className={`w-full ${field}`}>
-                <option value="STAFF">Staff</option>
-                <option value="OWNER">Owner</option>
-              </select>
-              <button className={btnGhost}>Send invite</button>
-            </form>
-            <p className="mt-2 text-xs text-muted">
-              Sends an email with a link to set their own password.
-            </p>
-          </section>
-        </div>
+        <section className="rounded-xl border border-border bg-surface p-4">
+          <h2 className="mb-3 text-lg font-bold">Add a team member</h2>
+          <form action={addTeamMember} className="grid gap-2 sm:grid-cols-2">
+            <input name="name" placeholder="Name (optional)" className={`w-full ${field}`} />
+            <input name="email" type="email" required placeholder="their@email.com" className={`w-full ${field}`} />
+            <input name="phone" type="tel" required placeholder="Phone number" className={`w-full ${field}`} />
+            <select name="role" defaultValue="STAFF" className={`w-full ${field}`}>
+              <option value="STAFF">Staff</option>
+              <option value="OWNER">Owner</option>
+            </select>
+            <input
+              name="password"
+              type="password"
+              minLength={8}
+              placeholder="Password (optional — leave blank to invite)"
+              className={`w-full sm:col-span-2 ${field}`}
+            />
+            <button className={`${btn} sm:col-span-2`}>Add team member</button>
+          </form>
+          <p className="mt-2 text-xs text-muted">
+            Enter a password to create their login now (share it with them) — or leave it blank to
+            email them an invite to set their own. Either way they can change it later under
+            &quot;Change my password.&quot;
+          </p>
+        </section>
       ) : (
         <p className="text-sm text-muted">Only owners can add or manage admins.</p>
       )}

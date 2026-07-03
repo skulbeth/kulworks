@@ -8,6 +8,7 @@ import {
   deleteProject,
   deleteActivity,
   sendProjectUpdate,
+  notifyProjectStarted,
 } from "../../_actions";
 import {
   TextField,
@@ -167,6 +168,21 @@ export default async function ProjectDetailPage({
         <h2 className="mb-3 text-lg font-bold">
           Send progress update to {project.client.name}
         </h2>
+
+        {/* One-click "we've started your project" note (details auto-filled) */}
+        <form action={notifyProjectStarted} className="mb-3">
+          <input type="hidden" name="projectId" value={project.id} />
+          <ConfirmButton
+            message={`Email ${project.client.email} that we've started their project? The details above (title, scope, deliverables, target date) are filled in automatically.`}
+            className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue"
+          >
+            📧 Notify client: project started
+          </ConfirmButton>
+        </form>
+        <p className="mb-3 text-xs text-muted">
+          Great right after a call. Or write a custom message below:
+        </p>
+
         <form action={sendProjectUpdate} className="space-y-3">
           <input type="hidden" name="projectId" value={project.id} />
           <textarea

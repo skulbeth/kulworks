@@ -374,15 +374,45 @@ export async function restorePayment(formData: FormData) {
   revalidateAdmin();
 }
 
-// ── Team invites (OWNER only) ──
-export async function inviteTeammate(formData: FormData) {
+// ── Team members (OWNER only) ──
+// Add a team member. One form: enter a password to create their login
+// immediately, or leave it blank to email them an invite to set their own password.
+export async function addTeamMember(formData: FormData) {
   const { profile } = await requireProfile();
   if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
   const email = s(formData, "email")?.toLowerCase();
+  const name = s(formData, "name");
+  const phone = s(formData, "phone");
+  const password = s(formData, "password");
   const role = s(formData, "role") === "OWNER" ? "OWNER" : "STAFF";
-  if (!email) return;
+  if (!email) redirect("/admin/team/?error=missing");
 
   const admin = createAdminClient();
+
+  // Password given → create the login now (active immediately).
+  if (password) {
+    if (password.length < 8) redirect("/admin/team/?error=weak");
+    const { data, error } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: name ? { name } : undefined,
+    });
+    if (error || !data?.user) {
+      await logAudit(profile.email, "team.create.failed", `${email}: ${error?.message ?? "unknown"}`);
+      redirect("/admin/team/?error=create");
+    }
+    await prisma.profile.upsert({
+      where: { id: data.user.id },
+      create: { id: data.user.id, email, name: name ?? null, phone, role: role as never },
+      update: { email, name: name ?? undefined, phone, role: role as never },
+    });
+    await logAudit(profile.email, "team.create", `${email} (${role})`);
+    revalidateAdmin();
+    redirect("/admin/team/?done=created");
+  }
+
+  // No password → email an invite; they set their own password.
   const { data, error } = await admin.auth.admin.inviteUserByEmail(email, {
     redirectTo: `${SITE_URL}/auth/callback?next=/admin/reset/`,
   });
@@ -392,46 +422,12 @@ export async function inviteTeammate(formData: FormData) {
   }
   await prisma.profile.upsert({
     where: { id: data.user.id },
-    create: { id: data.user.id, email, role: role as never },
-    update: { role: role as never },
+    create: { id: data.user.id, email, name: name ?? null, phone, role: role as never },
+    update: { name: name ?? undefined, phone, role: role as never },
   });
   await logAudit(profile.email, "team.invite", `${email} (${role})`);
   revalidateAdmin();
   redirect("/admin/team/?invited=1");
-}
-
-// ── Full admin management (OWNER only) ──
-// Create an admin directly with an initial password (no email round-trip needed).
-export async function createAdmin(formData: FormData) {
-  const { profile } = await requireProfile();
-  if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
-  const email = s(formData, "email")?.toLowerCase();
-  const password = s(formData, "password");
-  const name = s(formData, "name");
-  const phone = s(formData, "phone");
-  const role = s(formData, "role") === "OWNER" ? "OWNER" : "STAFF";
-  if (!email || !password) redirect("/admin/team/?error=missing");
-  if (password.length < 8) redirect("/admin/team/?error=weak");
-
-  const admin = createAdminClient();
-  const { data, error } = await admin.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true, // usable immediately, no confirmation email
-    user_metadata: name ? { name } : undefined,
-  });
-  if (error || !data?.user) {
-    await logAudit(profile.email, "team.create.failed", `${email}: ${error?.message ?? "unknown"}`);
-    redirect("/admin/team/?error=create");
-  }
-  await prisma.profile.upsert({
-    where: { id: data.user.id },
-    create: { id: data.user.id, email, name: name ?? null, phone, role: role as never },
-    update: { email, name: name ?? undefined, phone, role: role as never },
-  });
-  await logAudit(profile.email, "team.create", `${email} (${role})`);
-  revalidateAdmin();
-  redirect("/admin/team/?done=created");
 }
 
 // Edit an existing admin's email and/or role.
@@ -650,6 +646,57 @@ export async function sendProjectUpdate(formData: FormData) {
     },
   });
   await logAudit(profile.email, "email.project-update", project.client.email);
+  revalidateAdmin();
+  redirect(`/admin/projects/${projectId}/`);
+}
+
+// One-click "we've started your project" email to the client (e.g. after a phone call).
+// Auto-fills the project details; only sends on click; logged in Activity.
+export async function notifyProjectStarted(formData: FormData) {
+  const { profile } = await requireProfile();
+  const projectId = s(formData, "projectId");
+  if (!projectId) return;
+
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+    include: { client: true },
+  });
+  if (!project) return;
+
+  const lines = [
+    `Hi ${project.client.name},`,
+    "",
+    "Great news — we've started a project for you at Kulworks:",
+    "",
+    `Project: ${project.title}`,
+  ];
+  if (project.requested) lines.push(`What we're doing: ${project.requested}`);
+  if (project.deliverables) lines.push(`Deliverables: ${project.deliverables}`);
+  if (project.dueDate) lines.push(`Target date: ${project.dueDate.toLocaleDateString("en-US")}`);
+  lines.push(
+    "",
+    "We'll keep you posted as it moves along — just reply to this email with any questions.",
+    "",
+    "— Kulworks"
+  );
+  const text = lines.join("\n");
+
+  await sendMail({
+    to: project.client.email,
+    replyTo: site.email,
+    subject: `We've started your Kulworks project: ${project.title}`,
+    text,
+  });
+  await prisma.activity.create({
+    data: {
+      type: "EMAIL_SENT",
+      body: `Project-started notice emailed to ${project.client.email}.`,
+      projectId,
+      clientId: project.clientId,
+      authorId: profile.id,
+    },
+  });
+  await logAudit(profile.email, "email.project-started", project.client.email);
   revalidateAdmin();
   redirect(`/admin/projects/${projectId}/`);
 }
