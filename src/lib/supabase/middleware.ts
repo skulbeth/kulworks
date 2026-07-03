@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
   //  Keeping that out of edge middleware avoids DB access here and redirect loops.)
   if (isAdmin && !isAuthPage && !user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/admin/login";
+    url.pathname = "/admin/login/";
     return NextResponse.redirect(url);
   }
 

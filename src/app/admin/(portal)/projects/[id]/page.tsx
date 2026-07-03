@@ -237,8 +237,9 @@ export default async function ProjectDetailPage({
       </section>
 
       <form action={deleteProject} className="border-t border-border pt-4">
+        <input type="hidden" name="id" value={project.id} />
         <ConfirmButton
-          message="Delete this project and all its payments & activity? This cannot be undone."
+          message="Archive this project (with its payments & activity)? It's hidden from your lists but kept — you can restore it from the Archive tab."
           className="text-sm font-semibold text-red-600 hover:underline"
         >
           Delete this project

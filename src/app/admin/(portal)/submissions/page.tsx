@@ -156,7 +156,7 @@ export default async function SubmissionsPage({
           <form action={deleteSubmission} className="ml-auto">
             <input type="hidden" name="id" value={s.id} />
             <ConfirmButton
-              message="Delete this submission permanently?"
+              message="Archive this submission? It's hidden from your list but kept — you can restore it from the Archive tab."
               className="text-xs font-semibold text-red-600 hover:underline"
             >
               Delete
