@@ -10,8 +10,8 @@ For how the whole system fits together, see **[ARCHITECTURE.md](ARCHITECTURE.md)
 **Status:** Full custom backend is **built and shipped to production**, running behind the
 coming-soon gate (`constructionMode: true`). See the ✅ items below for everything done.
 
-**Roadmap order (Sam, 2026-07-03):** (1) 2FA method choice app-or-email ← *building now* →
-(2) #10 Quotes & Invoices (Venmo + PayPal) → (3) Newsletter v2 → (4) Google Calendar →
+**Roadmap order (Sam, 2026-07-03):** (1) 2FA method choice app-or-email ✅ SHIPPED →
+(2) #10 Quotes & Invoices (Venmo + PayPal) ← *next* → (3) Newsletter v2 → (4) Google Calendar →
 (5) **Real site content + photos** (copy, portfolio/service images) → then flip construction
 mode off to launch.
 
@@ -49,12 +49,14 @@ should be filled with real info before launch:
       Enroll on Team page, enforced 6-digit code at login, middleware enforces for enrolled
       users. No-factor accounts unaffected. **Recovery if locked out:** Supabase dashboard →
       Authentication → the user → remove the MFA factor (re-enables password-only login).
-- [ ] **2FA method choice: app OR emailed code** (next focused build) — let each admin pick
-      the authenticator app (done) OR a free 6-digit code emailed via Resend. Email 2FA is a
-      CUSTOM layer (Supabase has no email factor): generate/store(hashed+expiry)/verify a code
-      + enforce in `requireProfile` (Node) alongside the TOTP/AAL path; add a method chooser to
-      TwoFactorSetup + a branch in the login page. SECURITY-CRITICAL → do as a careful, live-
-      tested pass. (SMS dropped = paid. Admin `phone` field added for records / future SMS.)
+- [x] **2FA method choice: app OR emailed code** — SHIPPED. Per-admin master switch
+      (`Profile.twoFactorEnabled`); at login the admin chooses authenticator app (Supabase
+      TOTP) or a 6-digit code emailed via Resend. Email path is custom: `TwoFactorCode`
+      (hashed + 10-min expiry + 5-try cap) + HMAC-signed `kw2fa` cookie (12h), enforced in
+      `requireProfile`; cleared on logout/idle. FINAL: only email + app (no SMS — the free
+      carrier email-to-SMS gateway is best-effort, unsafe for login codes). **Recovery if
+      locked out:** Supabase dashboard → Auth → user → remove MFA factor, and/or set
+      `Profile.twoFactorEnabled = false`.
 - [x] **Admin phone field** — Profile.phone, required on create, editable; for records.
 - [ ] **Construction-mode flag** — currently `false` (preview). Flip back to `true`
       before deploy so the public still sees the coming-soon page — UNLESS this push
