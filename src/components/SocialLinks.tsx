@@ -20,21 +20,34 @@ export default function SocialLinks({ className = "" }: { className?: string }) 
     <ul className={`flex items-center gap-3 ${className}`}>
       {site.social.map((s) => {
         const isPlaceholder = s.url.includes("REPLACE_WITH_HANDLE");
+        const inner = (
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden>
+            {icons[s.name]}
+          </svg>
+        );
         return (
           <li key={s.name}>
-            <a
-              href={s.url}
-              {...(!isPlaceholder
-                ? { target: "_blank", rel: "noopener noreferrer" }
-                : { "aria-disabled": true })}
-              aria-label={isPlaceholder ? `${s.name} (add your handle)` : s.name}
-              title={isPlaceholder ? `${s.name}: add your handle in src/data/site.ts` : s.name}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-blue hover:text-blue"
-            >
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden>
-                {icons[s.name]}
-              </svg>
-            </a>
+            {isPlaceholder ? (
+              // Handle not set yet — show the slot but DON'T render a live (broken) link.
+              <span
+                aria-label={`${s.name} (add your handle)`}
+                title={`${s.name}: add your handle in src/data/site.ts`}
+                className="flex h-9 w-9 cursor-not-allowed items-center justify-center rounded-full border border-border bg-surface text-muted opacity-40"
+              >
+                {inner}
+              </span>
+            ) : (
+              <a
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={s.name}
+                title={s.name}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface text-muted transition-colors hover:border-blue hover:text-blue"
+              >
+                {inner}
+              </a>
+            )}
           </li>
         );
       })}
