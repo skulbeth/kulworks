@@ -17,9 +17,11 @@ export default function SiteFrame({
   children: ReactNode;
 }) {
   const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin") ?? false;
+  // The /admin portal and the customer-facing /invoice pages have no marketing chrome.
+  const bare =
+    (pathname?.startsWith("/admin") ?? false) || (pathname?.startsWith("/invoice") ?? false);
 
-  if (isAdmin) return <>{children}</>;
+  if (bare) return <>{children}</>;
 
   return (
     <>

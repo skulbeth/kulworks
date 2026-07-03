@@ -9,6 +9,7 @@ import { resend, FROM, sendMail } from "@/lib/email";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TWOFA_COOKIE, COOKIE_TTL_MS, signSession } from "@/lib/two-factor";
+import { computeTotals, docLabel } from "@/lib/invoice";
 import { site } from "@/data/site";
 
 const SITE_URL = "https://kulworks.com";
@@ -699,6 +700,197 @@ export async function notifyProjectStarted(formData: FormData) {
   await logAudit(profile.email, "email.project-started", project.client.email);
   revalidateAdmin();
   redirect(`/admin/projects/${projectId}/`);
+}
+
+// ── Quotes & Invoices ──
+// Read parallel line-item arrays (itemDesc[], itemQty[], itemPrice[]) from the editor form.
+function lineItems(fd: FormData) {
+  const descs = fd.getAll("itemDesc").map(String);
+  const qtys = fd.getAll("itemQty").map(String);
+  const prices = fd.getAll("itemPrice").map(String);
+  const out: { description: string; quantity: number; unitPrice: number; position: number }[] = [];
+  for (let i = 0; i < descs.length; i++) {
+    const description = descs[i]?.trim();
+    if (!description) continue;
+    out.push({
+      description,
+      quantity: Number(qtys[i]) || 1,
+      unitPrice: Number(prices[i]) || 0,
+      position: out.length,
+    });
+  }
+  return out;
+}
+
+async function nextDocNumber(type: "QUOTE" | "INVOICE") {
+  const count = await prisma.invoice.count({ where: { type: type as never } });
+  return `${type === "QUOTE" ? "Q" : "INV"}-${String(count + 1).padStart(4, "0")}`;
+}
+
+// Create a quote or invoice (DRAFT) for a project.
+export async function createInvoiceDoc(formData: FormData) {
+  const { profile } = await requireProfile();
+  const projectId = s(formData, "projectId");
+  if (!projectId) return;
+  const project = await prisma.project.findUnique({ where: { id: projectId } });
+  if (!project) redirect("/admin/projects/");
+
+  const type = s(formData, "type") === "QUOTE" ? "QUOTE" : "INVOICE";
+  const items = lineItems(formData);
+  if (items.length === 0) redirect(`/admin/projects/${projectId}/?error=noitems`);
+
+  const number = await nextDocNumber(type);
+  await prisma.invoice.create({
+    data: {
+      number,
+      type: type as never,
+      status: "DRAFT",
+      projectId,
+      clientId: project!.clientId,
+      taxRate: num(formData, "taxRate") ?? 0,
+      dueDate: date(formData, "dueDate") ?? undefined,
+      notes: s(formData, "notes"),
+      items: { create: items },
+    },
+  });
+  await logAudit(profile.email, "invoice.create", `${number} — ${project!.title}`);
+  revalidateAdmin();
+  redirect(`/admin/projects/${projectId}/?done=doc-created`);
+}
+
+// Email the quote/invoice to the client (link to the public view+pay page). Manual only.
+export async function sendInvoiceDoc(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const inv = await prisma.invoice.findUnique({
+    where: { id },
+    include: { client: true, items: true, project: true },
+  });
+  if (!inv) return;
+
+  const { total } = computeTotals(inv.items, inv.taxRate);
+  const url = `${SITE_URL}/invoice/${inv.token}/`;
+  const isQuote = inv.type === "QUOTE";
+  const lines = [
+    `Hi ${inv.client.name},`,
+    "",
+    isQuote
+      ? `Here's your quote from Kulworks (${inv.number}) for "${inv.project.title}":`
+      : `Here's your invoice from Kulworks (${inv.number}) for "${inv.project.title}":`,
+    "",
+    `Total: $${total.toFixed(2)}`,
+    inv.dueDate ? `Due: ${inv.dueDate.toLocaleDateString("en-US")}` : "",
+    "",
+    `View${isQuote ? "" : " and pay"} it here:`,
+    url,
+    "",
+    "Thank you!",
+    "— Kulworks",
+  ].filter((l) => l !== "");
+
+  await sendMail({
+    to: inv.client.email,
+    replyTo: site.email,
+    subject: `Your Kulworks ${isQuote ? "quote" : "invoice"}: ${inv.number}`,
+    text: lines.join("\n"),
+  });
+  await prisma.invoice.update({
+    where: { id },
+    data: { status: inv.status === "PAID" ? "PAID" : "SENT", issuedAt: inv.issuedAt ?? new Date() },
+  });
+  await prisma.activity.create({
+    data: {
+      type: "EMAIL_SENT",
+      body: `${docLabel(inv.type)} ${inv.number} emailed to ${inv.client.email} ($${total.toFixed(2)}).`,
+      projectId: inv.projectId,
+      clientId: inv.clientId,
+      authorId: profile.id,
+    },
+  });
+  await logAudit(profile.email, "invoice.send", `${inv.number} → ${inv.client.email}`);
+  revalidateAdmin();
+  redirect(`/admin/projects/${inv.projectId}/?done=doc-sent`);
+}
+
+// Mark an invoice paid → records a Payment on the project + logs it.
+export async function markInvoicePaid(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const inv = await prisma.invoice.findUnique({ where: { id }, include: { items: true } });
+  if (!inv) return;
+
+  const { total } = computeTotals(inv.items, inv.taxRate);
+  const method = s(formData, "method") ?? "OTHER";
+  await prisma.invoice.update({ where: { id }, data: { status: "PAID", paidAt: new Date() } });
+  await prisma.payment.create({
+    data: {
+      projectId: inv.projectId,
+      amount: total,
+      method: (PAYMENT_METHODS.includes(method) ? method : "OTHER") as never,
+      note: `${docLabel(inv.type)} ${inv.number}`,
+    },
+  });
+  await prisma.activity.create({
+    data: {
+      type: "PAYMENT",
+      body: `${inv.number} marked paid: $${total.toFixed(2)} (${method}).`,
+      projectId: inv.projectId,
+      clientId: inv.clientId,
+      authorId: profile.id,
+    },
+  });
+  await logAudit(profile.email, "invoice.paid", `${inv.number} $${total.toFixed(2)} (${method})`);
+  revalidateAdmin();
+  redirect(`/admin/projects/${inv.projectId}/?done=doc-paid`);
+}
+
+// Cancel a quote/invoice (kept as VOID — never hard-deleted).
+export async function voidInvoiceDoc(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const inv = await prisma.invoice.findUnique({ where: { id } });
+  if (!inv) return;
+  await prisma.invoice.update({ where: { id }, data: { status: "VOID" } });
+  await logAudit(profile.email, "invoice.void", inv.number);
+  revalidateAdmin();
+  redirect(`/admin/projects/${inv.projectId}/?done=doc-void`);
+}
+
+// Turn an approved quote into an invoice (copies the line items).
+export async function convertQuoteToInvoice(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const q = await prisma.invoice.findUnique({ where: { id }, include: { items: true } });
+  if (!q || q.type !== "QUOTE") return;
+
+  const number = await nextDocNumber("INVOICE");
+  await prisma.invoice.create({
+    data: {
+      number,
+      type: "INVOICE",
+      status: "DRAFT",
+      projectId: q.projectId,
+      clientId: q.clientId,
+      taxRate: q.taxRate,
+      dueDate: q.dueDate ?? undefined,
+      notes: q.notes,
+      items: {
+        create: q.items.map((it, i) => ({
+          description: it.description,
+          quantity: it.quantity,
+          unitPrice: it.unitPrice,
+          position: i,
+        })),
+      },
+    },
+  });
+  await logAudit(profile.email, "invoice.convert", `${q.number} → ${number}`);
+  revalidateAdmin();
+  redirect(`/admin/projects/${q.projectId}/?done=doc-converted`);
 }
 
 // ── Newsletter: compose + send a broadcast to the Resend Audience ──

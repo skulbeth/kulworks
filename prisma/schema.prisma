@@ -61,6 +61,7 @@ model Client {
   submissions Submission[]
   projects    Project[]
   activities  Activity[]
+  invoices    Invoice[]
 
   @@index([createdAt])
 }
@@ -153,6 +154,7 @@ model Project {
   submissions Submission[]
   activities  Activity[]
   payments    Payment[]
+  invoices    Invoice[]
   deletedAt   DateTime? // soft delete — archived, never hard-deleted
 
   @@index([stage])
@@ -281,4 +283,55 @@ model PageView {
 
   @@index([path])
   @@index([createdAt])
+}
+
+// ── Quotes & Invoices (a document sent to a client; INVOICE also carries pay links) ──
+enum DocType {
+  QUOTE
+  INVOICE
+}
+
+enum DocStatus {
+  DRAFT // created, not sent
+  SENT // emailed to the client
+  PAID // marked paid (invoice)
+  VOID // cancelled
+}
+
+model Invoice {
+  id        String        @id @default(cuid())
+  token     String        @unique @default(cuid()) // unguessable public view URL
+  number    String // human-facing, e.g. INV-0001 / Q-0001
+  type      DocType       @default(INVOICE)
+  status    DocStatus     @default(DRAFT)
+  project   Project       @relation(fields: [projectId], references: [id])
+  projectId String
+  client    Client        @relation(fields: [clientId], references: [id])
+  clientId  String
+  taxRate   Float         @default(0) // percent, e.g. 8.25
+  notes     String? // shown on the document (terms, thank-you, etc.)
+  dueDate   DateTime?
+  issuedAt  DateTime? // when it was sent
+  paidAt    DateTime?
+  deletedAt DateTime? // soft delete — archived, never hard-deleted
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  items     InvoiceItem[]
+
+  @@index([projectId])
+  @@index([clientId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  invoiceId   String
+  description String
+  quantity    Float   @default(1)
+  unitPrice   Float   @default(0)
+  position    Int     @default(0)
+
+  @@index([invoiceId])
 }

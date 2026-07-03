@@ -70,6 +70,21 @@ export const site = {
   profiles: [
     "https://makerworld.com/en/@skulbeth",
   ] as string[],
+
+  // ---- Payments (invoice pay options) ----
+  // Fill these once your PayPal / Venmo / Zelle are set up. Any value still
+  // containing "REPLACE_WITH" is treated as not-configured, and that pay option is
+  // simply hidden on invoices (nothing breaks).
+  payments: {
+    // Your PayPal.me handle — the part after paypal.me/… (e.g. "kulworks").
+    paypalMe: "REPLACE_WITH_PAYPAL_ME_HANDLE",
+    // Your Venmo username — the part after the @ (e.g. "Kulworks").
+    venmoUser: "REPLACE_WITH_VENMO_USERNAME",
+    // The email or phone enrolled with Zelle at your bank (shown as instructions).
+    zelle: "REPLACE_WITH_ZELLE_EMAIL_OR_PHONE",
+    // Default sales-tax rate applied to new invoices (percent). San Antonio ≈ 8.25%.
+    defaultTaxRate: 8.25,
+  },
 } as const;
 
 /** Social links that are real (handle filled in), used for schema sameAs. */
@@ -82,3 +97,22 @@ export const sameAsUrls = () => [...readySocialUrls(), ...site.profiles];
 /** Absolute URL helper. Pass a path like "/services/" -> "https://kulworks.com/services/". */
 export const absUrl = (path = "/") =>
   `${site.url}${path.startsWith("/") ? path : `/${path}`}`;
+
+// ---- Invoice payment helpers ----
+const paymentSet = (v: string) => !!v && !v.includes("REPLACE_WITH");
+
+/** Which invoice pay options are actually configured (null = hide it). */
+export const paymentConfig = () => ({
+  paypalMe: paymentSet(site.payments.paypalMe) ? site.payments.paypalMe : null,
+  venmoUser: paymentSet(site.payments.venmoUser) ? site.payments.venmoUser : null,
+  zelle: paymentSet(site.payments.zelle) ? site.payments.zelle : null,
+});
+
+/** PayPal.me link that prefills the amount. */
+export const paypalLink = (handle: string, amount: number) =>
+  `https://paypal.me/${handle}/${amount.toFixed(2)}`;
+
+/** Venmo pay-intent link (opens the app on mobile), prefilled with amount + note. */
+export const venmoLink = (user: string, amount: number, note: string) =>
+  `https://venmo.com/?txn=pay&recipients=${encodeURIComponent(user)}` +
+  `&amount=${amount.toFixed(2)}&note=${encodeURIComponent(note)}`;
