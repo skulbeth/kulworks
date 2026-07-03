@@ -22,6 +22,7 @@ model Profile {
   id            String     @id // = Supabase auth.users.id (uuid)
   email         String     @unique
   name          String?
+  phone         String? // admin's phone (records + future SMS option)
   role          Role       @default(STAFF)
   deactivatedAt DateTime? // soft "removed" — access revoked, record kept, reactivatable
   createdAt     DateTime   @default(now())

@@ -406,6 +406,7 @@ export async function createAdmin(formData: FormData) {
   const email = s(formData, "email")?.toLowerCase();
   const password = s(formData, "password");
   const name = s(formData, "name");
+  const phone = s(formData, "phone");
   const role = s(formData, "role") === "OWNER" ? "OWNER" : "STAFF";
   if (!email || !password) redirect("/admin/team/?error=missing");
   if (password.length < 8) redirect("/admin/team/?error=weak");
@@ -423,8 +424,8 @@ export async function createAdmin(formData: FormData) {
   }
   await prisma.profile.upsert({
     where: { id: data.user.id },
-    create: { id: data.user.id, email, name: name ?? null, role: role as never },
-    update: { email, name: name ?? undefined, role: role as never },
+    create: { id: data.user.id, email, name: name ?? null, phone, role: role as never },
+    update: { email, name: name ?? undefined, phone, role: role as never },
   });
   await logAudit(profile.email, "team.create", `${email} (${role})`);
   revalidateAdmin();
@@ -438,6 +439,7 @@ export async function updateAdmin(formData: FormData) {
   const id = s(formData, "id");
   if (!id) return;
   const email = s(formData, "email")?.toLowerCase();
+  const phone = s(formData, "phone");
   const role = s(formData, "role") === "OWNER" ? "OWNER" : "STAFF";
 
   const target = await prisma.profile.findUnique({ where: { id } });
@@ -459,7 +461,7 @@ export async function updateAdmin(formData: FormData) {
   }
   await prisma.profile.update({
     where: { id },
-    data: { email: email ?? target!.email, role: role as never },
+    data: { email: email ?? target!.email, phone, role: role as never },
   });
   await logAudit(profile.email, "team.update", `${email ?? target!.email} (${role})`);
   revalidateAdmin();

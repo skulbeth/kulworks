@@ -85,6 +85,7 @@ export default async function TeamPage({
                   <span className="font-semibold">{m.name ?? m.email}</span>
                   {isSelf && <span className="text-xs text-blue">(you)</span>}
                   <span className="text-sm text-muted">{m.email}</span>
+                  {m.phone && <span className="text-sm text-muted">· {m.phone}</span>}
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                       m.role === "OWNER" ? "bg-gold/15 text-gold" : "bg-surface2 text-muted"
@@ -112,6 +113,10 @@ export default async function TeamPage({
                         <label className="text-xs text-muted">
                           Email
                           <input name="email" type="email" defaultValue={m.email} className={`mt-1 block ${field}`} />
+                        </label>
+                        <label className="text-xs text-muted">
+                          Phone
+                          <input name="phone" type="tel" defaultValue={m.phone ?? ""} className={`mt-1 block ${field}`} />
                         </label>
                         <label className="text-xs text-muted">
                           Role
@@ -177,6 +182,7 @@ export default async function TeamPage({
             <form action={createAdmin} className="space-y-2">
               <input name="name" placeholder="Name (optional)" className={`w-full ${field}`} />
               <input name="email" type="email" required placeholder="their@email.com" className={`w-full ${field}`} />
+              <input name="phone" type="tel" required placeholder="Phone number" className={`w-full ${field}`} />
               <input
                 name="password"
                 type="password"
