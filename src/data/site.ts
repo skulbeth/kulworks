@@ -79,9 +79,10 @@ export const site = {
     // Your PayPal.me handle — the part after paypal.me/… (e.g. "kulworks").
     paypalMe: "REPLACE_WITH_PAYPAL_ME_HANDLE",
     // Your Venmo username — the part after the @ (e.g. "Kulworks").
-    venmoUser: "REPLACE_WITH_VENMO_USERNAME",
-    // The email or phone enrolled with Zelle at your bank (shown as instructions).
-    zelle: "REPLACE_WITH_ZELLE_EMAIL_OR_PHONE",
+    venmoUser: "kulworks",
+    // Zelle recipient — email and/or phone enrolled at your bank. Shown ONLY in the
+    // Zelle box on private invoice pages (never on any public/site page).
+    zelle: "sam.kulbeth@gmail.com or (210) 577-3064",
     // Default sales-tax rate applied to new invoices (percent). San Antonio ≈ 8.25%.
     defaultTaxRate: 8.25,
   },
