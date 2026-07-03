@@ -487,8 +487,9 @@ export async function resetAdminPassword(formData: FormData) {
   redirect("/admin/team/?done=reset");
 }
 
-// Remove an admin entirely (Supabase user + Profile). Can't remove yourself or the last owner.
-export async function removeAdmin(formData: FormData) {
+// Deactivate an admin (SOFT): revoke login access + flag the Profile, but keep the
+// record so it can be reactivated. Can't deactivate yourself or the last active owner.
+export async function deactivateAdmin(formData: FormData) {
   const { profile } = await requireProfile();
   if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
   const id = s(formData, "id");
@@ -498,20 +499,45 @@ export async function removeAdmin(formData: FormData) {
   const target = await prisma.profile.findUnique({ where: { id } });
   if (!target) redirect("/admin/team/?error=notfound");
   if (target!.role === "OWNER") {
-    const owners = await prisma.profile.count({ where: { role: "OWNER" } });
-    if (owners <= 1) redirect("/admin/team/?error=lastowner");
+    const activeOwners = await prisma.profile.count({
+      where: { role: "OWNER", deactivatedAt: null },
+    });
+    if (activeOwners <= 1) redirect("/admin/team/?error=lastowner");
   }
 
   const admin = createAdminClient();
-  const { error } = await admin.auth.admin.deleteUser(id);
+  // Ban the Supabase login (long duration) so they can't sign in. Reversible.
+  const { error } = await admin.auth.admin.updateUserById(id, { ban_duration: "876000h" });
   if (error) {
-    await logAudit(profile.email, "team.remove.failed", `${target!.email}: ${error.message}`);
+    await logAudit(profile.email, "team.deactivate.failed", `${target!.email}: ${error.message}`);
     redirect("/admin/team/?error=update");
   }
-  await prisma.profile.delete({ where: { id } });
-  await logAudit(profile.email, "team.remove", target!.email);
+  await prisma.profile.update({ where: { id }, data: { deactivatedAt: new Date() } });
+  await logAudit(profile.email, "team.deactivate", target!.email);
   revalidateAdmin();
-  redirect("/admin/team/?done=removed");
+  redirect("/admin/team/?done=deactivated");
+}
+
+// Reactivate a previously deactivated admin.
+export async function reactivateAdmin(formData: FormData) {
+  const { profile } = await requireProfile();
+  if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
+  const id = s(formData, "id");
+  if (!id) return;
+
+  const target = await prisma.profile.findUnique({ where: { id } });
+  if (!target) redirect("/admin/team/?error=notfound");
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.updateUserById(id, { ban_duration: "none" });
+  if (error) {
+    await logAudit(profile.email, "team.reactivate.failed", `${target!.email}: ${error.message}`);
+    redirect("/admin/team/?error=update");
+  }
+  await prisma.profile.update({ where: { id }, data: { deactivatedAt: null } });
+  await logAudit(profile.email, "team.reactivate", target!.email);
+  revalidateAdmin();
+  redirect("/admin/team/?done=reactivated");
 }
 
 // Any logged-in admin can change their own password.

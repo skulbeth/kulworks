@@ -23,7 +23,11 @@ export async function requireProfile(): Promise<{
   if (!user) redirect("/admin/login/");
 
   const existing = await prisma.profile.findUnique({ where: { id: user.id } });
-  if (existing) return { user, profile: existing };
+  if (existing) {
+    // Deactivated admins lose access even if they still hold a session.
+    if (existing.deactivatedAt) redirect("/admin/login/?error=deactivated");
+    return { user, profile: existing };
+  }
 
   const isFirst = (await prisma.profile.count()) === 0;
   const profile = await prisma.profile.create({

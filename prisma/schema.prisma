@@ -19,13 +19,14 @@ enum Role {
 }
 
 model Profile {
-  id         String     @id // = Supabase auth.users.id (uuid)
-  email      String     @unique
-  name       String?
-  role       Role       @default(STAFF)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  activities Activity[]
+  id            String     @id // = Supabase auth.users.id (uuid)
+  email         String     @unique
+  name          String?
+  role          Role       @default(STAFF)
+  deactivatedAt DateTime? // soft "removed" — access revoked, record kept, reactivatable
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  activities    Activity[]
 }
 
 // ── A customer/prospect (CRM contact record) ──

@@ -7,7 +7,8 @@ import {
   createAdmin,
   updateAdmin,
   resetAdminPassword,
-  removeAdmin,
+  deactivateAdmin,
+  reactivateAdmin,
   changeOwnPassword,
 } from "../_actions";
 
@@ -17,7 +18,8 @@ const DONE_MSG: Record<string, string> = {
   created: "Admin created. They can log in now with the password you set.",
   updated: "Admin updated.",
   reset: "Password reset.",
-  removed: "Admin removed.",
+  deactivated: "Admin deactivated — access revoked, record kept. Reactivate anytime.",
+  reactivated: "Admin reactivated — they can log in again.",
   mypassword: "Your password has been changed.",
 };
 
@@ -47,7 +49,7 @@ export default async function TeamPage({
     prisma.auditLog.findMany({ orderBy: { createdAt: "desc" }, take: 50 }),
     prisma.errorLog.findMany({ orderBy: { createdAt: "desc" }, take: 20 }),
   ]);
-  const ownerCount = members.filter((m) => m.role === "OWNER").length;
+  const activeOwnerCount = members.filter((m) => m.role === "OWNER" && !m.deactivatedAt).length;
 
   const field =
     "rounded-lg border border-border bg-surface2 px-3 py-2 text-sm focus:border-blue focus:outline-none";
@@ -89,6 +91,11 @@ export default async function TeamPage({
                   >
                     {m.role}
                   </span>
+                  {m.deactivatedAt && (
+                    <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs font-semibold text-red-600">
+                      Deactivated
+                    </span>
+                  )}
                   <span className="ml-auto text-xs text-muted">since {fmtDate(m.createdAt)}</span>
                 </div>
 
@@ -132,18 +139,26 @@ export default async function TeamPage({
                         <button className={btnGhost}>Reset password</button>
                       </form>
 
-                      {/* Remove */}
-                      {!isSelf && !(m.role === "OWNER" && ownerCount <= 1) && (
-                        <form action={removeAdmin}>
-                          <input type="hidden" name="id" value={m.id} />
-                          <ConfirmButton
-                            message={`Remove ${m.email}? They will lose all admin access.`}
-                            className="rounded-full border border-red-500/40 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-500/10"
-                          >
-                            Remove admin
-                          </ConfirmButton>
-                        </form>
-                      )}
+                      {/* Deactivate (soft) / reactivate */}
+                      {!isSelf &&
+                        (m.deactivatedAt ? (
+                          <form action={reactivateAdmin}>
+                            <input type="hidden" name="id" value={m.id} />
+                            <button className={btnGhost}>Reactivate access</button>
+                          </form>
+                        ) : (
+                          !(m.role === "OWNER" && activeOwnerCount <= 1) && (
+                            <form action={deactivateAdmin}>
+                              <input type="hidden" name="id" value={m.id} />
+                              <ConfirmButton
+                                message={`Deactivate ${m.email}? They lose access, but the record is kept — you can reactivate anytime.`}
+                                className="rounded-full border border-red-500/40 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-500/10"
+                              >
+                                Deactivate access
+                              </ConfirmButton>
+                            </form>
+                          )
+                        ))}
                     </div>
                   </details>
                 )}
