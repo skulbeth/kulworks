@@ -40,10 +40,10 @@ should be filled with real info before launch:
 - [ ] **Mailing address / PO box** — Sam doesn't have one yet. Required in marketing-email
       footers (CAN-SPAM) before sending real newsletters; get a PO box, then add to site data.
 - [ ] **Social handles** — `site.ts:59`, still `REPLACE_WITH_HANDLE` placeholders
-- [ ] **2FA on admin login** (before public launch) — Supabase MFA (TOTP): enroll on the Team
-      page + enforced code step at login + AAL guard in `requireProfile`. **Do as a focused
-      pass with a phone handy** (can't be verified blind; lock-out risk if rushed). Recovery
-      if ever locked out: Supabase dashboard → Authentication → the user → remove MFA factor.
+- [x] **2FA on admin login** — BUILT + shipped (free, Supabase TOTP). Enroll on the Team page,
+      enforced 6-digit code at login, middleware enforces it for enrolled users. No-factor
+      accounts are unaffected. **Recovery if ever locked out:** Supabase dashboard →
+      Authentication → the user → remove the MFA factor (re-enables password-only login).
 - [ ] **Construction-mode flag** — currently `false` (preview). Flip back to `true`
       before deploy so the public still sees the coming-soon page — UNLESS this push
       IS the real go-live.
