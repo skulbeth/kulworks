@@ -21,8 +21,20 @@ and whether to auto-email with a pay link. See the roadmap section below.
 
 **To run locally on a fresh clone:**
 1. `npm install`
-2. Get secrets — easiest: `npm i -g vercel && vercel login && vercel link && vercel env pull .env.local`
-   (or copy `.env.example` → `.env.local` and fill values from the Vercel dashboard).
+2. **GET THE SECRETS.** ⬇️ If a new PC complains it's *"missing environment variables"* or
+   *"can't find `.env.local`"* — THIS is the fix. `.env.local` is gitignored on purpose
+   (it holds all the API keys/passwords), so it does NOT come with `git clone`. Do **NOT**
+   copy it around by email/Drive/USB. Instead pull it straight from Vercel — run these
+   four commands in the project folder, in order:
+   ```
+   npm i -g vercel
+   vercel login
+   vercel link                                    # choose the "kulworks" project
+   vercel env pull .env.local --environment=production
+   ```
+   That creates `.env.local` with every real secret. (Fallback only if Vercel is
+   unavailable: copy `.env.example` → `.env.local` and fill each value from the Vercel
+   dashboard → Project → Settings → Environment Variables.)
 3. `npm run dev` → http://localhost:3002  (admin: `/admin/login/`)
 
 Everything (database, email, Drive) is cloud-hosted + env-driven, so a second machine
