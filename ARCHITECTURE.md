@@ -36,22 +36,23 @@ mounts the analytics `PageTracker` — both are **skipped on `/admin`**.
 
 ## 2. Admin portal (`src/app/admin/`)
 
-Login-gated (Supabase Auth). Guarded by `src/proxy.ts` (redirects unauthenticated
-`/admin/*` to the login page). 30-min idle auto-logout (`IdleLogout`).
+Login-gated (Supabase Auth). `src/proxy.ts` (edge middleware) redirects unauthenticated
+`/admin/*` to the login page; `requireProfile()` (in `lib/auth.ts`) additionally enforces
+per-admin **2FA** and blocks **deactivated** accounts. 30-min idle auto-logout (`IdleLogout`).
 
 | Route | What it does |
 |---|---|
-| `/admin/login` | Sign in + "Forgot password?" (sends reset email) |
+| `/admin/login` | Sign in → optional **2FA step** (choose authenticator app OR emailed code) + "Forgot password?" |
 | `/admin/reset` | Set a new password (after the reset/invite email link) |
-| `/admin/logout` | Sign out (POST) |
+| `/admin/logout` | Sign out (POST) — also clears the email-2FA cookie |
 | `/admin` | **Dashboard** — stats, upcoming due dates, reminders, recent submissions |
 | `/admin/submissions` | Raw quote requests; status change, convert→project, archive; shows phone + Drive link + visit journey |
-| `/admin/projects`, `/admin/projects/[id]` | Projects (BPM): stage/specs/costs/dates, payments, activity, reminders, **manual "Send progress update"**, archive |
+| `/admin/projects`, `/admin/projects/[id]` | Projects (BPM): stage/specs/costs/dates, payments, activity, reminders, **manual "Send progress update"** + one-click **"Notify client: project started"**, archive |
 | `/admin/clients`, `/admin/clients/[id]` | Clients (CRM): contact/address, projects, activity, **"Send an email"** composer (+ optional Drive folder) |
 | `/admin/subscribers` | Newsletter list (+ CSV export) |
 | `/admin/newsletter` | Compose + send a Resend Broadcast to subscribers |
 | `/admin/analytics` | Page-view analytics (totals, trend, top pages/referrers, devices, recent) |
-| `/admin/team` | Members + roles, **invite teammate** (owner only), **audit log**, **backups**, **system errors** |
+| `/admin/team` | **Add a team member** (set a password OR email an invite — one form), edit/reset/deactivate/reactivate (owner only), **change my password**, **two-factor auth** (app or emailed code), **audit log**, **backups**, **system errors** |
 | `/admin/archive` | Soft-deleted items + **Restore** |
 
 All admin data mutations live in `src/app/admin/(portal)/_actions.ts` (Next server
@@ -78,7 +79,7 @@ the important ones).
 
 | Model | Purpose |
 |---|---|
-| `Profile` | Admin users (id = Supabase auth id) + role (OWNER/STAFF) |
+| `Profile` | Admin users (id = Supabase auth id) + role (OWNER/STAFF), `phone`, `deactivatedAt` (soft-off), `twoFactorEnabled` |
 | `Client` | CRM contact (name, email, phone, company, address, notes) |
 | `Submission` | Raw quote request (+ phone, sessionId, driveFolderUrl, status) |
 | `Project` | Tracked job — pipeline stage, specs, costs, dates, shipping |
@@ -89,6 +90,7 @@ the important ones).
 | `RateLimit` | Sliding-window rate-limit hits |
 | `AuditLog` | Who did what in admin |
 | `ErrorLog` | Captured server errors |
+| `TwoFactorCode` | Hashed one-time email-2FA codes (expiry + attempt cap) |
 
 Soft delete: `Submission`, `Project`, `Payment`, `Activity` have `deletedAt` — deletes
 **archive** (hide, never destroy). All read queries filter `deletedAt: null`.
@@ -100,7 +102,8 @@ Migrations are versioned in `prisma/migrations/` (committed).
 
 | Integration | Used for | Env vars | Key files |
 |---|---|---|---|
-| **Supabase** | Postgres DB + admin Auth | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `DATABASE_URL`, `DIRECT_URL` | `lib/prisma.ts`, `lib/supabase/{client,server,middleware,admin}.ts` |
+| **Supabase** | Postgres DB + admin Auth | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `DATABASE_URL`, `DIRECT_URL` | `lib/prisma.ts`, `lib/supabase/{client,server,middleware,admin}.ts`, `lib/auth.ts` |
+| **Two-factor auth** | Admin 2FA — authenticator app (Supabase MFA/TOTP) or emailed 6-digit code (via Resend); signed session cookie | *(no new env — cookie signed with `SUPABASE_SECRET_KEY`)* | `lib/two-factor.ts`, `admin/login/_actions.ts`, `_components/TwoFactorSetup.tsx` |
 | **Resend** | All email (notifications, confirmations, reminders, backups, newsletter, admin sends) from `contact@kulworks.com` | `RESEND_API_KEY`, `RESEND_FROM`, `QUOTE_NOTIFY_EMAIL`, `RESEND_AUDIENCE_ID` | `lib/email.ts` |
 | **Cloudflare Turnstile** | Bot protection on public forms | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | `lib/turnstile.ts`, `components/TurnstileWidget.tsx` |
 | **Google Drive** | Auto-create shared artwork folders | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GOOGLE_DRIVE_PARENT_FOLDER_ID` | `lib/google-drive.ts`, `scripts/google-auth.mjs` |
@@ -150,14 +153,17 @@ Testing mode), Vercel, Squarespace (domain).
 - **Drive folders not creating** → `GOOGLE_*` env vars; Google Cloud OAuth app still in Testing with Sam as test user; refresh token may need re-issuing (`npm run google:auth`).
 - **No reminder/backup emails** → `CRON_SECRET` in Vercel; Vercel → Cron tab (Hobby plan cron limits).
 - **No SMS ping** → `NOTIFY_SMS` in Vercel; carrier gateways are best-effort.
-- **Locked out of admin** → use "Forgot password?" on the login page, or `npm run admin:create` to reset.
+- **Locked out of admin** → use "Forgot password?" on the login page, or `npm run admin:create` to reset. **2FA lockout:** Supabase dashboard → Authentication → the user → remove the MFA factor, and/or set that `Profile.twoFactorEnabled = false` (re-enables password-only login).
 - **Data recovery** → soft-deleted items are in `/admin/archive`; full data in the weekly backup email or `/admin/backup`.
 
 ---
 
 ## 9. Resume on any machine
 
-See `TODO.md` → "Resume here". Short version: `git clone`, `npm install`,
-`vercel env pull .env.local` (or copy `.env.example` → `.env.local` and fill), `npm run dev`.
+See `TODO.md` → "Resume here". Short version: `git clone`, `npm install`, then pull the
+secrets from Vercel (the secure way — no copying secret files around):
+`vercel login && vercel link && vercel env pull .env.local --environment=production`
+(or copy `.env.example` → `.env.local` and fill by hand). Then `npm run dev`.
 Everything else (DB, email, Drive) is cloud-hosted + env-driven, so a second machine
-picks up the same live data automatically.
+picks up the same live data automatically. **Do NOT** email/Drive/commit `.env.local` —
+it's gitignored for a reason; `vercel env pull` is the intended way to sync secrets.

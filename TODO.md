@@ -200,6 +200,14 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 ## 🧹 Housekeeping
 
 - [x] **Committed + pushed** — all work on branch `feat/backend-crm` (Vercel preview built).
+- [x] **Full site + app audit (2026-07-03)** — crawled every page (all 30 internal links
+      resolve, 0 broken), verified every form's fields match its action, all API
+      methods/validation/auth-gating correct, send/receive paths reviewed. Fixes shipped:
+      the "Delete this project" button (missing hidden id — did nothing), misleading
+      "permanent" delete copy (they're soft/restorable), an extra login redirect hop, and
+      placeholder social icons no longer render as live (broken) links until real handles
+      are set. Team add/invite merged into one form; one-click "Notify client: project
+      started" added. 21/21 smoke.
 
 ## ✅ Done
 
