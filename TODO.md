@@ -161,49 +161,41 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       email quota).
 - [x] **Admin error boundary** — friendly "try again" instead of a crash on transient errors.
 
-## 🧭 Approved roadmap (Sam wants all of these — build in chunks)
+## 🧭 Approved roadmap
 
-**Tier 1 — before fully public**
-- [ ] **1. Admin password reset** — "Forgot password?" on login → Supabase reset email →
-      /admin/reset to set new password. (Needs: allow the reset redirect URL in Supabase
-      Auth settings; optionally brand the email via Supabase SMTP = Resend.)
-- [ ] **2. Bot protection (Cloudflare Turnstile)** on /contact + newsletter. (Needs: Sam's
-      Cloudflare Turnstile site key + secret. Build no-op until keys set.)
-- [ ] **3. Privacy policy page** + footer link.
-- [ ] **4. Rate limiting** on /api/quote, /api/subscribe, /api/track (DB-based; no new service).
+**Tier 1 — before fully public (ALL SHIPPED ✅)**
+- [x] **1. Admin password reset** — "Forgot password?" → Supabase reset email → /admin/reset. Live.
+- [x] **2. Bot protection (Cloudflare Turnstile)** on /contact + newsletter. Live (real keys in Vercel).
+- [x] **3. Privacy policy page** + footer link. Live at /privacy.
+- [x] **4. Rate limiting** on /api/quote, /api/subscribe, /api/track (DB-based). Live.
 
-**Tier 2 — high value**
-- [ ] **5. Artwork intake → Google Drive auto-folder** (Sam chose this). When a customer
-      requests it, auto-create a folder in Sam's Drive (free 15GB), share the link, email it,
-      store the link on the submission. Needs: Google Cloud project + Drive API + OAuth client
-      (Sam sets up → client ID/secret) + a one-time authorize (refresh token via script).
-      Add a `driveFolderUrl` to Submission. Build via Drive REST (no heavy googleapis dep).
-- [ ] **6. Archived / restore view** — see + restore soft-deleted items.
-- [ ] **7. Team invite UI + audit log** — invite teammates from admin; log who changed what.
-      (SHIPPED: invite-by-email + audit log. TODO enhancement below.)
-- [x] **7b. Full admin management in the Team page** (SHIPPED 2026-07-02) — beyond invites:
-      create an admin directly by setting email + initial password (UI equivalent of
-      `admin:create`), edit existing admins (change email, change role owner/staff),
-      reset another admin's password, remove an admin, and a self-service "change my
-      password". OWNER-only, audit-logged, with guards (can't remove yourself or the last
-      owner). Built in `team/page.tsx` + `_actions.ts` (createAdmin/updateAdmin/
-      resetAdminPassword/removeAdmin/changeOwnPassword) via the Supabase admin API.
-      Verified at build level; runtime-test on the live site (no local DB on that clone).
-- [x] **8a. Customer auto-confirmation on quote submit** — KEEP ON (Sam confirmed). Live.
-- [ ] **8b. Manual customer progress updates** — as Sam advances a project's stage, a
-      "Send update to customer" button that sends ONLY if he chooses (never automatic).
-      Every stage change + every sent update is timestamped → a dated progress history
-      on the project timeline. (Most records already carry created/updated timestamps.)
-- [ ] **9. Error monitoring** — capture server errors (DB error log in admin now; Sentry optional later).
+**Tier 2 — high value (ALL SHIPPED ✅)**
+- [x] **5. Artwork intake → Google Drive auto-folder** — creates + shares a Drive folder on
+      request, emails the link, stores `driveFolderUrl` on the submission. Live.
+- [x] **6. Archived / restore view** — /admin/archive lists soft-deleted items with restore. Live.
+- [x] **7. Team invite UI + audit log** — invite-by-email + who-did-what audit log. Live.
+- [x] **7b. Full admin management (Team page)** — add a team member (password now OR email
+      invite, one merged form), edit email/role/phone, reset password, deactivate/reactivate
+      (soft), change-my-password, 2FA. OWNER-only, audit-logged, guarded. Live.
+- [x] **8a. Customer auto-confirmation on quote submit** — live.
+- [x] **8b. Manual customer progress updates** — per-project "Send progress update" button
+      (manual only) + one-click "Notify client: project started"; both logged with timestamps
+      in the project's Activity timeline. Live.
+- [x] **9. Error monitoring** — server errors captured to a DB ErrorLog, shown on the Team page. Live.
 
 **Tier 3 — bigger**
-- [ ] **10. Quote & invoice generation** *(DISCUSS FIRST)* — build a nice quote in admin →
-      PDF/email. Sam wants **auto-send invoice from admin**. Payment via **Square (has acct),
-      PayPal (will set up), Venmo, or Zelle** — likely payment *links/requests* rather than
-      embedded checkout. Circle back to choose provider + flow.
+- [ ] **10. Quote & invoice generation** *(NEXT — DISCUSS FIRST)* — build a quote/invoice in
+      admin → email it. Sam wants **auto-send invoice** with **PayPal + Venmo** pay links
+      (Square/Zelle also possible) — likely payment *links/requests*, not embedded checkout.
+      Decisions needed: quote-then-invoice vs. just-invoices; auto-email with pay link.
 - [ ] **11. Newsletter v2** — segmentation/tags, images, sent-log, open/click stats (scoped above).
 - [ ] **12. Google Calendar sync** — due/delivery dates + reminders.
-- [ ] **13. Scheduled data backup/export** — weekly export cron (Supabase free tier backups are limited).
+- [x] **13. Scheduled data backup/export** — weekly `/api/cron/backup` emails a JSON backup +
+      on-demand download on the Team page. Live.
+
+**Other later (not blocking launch)**
+- [ ] **File uploads for client artwork** — in-form upload (today it's a Drive-folder link).
+- [ ] *(Optional)* Vercel Web Analytics one-line backstop; single vs. double opt-in decision.
 
 ## 🧹 Housekeeping
 
