@@ -398,6 +398,137 @@ export async function inviteTeammate(formData: FormData) {
   redirect("/admin/team/?invited=1");
 }
 
+// ── Full admin management (OWNER only) ──
+// Create an admin directly with an initial password (no email round-trip needed).
+export async function createAdmin(formData: FormData) {
+  const { profile } = await requireProfile();
+  if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
+  const email = s(formData, "email")?.toLowerCase();
+  const password = s(formData, "password");
+  const name = s(formData, "name");
+  const role = s(formData, "role") === "OWNER" ? "OWNER" : "STAFF";
+  if (!email || !password) redirect("/admin/team/?error=missing");
+  if (password.length < 8) redirect("/admin/team/?error=weak");
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true, // usable immediately, no confirmation email
+    user_metadata: name ? { name } : undefined,
+  });
+  if (error || !data?.user) {
+    await logAudit(profile.email, "team.create.failed", `${email}: ${error?.message ?? "unknown"}`);
+    redirect("/admin/team/?error=create");
+  }
+  await prisma.profile.upsert({
+    where: { id: data.user.id },
+    create: { id: data.user.id, email, name: name ?? null, role: role as never },
+    update: { email, name: name ?? undefined, role: role as never },
+  });
+  await logAudit(profile.email, "team.create", `${email} (${role})`);
+  revalidateAdmin();
+  redirect("/admin/team/?done=created");
+}
+
+// Edit an existing admin's email and/or role.
+export async function updateAdmin(formData: FormData) {
+  const { profile } = await requireProfile();
+  if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
+  const id = s(formData, "id");
+  if (!id) return;
+  const email = s(formData, "email")?.toLowerCase();
+  const role = s(formData, "role") === "OWNER" ? "OWNER" : "STAFF";
+
+  const target = await prisma.profile.findUnique({ where: { id } });
+  if (!target) redirect("/admin/team/?error=notfound");
+
+  // Never let the last remaining owner be demoted to staff.
+  if (target!.role === "OWNER" && role !== "OWNER") {
+    const owners = await prisma.profile.count({ where: { role: "OWNER" } });
+    if (owners <= 1) redirect("/admin/team/?error=lastowner");
+  }
+
+  const admin = createAdminClient();
+  if (email && email !== target!.email) {
+    const { error } = await admin.auth.admin.updateUserById(id, { email, email_confirm: true });
+    if (error) {
+      await logAudit(profile.email, "team.update.failed", `${id}: ${error.message}`);
+      redirect("/admin/team/?error=update");
+    }
+  }
+  await prisma.profile.update({
+    where: { id },
+    data: { email: email ?? target!.email, role: role as never },
+  });
+  await logAudit(profile.email, "team.update", `${email ?? target!.email} (${role})`);
+  revalidateAdmin();
+  redirect("/admin/team/?done=updated");
+}
+
+// Set a new password for another admin.
+export async function resetAdminPassword(formData: FormData) {
+  const { profile } = await requireProfile();
+  if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
+  const id = s(formData, "id");
+  const password = s(formData, "password");
+  if (!id || !password) redirect("/admin/team/?error=missing");
+  if (password.length < 8) redirect("/admin/team/?error=weak");
+
+  const target = await prisma.profile.findUnique({ where: { id } });
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.updateUserById(id, { password });
+  if (error) {
+    await logAudit(profile.email, "team.reset-password.failed", `${id}: ${error.message}`);
+    redirect("/admin/team/?error=update");
+  }
+  await logAudit(profile.email, "team.reset-password", target?.email ?? id);
+  revalidateAdmin();
+  redirect("/admin/team/?done=reset");
+}
+
+// Remove an admin entirely (Supabase user + Profile). Can't remove yourself or the last owner.
+export async function removeAdmin(formData: FormData) {
+  const { profile } = await requireProfile();
+  if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
+  const id = s(formData, "id");
+  if (!id) return;
+  if (id === profile.id) redirect("/admin/team/?error=self");
+
+  const target = await prisma.profile.findUnique({ where: { id } });
+  if (!target) redirect("/admin/team/?error=notfound");
+  if (target!.role === "OWNER") {
+    const owners = await prisma.profile.count({ where: { role: "OWNER" } });
+    if (owners <= 1) redirect("/admin/team/?error=lastowner");
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.deleteUser(id);
+  if (error) {
+    await logAudit(profile.email, "team.remove.failed", `${target!.email}: ${error.message}`);
+    redirect("/admin/team/?error=update");
+  }
+  await prisma.profile.delete({ where: { id } });
+  await logAudit(profile.email, "team.remove", target!.email);
+  revalidateAdmin();
+  redirect("/admin/team/?done=removed");
+}
+
+// Any logged-in admin can change their own password.
+export async function changeOwnPassword(formData: FormData) {
+  const { profile } = await requireProfile();
+  const password = s(formData, "password");
+  if (!password) redirect("/admin/team/?error=missing");
+  if (password.length < 8) redirect("/admin/team/?error=weak");
+
+  const admin = createAdminClient();
+  const { error } = await admin.auth.admin.updateUserById(profile.id, { password });
+  if (error) redirect("/admin/team/?error=update");
+  await logAudit(profile.email, "team.self-password", profile.email);
+  revalidateAdmin();
+  redirect("/admin/team/?done=mypassword");
+}
+
 // ── Manual email to a client (optionally with a fresh Drive folder link) ──
 export async function sendClientEmail(formData: FormData) {
   const { profile } = await requireProfile();
