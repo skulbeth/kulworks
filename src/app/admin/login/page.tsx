@@ -1,13 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ThemeToggle";
 import { getMy2faStatus, sendEmail2faCode, verifyEmail2faCode } from "./_actions";
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [mode, setMode] = useState<"login" | "forgot" | "2fa">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -42,24 +40,30 @@ export default function AdminLoginPage() {
 
   // After a valid password (or on mount with a session): finish, or start the 2FA step.
   async function routeAfterPassword() {
-    const status = await getMy2faStatus();
-    if (!status.authed) {
+    try {
+      const status = await getMy2faStatus();
+      if (!status.authed) {
+        setBusy(false);
+        return;
+      }
+      if (!status.enabled || status.verified) {
+        // Hard navigation so the new session cookie is definitely picked up.
+        window.location.href = "/admin/";
+        return;
+      }
+      setHasTotp(status.hasTotp);
+      setError(null);
       setBusy(false);
-      return;
-    }
-    if (!status.enabled || status.verified) {
-      router.push("/admin/");
-      router.refresh();
-      return;
-    }
-    setHasTotp(status.hasTotp);
-    setError(null);
-    setBusy(false);
-    setMode("2fa");
-    if (status.hasTotp) {
-      setMethod("choose"); // let them pick app vs email
-    } else {
-      await chooseEmail(); // email is the only option → send right away
+      setMode("2fa");
+      if (status.hasTotp) {
+        setMethod("choose"); // let them pick app vs email
+      } else {
+        await chooseEmail(); // email is the only option → send right away
+      }
+    } catch {
+      // Password already succeeded; if the status check hiccups, don't get stuck on
+      // the spinner — go to the dashboard and let the server guard re-check.
+      window.location.href = "/admin/";
     }
   }
 
@@ -138,8 +142,7 @@ export default function AdminLoginPage() {
         );
       }
     }
-    router.push("/admin/");
-    router.refresh();
+    window.location.href = "/admin/";
   }
 
   async function handleForgot(e: React.FormEvent) {
