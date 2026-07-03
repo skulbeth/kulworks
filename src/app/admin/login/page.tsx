@@ -4,15 +4,21 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ThemeToggle";
+import { getMy2faStatus, sendEmail2faCode, verifyEmail2faCode } from "./_actions";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"login" | "forgot" | "mfa">("login");
+  const [mode, setMode] = useState<"login" | "forgot" | "2fa">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // 2FA step state
+  const [hasTotp, setHasTotp] = useState(false);
+  const [method, setMethod] = useState<"choose" | "app" | "email">("choose");
   const [code, setCode] = useState("");
-  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
-  const [mfaChallengeId, setMfaChallengeId] = useState<string | null>(null);
+  const [appFactorId, setAppFactorId] = useState<string | null>(null);
+  const [appChallengeId, setAppChallengeId] = useState<string | null>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
@@ -20,37 +26,41 @@ export default function AdminLoginPage() {
   const field =
     "w-full rounded-lg border border-border bg-surface2 px-4 py-3 text-foreground placeholder:text-muted/60 focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
   const label = "mb-1.5 block text-sm font-semibold";
+  const primaryBtn =
+    "w-full rounded-full bg-primary px-6 py-3 font-bold text-black transition-all hover:bg-primary-hover disabled:opacity-60";
 
-  // If a session already needs a 2FA step (e.g., the guard bounced them here), show it.
+  // If a session already exists (fresh visit or the guard bounced them here), decide what to show.
   useEffect(() => {
     (async () => {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) await proceedOrMfa();
+      if (!session) return;
+      await routeAfterPassword();
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // After a password login (or on mount with a session): either finish, or require the 2FA code.
-  async function proceedOrMfa() {
-    const supabase = createClient();
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      const totp = factors?.totp?.find((f) => f.status === "verified");
-      if (totp) {
-        const ch = await supabase.auth.mfa.challenge({ factorId: totp.id });
-        if (!ch.error) {
-          setMfaFactorId(totp.id);
-          setMfaChallengeId(ch.data.id);
-          setMode("mfa");
-          setBusy(false);
-          return;
-        }
-      }
+  // After a valid password (or on mount with a session): finish, or start the 2FA step.
+  async function routeAfterPassword() {
+    const status = await getMy2faStatus();
+    if (!status.authed) {
+      setBusy(false);
+      return;
     }
-    router.push("/admin/");
-    router.refresh();
+    if (!status.enabled || status.verified) {
+      router.push("/admin/");
+      router.refresh();
+      return;
+    }
+    setHasTotp(status.hasTotp);
+    setError(null);
+    setBusy(false);
+    setMode("2fa");
+    if (status.hasTotp) {
+      setMethod("choose"); // let them pick app vs email
+    } else {
+      await chooseEmail(); // email is the only option → send right away
+    }
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -64,24 +74,69 @@ export default function AdminLoginPage() {
       setBusy(false);
       return;
     }
-    await proceedOrMfa();
+    await routeAfterPassword();
   }
 
-  async function handleMfa(e: React.FormEvent) {
-    e.preventDefault();
-    if (!mfaFactorId || !mfaChallengeId) return;
+  async function chooseApp() {
     setError(null);
     setBusy(true);
     const supabase = createClient();
-    const { error } = await supabase.auth.mfa.verify({
-      factorId: mfaFactorId,
-      challengeId: mfaChallengeId,
-      code,
-    });
-    if (error) {
-      setError(error.message);
+    const { data: factors } = await supabase.auth.mfa.listFactors();
+    const totp = factors?.totp?.find((f) => f.status === "verified");
+    if (!totp) {
       setBusy(false);
-      return;
+      return setError("No authenticator app is set up on this account.");
+    }
+    const ch = await supabase.auth.mfa.challenge({ factorId: totp.id });
+    setBusy(false);
+    if (ch.error) return setError(ch.error.message);
+    setAppFactorId(totp.id);
+    setAppChallengeId(ch.data.id);
+    setCode("");
+    setMethod("app");
+  }
+
+  async function chooseEmail() {
+    setError(null);
+    setBusy(true);
+    const r = await sendEmail2faCode();
+    setBusy(false);
+    if (!r.ok) return setError("Couldn't send the code. Please try again.");
+    setCode("");
+    setMethod("email");
+  }
+
+  async function submitCode(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setBusy(true);
+    if (method === "app") {
+      if (!appFactorId || !appChallengeId) {
+        setBusy(false);
+        return;
+      }
+      const supabase = createClient();
+      const v = await supabase.auth.mfa.verify({
+        factorId: appFactorId,
+        challengeId: appChallengeId,
+        code,
+      });
+      if (v.error) {
+        setBusy(false);
+        return setError(v.error.message);
+      }
+    } else {
+      const r = await verifyEmail2faCode(code);
+      if (!r.ok) {
+        setBusy(false);
+        return setError(
+          r.error === "too-many"
+            ? "Too many tries. Request a new code."
+            : r.error === "expired"
+            ? "That code expired — request a new one."
+            : "That code didn't match. Try again."
+        );
+      }
     }
     router.push("/admin/");
     router.refresh();
@@ -116,26 +171,63 @@ export default function AdminLoginPage() {
       </div>
       <h1 className="text-2xl font-bold">Kulworks Admin</h1>
 
-      {mode === "mfa" ? (
-        <>
-          <p className="mt-1 text-muted">Enter the 6-digit code from your authenticator app.</p>
-          <form onSubmit={handleMfa} className="mt-8 space-y-4">
-            <input
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              autoFocus
-              placeholder="123456"
-              className={field}
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            />
-            {errorBox}
-            <button type="submit" disabled={busy || code.length !== 6}
-              className="w-full rounded-full bg-primary px-6 py-3 font-bold text-black transition-all hover:bg-primary-hover disabled:opacity-60">
-              {busy ? "Verifying…" : "Verify"}
-            </button>
-          </form>
-        </>
+      {mode === "2fa" ? (
+        method === "choose" ? (
+          <>
+            <p className="mt-1 text-muted">How do you want your sign-in code?</p>
+            <div className="mt-8 space-y-3">
+              <button onClick={chooseApp} disabled={busy} className={primaryBtn}>
+                📱 Use my authenticator app
+              </button>
+              <button
+                onClick={chooseEmail}
+                disabled={busy}
+                className="w-full rounded-full border border-border px-6 py-3 font-semibold transition-all hover:border-blue hover:text-blue disabled:opacity-60"
+              >
+                ✉️ Email me a code
+              </button>
+              {errorBox}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mt-1 text-muted">
+              {method === "app"
+                ? "Enter the 6-digit code from your authenticator app."
+                : "We emailed you a 6-digit code. Enter it below."}
+            </p>
+            <form onSubmit={submitCode} className="mt-8 space-y-4">
+              <input
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                autoFocus
+                placeholder="123456"
+                className={field}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              />
+              {errorBox}
+              <button type="submit" disabled={busy || code.length !== 6} className={primaryBtn}>
+                {busy ? "Verifying…" : "Verify"}
+              </button>
+            </form>
+            <div className="mt-4 flex gap-4 text-sm">
+              {method === "email" && (
+                <button onClick={chooseEmail} disabled={busy} className="font-semibold text-blue hover:underline">
+                  Resend code
+                </button>
+              )}
+              {hasTotp && (
+                <button
+                  onClick={() => { setError(null); setCode(""); setMethod("choose"); }}
+                  className="font-semibold text-blue hover:underline"
+                >
+                  Use a different method
+                </button>
+              )}
+            </div>
+          </>
+        )
       ) : mode === "login" ? (
         <>
           <p className="mt-1 text-muted">Sign in to manage clients, quotes, and projects.</p>
@@ -151,8 +243,7 @@ export default function AdminLoginPage() {
                 value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             {errorBox}
-            <button type="submit" disabled={busy}
-              className="w-full rounded-full bg-primary px-6 py-3 font-bold text-black transition-all hover:bg-primary-hover disabled:opacity-60">
+            <button type="submit" disabled={busy} className={primaryBtn}>
               {busy ? "Signing in…" : "Sign in"}
             </button>
           </form>
@@ -182,8 +273,7 @@ export default function AdminLoginPage() {
                 value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             {errorBox}
-            <button type="submit" disabled={busy}
-              className="w-full rounded-full bg-primary px-6 py-3 font-bold text-black transition-all hover:bg-primary-hover disabled:opacity-60">
+            <button type="submit" disabled={busy} className={primaryBtn}>
               {busy ? "Sending…" : "Send reset link"}
             </button>
           </form>

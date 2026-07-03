@@ -18,6 +18,8 @@ export default function IdleLogout() {
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(async () => {
         await supabase.auth.signOut();
+        // Also hit the logout route so the email-2FA cookie is cleared server-side.
+        await fetch("/admin/logout/", { method: "POST" }).catch(() => {});
         router.push("/admin/login/");
         router.refresh();
       }, IDLE_MS);

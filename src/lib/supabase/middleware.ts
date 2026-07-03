@@ -32,36 +32,19 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // If the user has 2FA enrolled but this session is only at aal1, they must still
-  // enter their code. (Fail open on a transient error so a hiccup can't lock everyone out.)
-  let needsStepUp = false;
-  if (user) {
-    try {
-      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      needsStepUp = !!aal && aal.nextLevel === "aal2" && aal.currentLevel !== "aal2";
-    } catch {
-      needsStepUp = false;
-    }
-  }
-
   const { pathname } = request.nextUrl;
   const isAdmin = pathname.startsWith("/admin");
-  const isLogin = pathname.startsWith("/admin/login");
-  // Auth-flow pages are exempt from the guards below (you complete auth on them).
-  const isAuthPage = isLogin || pathname.startsWith("/admin/reset");
+  // Auth-flow pages complete sign-in, so they're exempt from the "must be signed in" guard.
+  const isAuthPage =
+    pathname.startsWith("/admin/login") || pathname.startsWith("/admin/reset");
 
-  // Not signed in, or signed in but still owes a 2FA code → send to login.
-  if (isAdmin && !isAuthPage && (!user || needsStepUp)) {
+  // Not signed in and trying to reach a protected admin page → login.
+  // (2FA enforcement + "already-signed-in → dashboard" both live in the app layer:
+  //  requireProfile() guards portal pages and the login page redirects signed-in users.
+  //  Keeping that out of edge middleware avoids DB access here and redirect loops.)
+  if (isAdmin && !isAuthPage && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
-    return NextResponse.redirect(url);
-  }
-
-  // Fully authenticated but sitting on the login page → send to the dashboard.
-  // (If they still owe a 2FA code, let them stay so the login page can prompt for it.)
-  if (isLogin && user && !needsStepUp) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
     return NextResponse.redirect(url);
   }
 

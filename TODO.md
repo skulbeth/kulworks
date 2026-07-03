@@ -10,6 +10,11 @@ For how the whole system fits together, see **[ARCHITECTURE.md](ARCHITECTURE.md)
 **Status:** Full custom backend is **built and shipped to production**, running behind the
 coming-soon gate (`constructionMode: true`). See the ✅ items below for everything done.
 
+**Roadmap order (Sam, 2026-07-03):** (1) 2FA method choice app-or-email ← *building now* →
+(2) #10 Quotes & Invoices (Venmo + PayPal) → (3) Newsletter v2 → (4) Google Calendar →
+(5) **Real site content + photos** (copy, portfolio/service images) → then flip construction
+mode off to launch.
+
 **Next up (biggest remaining item):** **#10 Quotes & Invoices** — parked pending a decision
 on payment provider (Square / PayPal / Venmo / Zelle), quote-then-invoice vs. just-invoices,
 and whether to auto-email with a pay link. See the roadmap section below.

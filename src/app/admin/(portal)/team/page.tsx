@@ -22,6 +22,8 @@ const DONE_MSG: Record<string, string> = {
   deactivated: "Admin deactivated — access revoked, record kept. Reactivate anytime.",
   reactivated: "Admin reactivated — they can log in again.",
   mypassword: "Your password has been changed.",
+  "2faon": "Two-factor auth is on. You'll enter a code (emailed, or from your app) at your next sign-in.",
+  "2faoff": "Two-factor auth is off.",
 };
 
 const ERROR_MSG: Record<string, string> = {
@@ -241,7 +243,7 @@ export default async function TeamPage({
       {/* Two-factor authentication (everyone, per-account) */}
       <section className="rounded-xl border border-border bg-surface p-4">
         <h2 className="mb-3 text-lg font-bold">Two-factor authentication</h2>
-        <TwoFactorSetup />
+        <TwoFactorSetup enabled={profile.twoFactorEnabled} />
       </section>
 
       {/* Audit log */}

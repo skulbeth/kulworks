@@ -25,9 +25,22 @@ model Profile {
   phone         String? // admin's phone (records + future SMS option)
   role          Role       @default(STAFF)
   deactivatedAt DateTime? // soft "removed" — access revoked, record kept, reactivatable
+  twoFactorEnabled Boolean @default(false) // require a login code (authenticator app or emailed)
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
   activities    Activity[]
+}
+
+// ── One-time email 2FA codes (hashed). One row per outstanding code per admin. ──
+model TwoFactorCode {
+  id        String   @id @default(cuid())
+  userId    String // = Supabase auth user id / Profile.id
+  codeHash  String // sha256 of the 6-digit code
+  attempts  Int      @default(0) // wrong tries; burned after too many
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ── A customer/prospect (CRM contact record) ──

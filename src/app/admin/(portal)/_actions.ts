@@ -2,11 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
 import { resend, FROM, sendMail } from "@/lib/email";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { TWOFA_COOKIE, COOKIE_TTL_MS, signSession } from "@/lib/two-factor";
 import { site } from "@/data/site";
 
 const SITE_URL = "https://kulworks.com";
@@ -555,6 +557,30 @@ export async function changeOwnPassword(formData: FormData) {
   await logAudit(profile.email, "team.self-password", profile.email);
   revalidateAdmin();
   redirect("/admin/team/?done=mypassword");
+}
+
+// Any admin turns their own 2FA on/off. Turning it on marks the CURRENT session as verified
+// (so you aren't immediately bounced); the code requirement then applies at your next login.
+export async function setTwoFactorEnabled(formData: FormData) {
+  const { user, profile } = await requireProfile();
+  const enable = formData.get("enable") === "true";
+  await prisma.profile.update({ where: { id: profile.id }, data: { twoFactorEnabled: enable } });
+
+  const jar = await cookies();
+  if (enable) {
+    jar.set(TWOFA_COOKIE, signSession(user.id, Date.now() + COOKIE_TTL_MS), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: Math.floor(COOKIE_TTL_MS / 1000),
+    });
+  } else {
+    jar.delete(TWOFA_COOKIE);
+  }
+  await logAudit(profile.email, enable ? "team.2fa.enable" : "team.2fa.disable", profile.email);
+  revalidateAdmin();
+  redirect(`/admin/team/?done=${enable ? "2faon" : "2faoff"}`);
 }
 
 // ── Manual email to a client (optionally with a fresh Drive folder link) ──
