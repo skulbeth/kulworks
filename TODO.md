@@ -40,10 +40,17 @@ should be filled with real info before launch:
 - [ ] **Mailing address / PO box** — Sam doesn't have one yet. Required in marketing-email
       footers (CAN-SPAM) before sending real newsletters; get a PO box, then add to site data.
 - [ ] **Social handles** — `site.ts:59`, still `REPLACE_WITH_HANDLE` placeholders
-- [x] **2FA on admin login** — BUILT + shipped (free, Supabase TOTP). Enroll on the Team page,
-      enforced 6-digit code at login, middleware enforces it for enrolled users. No-factor
-      accounts are unaffected. **Recovery if ever locked out:** Supabase dashboard →
+- [x] **2FA on admin login (authenticator app)** — BUILT + shipped (free, Supabase TOTP).
+      Enroll on Team page, enforced 6-digit code at login, middleware enforces for enrolled
+      users. No-factor accounts unaffected. **Recovery if locked out:** Supabase dashboard →
       Authentication → the user → remove the MFA factor (re-enables password-only login).
+- [ ] **2FA method choice: app OR emailed code** (next focused build) — let each admin pick
+      the authenticator app (done) OR a free 6-digit code emailed via Resend. Email 2FA is a
+      CUSTOM layer (Supabase has no email factor): generate/store(hashed+expiry)/verify a code
+      + enforce in `requireProfile` (Node) alongside the TOTP/AAL path; add a method chooser to
+      TwoFactorSetup + a branch in the login page. SECURITY-CRITICAL → do as a careful, live-
+      tested pass. (SMS dropped = paid. Admin `phone` field added for records / future SMS.)
+- [x] **Admin phone field** — Profile.phone, required on create, editable; for records.
 - [ ] **Construction-mode flag** — currently `false` (preview). Flip back to `true`
       before deploy so the public still sees the coming-soon page — UNLESS this push
       IS the real go-live.
