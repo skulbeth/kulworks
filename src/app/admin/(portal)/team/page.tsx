@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
 import { fmtDate, fmtDateTime } from "@/lib/format";
 import ConfirmButton from "../_components/ConfirmButton";
+import TwoFactorSetup from "../_components/TwoFactorSetup";
 import {
   inviteTeammate,
   createAdmin,
@@ -229,6 +230,12 @@ export default async function TeamPage({
           />
           <button className={btn}>Update password</button>
         </form>
+      </section>
+
+      {/* Two-factor authentication (everyone, per-account) */}
+      <section className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="mb-3 text-lg font-bold">Two-factor authentication</h2>
+        <TwoFactorSetup />
       </section>
 
       {/* Audit log */}
