@@ -147,6 +147,83 @@ export const guides: Guide[] = [
       "test a card game before printing",
     ],
   },
+  {
+    slug: "print-and-play-vs-real-prototype",
+    title: "Print-and-Play vs. a Real Prototype: When to Make the Jump",
+    description:
+      "Printing your game at home is a great start, but at some point a clean prototype pays off. Here is how to know when to make the jump.",
+    datePublished: "2026-07-12",
+    readMinutes: 4,
+    intro:
+      "Every designer starts by printing pages at home and cutting them out. That is a smart, cheap way to begin. But there is a point where a cleaner prototype is worth it, and knowing when saves you time and makes your game look the way it plays in your head.",
+    sections: [
+      {
+        h: "What print-and-play is good for",
+        body: [
+          "Home print-and-play is free and instant, which makes it perfect for the earliest, roughest testing. You are checking whether the idea works at all, so ugly is fine.",
+          "If the rules are still moving around a lot, stay here. There is no reason to print anything nice while big things are still changing.",
+        ],
+      },
+      {
+        h: "Where a real prototype starts to help",
+        body: [
+          "Once the core game holds up, paper scraps start to get in the way. Cards that curl, smudge, or are hard to read make it harder to tell whether a problem is the game or the paper.",
+          "A clean prototype also changes how other people treat your game. Playtesters, a game store, or a publisher take a real deck more seriously than a stack of cut-up printer paper, and you get better feedback because of it.",
+          "Real cards shuffle and handle the way the finished game will, so you catch things like text that is too small or a layout that is awkward in hand.",
+        ],
+      },
+      {
+        h: "The middle ground is what we specialize in",
+        body: [
+          "There is a big gap between a home printer and paying a factory for a thousand copies. That gap is where we live. We get you clean, table ready cards and pieces in small numbers, without a huge minimum, so your game looks and plays like the real thing while you are still refining it.",
+          "You do not have to pick one forever either. Plenty of designers keep doing quick home versions for wild new ideas, then come to us for a clean prototype once a version is worth showing off.",
+        ],
+      },
+    ],
+    keywords: [
+      "print and play vs prototype",
+      "board game prototype printing",
+      "when to print a game prototype",
+    ],
+  },
+  {
+    slug: "how-many-prototype-copies",
+    title: "How Many Prototype Copies Should You Print?",
+    description:
+      "One copy, a few, or more? A simple way to decide how many prototype decks to print for playtesting your card or board game.",
+    datePublished: "2026-07-12",
+    readMinutes: 3,
+    intro:
+      "When you are ready for a real prototype, the next question is how many to print. You do not need a big order to test well. Here is a simple way to decide.",
+    sections: [
+      {
+        h: "Start with one",
+        body: [
+          "A single copy is enough to catch the obvious stuff yourself. You will spot readability problems, layout issues, and rules that do not line up, all before anyone else sees it.",
+          "Print one, play it solo or with one other person, and fix what jumps out. This round is cheap and it saves you from printing a mistake more than once.",
+        ],
+      },
+      {
+        h: "A few for a playtest group",
+        body: [
+          "Once the game holds up, a small batch of two to five copies lets a table actually play without waiting around or passing one deck back and forth.",
+          "This is the sweet spot for most designers, and it is exactly the kind of small number we specialize in. No big minimum, and quick reprints when the design changes.",
+        ],
+      },
+      {
+        h: "More when you take it out into the world",
+        body: [
+          "You need more copies when the game leaves your table. Blind playtests, conventions, sending decks to reviewers, or handing a clean copy to a publisher all call for extra.",
+          "Even then you are usually talking about a modest short run, not a factory order. Print what you need for the stage you are in, and scale up only once the design is proven.",
+        ],
+      },
+    ],
+    keywords: [
+      "how many prototype copies to print",
+      "playtest copies board game",
+      "card game prototype quantity",
+    ],
+  },
 ];
 
 export const getGuide = (slug: string) => guides.find((g) => g.slug === slug);
