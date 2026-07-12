@@ -16,6 +16,7 @@ const PROJECT_TYPES = services.flatMap((s) =>
     ? [
         { id: s.id, name: s.name },
         { id: "card-design", name: "Card Design & Prototyping" },
+        { id: "prototype", name: "Prototype / playtest run" },
       ]
     : [{ id: s.id, name: s.name }]
 );

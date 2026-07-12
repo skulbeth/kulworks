@@ -26,7 +26,7 @@ export const audiences: Audience[] = [
   },
   {
     title: "Designer Prototypes",
-    blurb: "Fast-turnaround proto decks so you can test, tweak, and test again.",
+    blurb: "We specialize in prototype work, that clean middle ground between a home printer and a full print run, so you can test, tweak, and test again.",
     icon: "⚡",
   },
   {

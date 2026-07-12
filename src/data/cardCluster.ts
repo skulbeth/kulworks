@@ -132,8 +132,12 @@ export const cardPages: CardPage[] = [
     eyebrow: "Card printing",
     h1: "Board Game & Card Prototype Printing",
     intro:
-      "Designing a game means printing it over and over as it changes. We turn around prototype decks fast so you can playtest, fix what is broken, and print the next version without waiting weeks or paying for a giant run.",
+      "Designing a game means printing it over and over as it changes. We specialize in getting you real prototype cards and pieces fast, so you can playtest, fix what is broken, and print the next version without waiting weeks or paying for a giant run.",
     sections: [
+      {
+        h: "The clean middle ground",
+        body: "There is a big gap between printing cards at home and cutting them out with scissors, and paying a factory for a thousand of them. That gap is what we specialize in. We get you clean, table ready prototype cards and pieces in small numbers, so your game looks and plays like the real thing while you are still working out the design. We are not a big manufacturer, and for this stage that is the point. You get quality, quick turnaround, and no huge minimum.",
+      },
       {
         h: "Test before you commit",
         body: "A real, printed prototype tells you things a screen never will. Get a finished-feeling deck in hand, run it at the table, and iterate quickly.",
