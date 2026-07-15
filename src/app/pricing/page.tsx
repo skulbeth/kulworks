@@ -26,7 +26,7 @@ export default function PricingPage() {
 
       <section className="border-b border-border">
         <Container className="py-16">
-          <SectionHeading eyebrow="Pricing" title="What it costs" intro={pricingIntro} />
+          <SectionHeading as="h1" eyebrow="Pricing" title="What it costs" intro={pricingIntro} />
         </Container>
       </section>
 

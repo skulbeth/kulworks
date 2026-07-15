@@ -30,6 +30,7 @@ export default function ServicesPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <SectionHeading
+            as="h1"
             eyebrow="Services"
             title="What we make"
             intro="Five crafts under one roof. UV card printing is our lead service, and we design and produce across materials, so most projects can start and finish here."

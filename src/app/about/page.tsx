@@ -25,6 +25,7 @@ export default function AboutPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <SectionHeading
+            as="h1"
             eyebrow="About"
             title="A San Antonio maker studio, end to end"
             intro="Kulworks takes an idea all the way to a finished, physical thing you can hold, without bouncing between vendors or sending it overseas."

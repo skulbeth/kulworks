@@ -25,6 +25,7 @@ export default function PortfolioPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <SectionHeading
+            as="h1"
             eyebrow="Portfolio"
             title="The work"
             intro="Filter by craft to see what Kulworks makes. These are labeled placeholders for now, replaced with real photos as projects ship."

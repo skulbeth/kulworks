@@ -29,6 +29,7 @@ export default function GuidesPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <SectionHeading
+            as="h1"
             eyebrow="Guides & FAQ"
             title="Guides and answers"
             intro="Practical guides plus quick answers to the questions we hear most, from card sizes to getting your art print-ready."

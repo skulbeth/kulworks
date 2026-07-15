@@ -53,7 +53,7 @@ export default async function CardSubPage({
 
       <section className="border-b border-border">
         <Container className="py-16">
-          <SectionHeading eyebrow={page.eyebrow} title={page.h1} intro={page.intro} />
+          <SectionHeading as="h1" eyebrow={page.eyebrow} title={page.h1} intro={page.intro} />
         </Container>
       </section>
 

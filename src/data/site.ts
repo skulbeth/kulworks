@@ -44,14 +44,32 @@ export const site = {
   },
   // Approximate center of San Antonio. Adjust to your actual location if listed.
   geo: { latitude: 29.4241878, longitude: -98.4936282 },
+  // Local service area (feeds LocalBusiness `areaServed` schema — searchable, but not
+  // shown as a keyword list on any page). San Antonio + the surrounding Hill Country.
   areaServed: [
     "San Antonio, TX",
     "Bexar County, TX",
     "Greater San Antonio",
+    "Texas Hill Country",
     "New Braunfels, TX",
     "Schertz, TX",
+    "Cibolo, TX",
     "Boerne, TX",
+    "Bulverde, TX",
+    "Spring Branch, TX",
+    "Canyon Lake, TX",
+    "Blanco, TX",
+    "Bandera, TX",
+    "Fair Oaks Ranch, TX",
+    "Helotes, TX",
+    "Garden Ridge, TX",
+    "Wimberley, TX",
+    "Comal County, TX",
+    "Kendall County, TX",
+    "Blanco County, TX",
   ],
+  // We ship finished physical work (cards, tiles, prints, models) anywhere in the US.
+  shipsNationwide: true,
   priceRange: "$$",
 
   // ---- Social profiles ----

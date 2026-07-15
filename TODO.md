@@ -65,6 +65,13 @@ should be filled with real info before launch:
 - [ ] **Mailing address / PO box** — Sam doesn't have one yet. Required in marketing-email
       footers (CAN-SPAM) before sending real newsletters; get a PO box, then add to site data.
 - [ ] **Social handles** — `site.ts:59`, still `REPLACE_WITH_HANDLE` placeholders
+- [ ] **OG share image** — `public/images/og-default.png` (1200×630) still missing; it's
+      referenced by social-share tags + schema logo/image, so both 404 until added.
+- [x] **On-page SEO polish (2026-07-15)** — added a real `<h1>` to every page (was `<h2>`
+      via SectionHeading — fixed with an `as` prop); expanded `areaServed` schema to San
+      Antonio + Hill Country towns (Bulverde, Blanco, Spring Branch, etc.); added a nationwide-
+      shipping note (footer + Contact "Where we work"). Kept visible copy lean — town list
+      lives in structured data, not on-page keyword lists.
 - [x] **2FA on admin login (authenticator app)** — BUILT + shipped (free, Supabase TOTP).
       Enroll on Team page, enforced 6-digit code at login, middleware enforces for enrolled
       users. No-factor accounts unaffected. **Recovery if locked out:** Supabase dashboard →

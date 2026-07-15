@@ -27,7 +27,7 @@ export default function CardPrintingHub() {
 
       <section className="border-b border-border">
         <Container className="py-16">
-          <SectionHeading eyebrow={cardHub.eyebrow} title={cardHub.h1} intro={cardHub.intro} />
+          <SectionHeading as="h1" eyebrow={cardHub.eyebrow} title={cardHub.h1} intro={cardHub.intro} />
         </Container>
       </section>
 

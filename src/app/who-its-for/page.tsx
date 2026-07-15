@@ -26,6 +26,7 @@ export default function WhoItsForPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <SectionHeading
+            as="h1"
             eyebrow="Who it's for"
             title="People we love making for"
             intro="Card printing is especially popular with teams, designers, and sellers, but whatever you bring, we'll make it real."
