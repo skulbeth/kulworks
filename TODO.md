@@ -85,9 +85,57 @@ should be filled with real info before launch:
       locked out:** Supabase dashboard → Auth → user → remove MFA factor, and/or set
       `Profile.twoFactorEnabled = false`.
 - [x] **Admin phone field** — Profile.phone, required on create, editable; for records.
-- [ ] **Construction-mode flag** — currently `false` (preview). Flip back to `true`
-      before deploy so the public still sees the coming-soon page — UNLESS this push
-      IS the real go-live.
+- [ ] **Construction-mode flag** — currently `true` (public sees the coming-soon page,
+      whole site noindex). Flip to `false` only when content/socials/address are ready and
+      this is the real go-live.
+
+## 🧩 Beyond code — business / ops gaps (the stuff that isn't the site)
+
+Asked "what else am I missing" (2026-07-15). The software is done; these are the non-code
+things that actually gate running the business. Roughly by priority:
+
+**Legal / money (do before invoicing real customers):**
+- [ ] **Texas Sales & Use Tax permit** — invoices charge 8.25% tax, but collecting/remitting
+      sales tax legally requires registering with the TX Comptroller. Register first.
+- [ ] **Vercel plan** — the site is on the **Hobby** plan, which is for *non-commercial* use.
+      A real business likely needs **Vercel Pro (~$20/mo)** to comply with their ToS (also
+      lifts cron/limits). Verify + upgrade before/at launch.
+- [ ] **Business payment accounts** — Zelle points to a *personal* email/phone and Venmo is
+      `@kulworks`; Venmo for goods/services is supposed to use a **business profile** (personal
+      use for business risks frozen funds). Consider a business bank account to separate money.
+- [ ] **PayPal.me handle** — still `REPLACE_WITH_PAYPAL_ME_HANDLE` in `site.ts` (invoice pay link).
+- [ ] **Business formation / DBA + insurance** — LLC vs. sole prop, DBA if "Kulworks" isn't
+      your legal name, and general/product liability insurance. (Real-world, not the site.)
+- [ ] **Terms of Service page** — you have Privacy; add a ToS since you take payments/quotes.
+- [ ] **PO box / mailing address** — required in newsletter footers (CAN-SPAM) before real sends.
+
+**Get found / measure (post-launch):**
+- [ ] **Google Business Profile** + reviews + local citations — the single biggest local lever
+      (see the GBP section in LAUNCH-TODO.md). None of this exists yet.
+- [ ] **Google Search Console** — verify `kulworks.com`, submit the sitemap.
+- [ ] **Bing Webmaster Tools** — same.
+
+**Deliverability / email:**
+- [ ] **DMARC record** — SPF/DKIM are set via Resend; add a DMARC DNS record to improve inbox
+      placement + prevent spoofing.
+- [ ] **Spam-placement test** — send to Gmail/Outlook/Yahoo and confirm mail lands in inbox.
+
+**Reliability / ops:**
+- [ ] **Uptime monitoring** — nothing tells you if the site goes down (free: UptimeRobot).
+- [ ] **Error alerting** — errors log to `ErrorLog` (Team page) but nothing emails you; add a
+      heads-up on new errors.
+- [ ] **Domain auto-renew** — confirm `kulworks.com` auto-renews (Squarespace) so it can't lapse.
+- [ ] **Rotate the Google refresh token** — it was pasted into a chat during setup; re-run
+      `npm run google:auth` once to rotate to a never-shared token (low urgency).
+
+**On-site polish (code — small, in our control):**
+- [ ] **OG share image** — `public/images/og-default.png` (1200×630) still missing (404s in
+      social previews + schema image).
+- [ ] **Custom 404 page** — public site has no `not-found.tsx`; falls back to Next's default.
+- [ ] **Security headers** — `next.config.mjs` sets none; add HSTS, X-Frame-Options,
+      X-Content-Type-Options, Referrer-Policy (and consider a CSP).
+- [ ] **Image optimization** — `images.unoptimized: true`; logo PNG is oversized. Revisit for
+      Core Web Vitals once real photos land.
 
 ## 🗄️ Custom backend build (the big project)
 
