@@ -69,6 +69,10 @@ export default function Footer() {
           © {year} Kulworks. All rights reserved. ·{" "}
           <Link href="/privacy/" className="hover:text-blue">
             Privacy Policy
+          </Link>{" "}
+          ·{" "}
+          <Link href="/terms/" className="hover:text-blue">
+            Terms of Service
           </Link>
         </div>
       </div>

@@ -65,8 +65,8 @@ should be filled with real info before launch:
 - [ ] **Mailing address / PO box** — Sam doesn't have one yet. Required in marketing-email
       footers (CAN-SPAM) before sending real newsletters; get a PO box, then add to site data.
 - [ ] **Social handles** — `site.ts:59`, still `REPLACE_WITH_HANDLE` placeholders
-- [ ] **OG share image** — `public/images/og-default.png` (1200×630) still missing; it's
-      referenced by social-share tags + schema logo/image, so both 404 until added.
+- [x] **OG share image** — DONE. Branded `public/images/og-default.png` (1200×630) generated
+      (`npm run og`, `scripts/make-og.mjs`). Swap for real art anytime by replacing the file.
 - [x] **On-page SEO polish (2026-07-15)** — added a real `<h1>` to every page (was `<h2>`
       via SectionHeading — fixed with an `as` prop); expanded `areaServed` schema to San
       Antonio + Hill Country towns (Bulverde, Blanco, Spring Branch, etc.); added a nationwide-
@@ -106,7 +106,9 @@ things that actually gate running the business. Roughly by priority:
 - [ ] **PayPal.me handle** — still `REPLACE_WITH_PAYPAL_ME_HANDLE` in `site.ts` (invoice pay link).
 - [ ] **Business formation / DBA + insurance** — LLC vs. sole prop, DBA if "Kulworks" isn't
       your legal name, and general/product liability insurance. (Real-world, not the site.)
-- [ ] **Terms of Service page** — you have Privacy; add a ToS since you take payments/quotes.
+- [x] **Terms of Service page** — DONE. `/terms` (footer-linked) covering quotes/payment,
+      artwork & IP rights, proofs/approval, custom-goods refunds, liability cap, Texas governing
+      law. Solid template — worth an attorney's once-over before you rely on it.
 - [ ] **PO box / mailing address** — required in newsletter footers (CAN-SPAM) before real sends.
 
 **Get found / measure (post-launch):**
@@ -129,11 +131,13 @@ things that actually gate running the business. Roughly by priority:
       `npm run google:auth` once to rotate to a never-shared token (low urgency).
 
 **On-site polish (code — small, in our control):**
-- [ ] **OG share image** — `public/images/og-default.png` (1200×630) still missing (404s in
-      social previews + schema image).
-- [ ] **Custom 404 page** — public site has no `not-found.tsx`; falls back to Next's default.
-- [ ] **Security headers** — `next.config.mjs` sets none; add HSTS, X-Frame-Options,
-      X-Content-Type-Options, Referrer-Policy (and consider a CSP).
+- [x] **OG share image** — DONE (branded `og-default.png`, `npm run og`).
+- [x] **Custom 404 page** — DONE (`src/app/not-found.tsx`, on-brand with links back).
+- [x] **Security headers** — DONE (`next.config.mjs` sets HSTS, X-Frame-Options,
+      X-Content-Type-Options, Referrer-Policy, Permissions-Policy). CSP still deferred (needs
+      nonces/hashes for the inline theme-init script + JSON-LD — a wrong CSP breaks the site).
+- [ ] **Content-Security-Policy** — the one on-site item left: add a CSP with per-route
+      nonces/hashes. Deferred because a wrong CSP silently breaks the theme + JSON-LD.
 - [ ] **Image optimization** — `images.unoptimized: true`; logo PNG is oversized. Revisit for
       Core Web Vitals once real photos land.
 

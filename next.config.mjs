@@ -18,6 +18,29 @@ const nextConfig = {
 
   // Emit /about/index.html style URLs — keeps existing trailing-slash URLs stable.
   trailingSlash: true,
+
+  // Baseline security headers on every response. (A strict Content-Security-Policy is
+  // intentionally NOT set here yet — it needs per-route nonces/hashes for the inline
+  // theme-init script + JSON-LD, and a wrong CSP silently breaks the site. Tracked in TODO.)
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Force HTTPS for 2 years, including subdomains.
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+          // Don't let browsers MIME-sniff responses.
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Disallow the site being framed by other origins (clickjacking).
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // Send only the origin on cross-origin navigations.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Lock down powerful browser features we don't use.
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

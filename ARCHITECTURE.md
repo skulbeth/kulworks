@@ -27,6 +27,8 @@ updated as the system changes.
 | `/who-its-for` | `who-its-for/page.tsx` | Audience page |
 | `/contact` | `contact/page.tsx` | **Quote form** (`components/ContactForm.tsx`) |
 | `/privacy` | `privacy/page.tsx` | Privacy policy |
+| `/terms` | `terms/page.tsx` | Terms of Service |
+| (404) | `not-found.tsx` | Custom "page not found" |
 | `/sitemap.xml`, `/robots.txt`, `/icon.svg` | `sitemap.ts`, `robots.ts`, `icon.svg` | SEO |
 
 Marketing chrome (Header/Footer) is applied by `components/SiteFrame.tsx`, which also
