@@ -157,6 +157,10 @@ model Project {
   invoices    Invoice[]
   deletedAt   DateTime? // soft delete — archived, never hard-deleted
 
+  // Google Calendar sync — ids of the all-day events pushed to the Kulworks calendar
+  dueEventId      String? // event for `dueDate`
+  deliveryEventId String? // event for `deliveryDate`
+
   @@index([stage])
   @@index([dueDate])
   @@index([createdAt])
@@ -215,10 +219,11 @@ model Activity {
   author    Profile? @relation(fields: [authorId], references: [id])
   authorId  String?
 
-  // For future auto-reminders / Google Calendar sync
-  remindAt  DateTime?
-  done      Boolean   @default(false)
-  deletedAt DateTime? // soft delete — archived, never hard-deleted
+  // Auto-reminders / Google Calendar sync
+  remindAt        DateTime?
+  done            Boolean   @default(false)
+  calendarEventId String? // Google Calendar event id, when this reminder is synced
+  deletedAt       DateTime? // soft delete — archived, never hard-deleted
 
   @@index([occurredAt])
   @@index([remindAt])

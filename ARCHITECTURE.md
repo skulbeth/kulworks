@@ -82,9 +82,9 @@ the important ones).
 | `Profile` | Admin users (id = Supabase auth id) + role (OWNER/STAFF), `phone`, `deactivatedAt` (soft-off), `twoFactorEnabled` |
 | `Client` | CRM contact (name, email, phone, company, address, notes) |
 | `Submission` | Raw quote request (+ phone, sessionId, driveFolderUrl, status) |
-| `Project` | Tracked job — pipeline stage, specs, costs, dates, shipping |
+| `Project` | Tracked job — pipeline stage, specs, costs, dates, shipping; `dueEventId`/`deliveryEventId` (Google Calendar) |
 | `Payment` | Itemized payments per project (amount + method) |
-| `Activity` | Timeline: notes, emails-sent, calls, status changes, reminders (`remindAt`, `done`) |
+| `Activity` | Timeline: notes, emails-sent, calls, status changes, reminders (`remindAt`, `done`, `calendarEventId`) |
 | `Subscriber` | Newsletter list (+ `resendContactId`) |
 | `PageView` | Analytics (path, referrer, geo, device, sessionId) |
 | `RateLimit` | Sliding-window rate-limit hits |
@@ -106,7 +106,8 @@ Migrations are versioned in `prisma/migrations/` (committed).
 | **Two-factor auth** | Admin 2FA — authenticator app (Supabase MFA/TOTP) or emailed 6-digit code (via Resend); signed session cookie | *(no new env — cookie signed with `SUPABASE_SECRET_KEY`)* | `lib/two-factor.ts`, `admin/login/_actions.ts`, `_components/TwoFactorSetup.tsx` |
 | **Resend** | All email (notifications, confirmations, reminders, backups, newsletter, admin sends) from `contact@kulworks.com` | `RESEND_API_KEY`, `RESEND_FROM`, `QUOTE_NOTIFY_EMAIL`, `RESEND_AUDIENCE_ID` | `lib/email.ts` |
 | **Cloudflare Turnstile** | Bot protection on public forms | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | `lib/turnstile.ts`, `components/TurnstileWidget.tsx` |
-| **Google Drive** | Auto-create shared artwork folders | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GOOGLE_DRIVE_PARENT_FOLDER_ID` | `lib/google-drive.ts`, `scripts/google-auth.mjs` |
+| **Google Drive** | Auto-create shared artwork folders | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GOOGLE_DRIVE_PARENT_FOLDER_ID` | `lib/google-oauth.ts` (shared token), `lib/google-drive.ts`, `scripts/google-auth.mjs` |
+| **Google Calendar** | Push project due/delivery dates + reminders (incl. auto 3-day-before) onto a dedicated **Kulworks** calendar as all-day events (one-way, app→calendar; best-effort — never blocks a save) | `GOOGLE_CALENDAR_ID` (+ shared Google OAuth vars above; refresh token needs the Calendar scope) | `lib/google-calendar.ts`, `lib/google-oauth.ts`, `scripts/google-calendar-setup.mjs`, `scripts/calendar-backfill.mjs`, wired in `admin/(portal)/_actions.ts` |
 | **Vercel Cron** | Scheduled reminders + backup | `CRON_SECRET` | `vercel.json` |
 | **Carrier SMS gateway** | Free "new lead" text ping | `NOTIFY_SMS` (e.g. `210…@vtext.com`) | in `/api/quote` |
 | **Squarespace** | Domain + DNS (email forwarding, Resend + Vercel DNS records) | — | (external — Squarespace dashboard) |
@@ -137,7 +138,9 @@ Testing mode), Vercel, Squarespace (domain).
 | `npm run db:verify` | DB connection check |
 | `npm run admin:create -- <email> <pw> ["Name"]` | Create/update an admin login |
 | `npm run admin:check -- <email> <pw>` | Test a login |
-| `npm run google:auth` | One-time Google authorize → refresh token |
+| `npm run google:auth` | One-time Google authorize (Drive + Calendar scopes) → refresh token |
+| `npm run google:calendar` | Find-or-create the "Kulworks" calendar → prints `GOOGLE_CALENDAR_ID` |
+| `npm run calendar:backfill` | Push existing projects' dates + open reminders onto the calendar (safe to re-run) |
 | `npm run email:test` | Send a test email |
 | `node scripts/smoke-test.mjs` (dev server up) | Full smoke suite (21+ checks) |
 | other `scripts/verify-*.mjs`, `test-drive`, `resend-setup`, `db-inspect`, `cleanup-live-test`, `check-real-visits` | One-off verifications |
@@ -151,6 +154,7 @@ Testing mode), Vercel, Squarespace (domain).
 - **No emails arriving** → Resend dashboard (Logs); verify `RESEND_*` env vars; confirm `kulworks.com` domain still verified in Resend.
 - **Bot challenge blocking real users** → Turnstile keys in Vercel; Cloudflare Turnstile dashboard.
 - **Drive folders not creating** → `GOOGLE_*` env vars; Google Cloud OAuth app still in Testing with Sam as test user; refresh token may need re-issuing (`npm run google:auth`).
+- **Calendar events not appearing** → `GOOGLE_CALENDAR_ID` set in Vercel? Refresh token must include the Calendar scope — if it predates the scope add, re-run `npm run google:auth` and update `GOOGLE_REFRESH_TOKEN`. Sync is best-effort: check server logs (`[calendar] …`) / Team → System errors. Events only sync for dates/reminders saved *after* setup — run `npm run calendar:backfill` for existing ones.
 - **No reminder/backup emails** → `CRON_SECRET` in Vercel; Vercel → Cron tab (Hobby plan cron limits).
 - **No SMS ping** → `NOTIFY_SMS` in Vercel; carrier gateways are best-effort.
 - **Locked out of admin** → use "Forgot password?" on the login page, or `npm run admin:create` to reset. **2FA lockout:** Supabase dashboard → Authentication → the user → remove the MFA factor, and/or set that `Profile.twoFactorEnabled = false` (re-enables password-only login).

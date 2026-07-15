@@ -1,34 +1,16 @@
 // Google Drive integration: create a shared folder for a client's files and return
 // its link. No-op (returns null) unless GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN are set.
 // Uses the Drive REST API directly (no heavy googleapis dependency).
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
+import { googleConfigured, getGoogleAccessToken } from "@/lib/google-oauth";
+
 const PARENT = process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID;
 
 export function driveConfigured(): boolean {
-  return !!(CLIENT_ID && CLIENT_SECRET && REFRESH_TOKEN);
+  return googleConfigured();
 }
 
 async function getAccessToken(): Promise<string | null> {
-  if (!driveConfigured()) return null;
-  try {
-    const res = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: CLIENT_ID!,
-        client_secret: CLIENT_SECRET!,
-        refresh_token: REFRESH_TOKEN!,
-        grant_type: "refresh_token",
-      }),
-    });
-    const data = (await res.json()) as { access_token?: string };
-    return data.access_token ?? null;
-  } catch (e) {
-    console.error("[drive] token refresh failed:", e);
-    return null;
-  }
+  return getGoogleAccessToken();
 }
 
 // Creates a folder (optionally under PARENT), makes it shareable by link (editor so the

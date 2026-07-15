@@ -1,11 +1,17 @@
-// One-time Google authorize: gets a refresh token so the app can create Drive folders.
+// One-time Google authorize: gets a refresh token so the app can create Drive folders
+// AND manage the Kulworks calendar.
 // Run: npm run google:auth  → open the printed URL, click Allow → it prints the token.
+// (If you authorized before the Calendar scope was added, re-run this and paste the new
+// GOOGLE_REFRESH_TOKEN into .env.local + Vercel so calendar sync can write events.)
 import http from "node:http";
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const REDIRECT = "http://localhost:5055/oauth2callback";
-const SCOPE = "https://www.googleapis.com/auth/drive.file";
+const SCOPE = [
+  "https://www.googleapis.com/auth/drive.file", // create/manage client artwork folders
+  "https://www.googleapis.com/auth/calendar", // create the Kulworks calendar + manage events
+].join(" ");
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
   console.error("❌ Set GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in .env.local first.");

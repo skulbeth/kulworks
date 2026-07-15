@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
 import { resend, FROM, sendMail } from "@/lib/email";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
+import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TWOFA_COOKIE, COOKIE_TTL_MS, signSession } from "@/lib/two-factor";
 import { computeTotals, docLabel } from "@/lib/invoice";
@@ -61,19 +62,31 @@ const REMINDER_LEAD_DAYS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 async function syncAutoReminder(projectId: string, title: string, dueDate: Date | null) {
-  // Clear any existing auto-reminder for this project, then recreate if there's a due date.
+  // Clear any existing auto-reminder for this project (and its calendar event), then
+  // recreate if there's a due date.
+  const existing = await prisma.activity.findMany({
+    where: { projectId, type: "REMINDER", body: { startsWith: AUTO_TAG } },
+    select: { calendarEventId: true },
+  });
+  await Promise.all(existing.map((a) => deleteEvent(a.calendarEventId)));
   await prisma.activity.deleteMany({
     where: { projectId, type: "REMINDER", body: { startsWith: AUTO_TAG } },
   });
   if (!dueDate) return;
-  await prisma.activity.create({
-    data: {
-      type: "REMINDER",
-      body: `${AUTO_TAG} "${title}" is due ${dueDate.toLocaleDateString("en-US")}`,
-      remindAt: new Date(dueDate.getTime() - REMINDER_LEAD_DAYS * DAY_MS),
-      projectId,
-    },
+  const body = `${AUTO_TAG} "${title}" is due ${dueDate.toLocaleDateString("en-US")}`;
+  const remindAt = new Date(dueDate.getTime() - REMINDER_LEAD_DAYS * DAY_MS);
+  const activity = await prisma.activity.create({
+    data: { type: "REMINDER", body, remindAt, projectId },
   });
+  const calendarEventId = await syncReminderEvent({
+    body,
+    remindAt,
+    done: false,
+    calendarEventId: null,
+  });
+  if (calendarEventId) {
+    await prisma.activity.update({ where: { id: activity.id }, data: { calendarEventId } });
+  }
 }
 
 function revalidateAdmin() {
@@ -145,7 +158,11 @@ export async function updateProject(formData: FormData) {
   const stage = s(formData, "stage");
   const dueDate = date(formData, "dueDate");
   const title = s(formData, "title") ?? "Untitled project";
-  const existing = await prisma.project.findUnique({ where: { id }, select: { stage: true } });
+  const deliveryDate = date(formData, "deliveryDate");
+  const existing = await prisma.project.findUnique({
+    where: { id },
+    select: { stage: true, dueEventId: true, deliveryEventId: true },
+  });
 
   await prisma.project.update({
     where: { id },
@@ -165,7 +182,7 @@ export async function updateProject(formData: FormData) {
       devHours: num(formData, "devHours"),
       dueDate,
       startDate: date(formData, "startDate"),
-      deliveryDate: date(formData, "deliveryDate"),
+      deliveryDate,
       shipStreet: s(formData, "shipStreet"),
       shipCity: s(formData, "shipCity"),
       shipState: s(formData, "shipState"),
@@ -186,7 +203,18 @@ export async function updateProject(formData: FormData) {
     });
   }
 
-  // Keep the due-date auto-reminder in sync.
+  // Push the due + delivery dates to the Kulworks calendar (best-effort), persisting the
+  // event ids so later edits update the same events.
+  const { dueEventId, deliveryEventId } = await syncProjectEvents({
+    title,
+    dueDate,
+    deliveryDate,
+    dueEventId: existing?.dueEventId ?? null,
+    deliveryEventId: existing?.deliveryEventId ?? null,
+  });
+  await prisma.project.update({ where: { id }, data: { dueEventId, deliveryEventId } });
+
+  // Keep the due-date auto-reminder (and its calendar event) in sync.
   await syncAutoReminder(id, title, dueDate);
 
   await logAudit(profile.email, "update.project", title);
@@ -281,7 +309,7 @@ export async function addReminder(formData: FormData) {
   const remindAt = date(formData, "remindAt");
   const body = s(formData, "body");
   if (!remindAt || !body) return;
-  await prisma.activity.create({
+  const activity = await prisma.activity.create({
     data: {
       type: "REMINDER",
       body,
@@ -291,6 +319,10 @@ export async function addReminder(formData: FormData) {
       authorId: profile.id,
     },
   });
+  const calendarEventId = await syncReminderEvent({ body, remindAt, done: false, calendarEventId: null });
+  if (calendarEventId) {
+    await prisma.activity.update({ where: { id: activity.id }, data: { calendarEventId } });
+  }
   revalidateAdmin();
 }
 
@@ -298,7 +330,13 @@ export async function completeReminder(formData: FormData) {
   await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
-  await prisma.activity.update({ where: { id }, data: { done: true } });
+  // Done reminders come off the calendar.
+  const existing = await prisma.activity.findUnique({
+    where: { id },
+    select: { calendarEventId: true },
+  });
+  await deleteEvent(existing?.calendarEventId);
+  await prisma.activity.update({ where: { id }, data: { done: true, calendarEventId: null } });
   revalidateAdmin();
 }
 
@@ -316,7 +354,15 @@ export async function deleteActivity(formData: FormData) {
   await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
-  await prisma.activity.update({ where: { id }, data: { deletedAt: new Date() } });
+  const existing = await prisma.activity.findUnique({
+    where: { id },
+    select: { calendarEventId: true },
+  });
+  await deleteEvent(existing?.calendarEventId);
+  await prisma.activity.update({
+    where: { id },
+    data: { deletedAt: new Date(), calendarEventId: null },
+  });
   revalidateAdmin();
 }
 
@@ -325,12 +371,32 @@ export async function deleteProject(formData: FormData) {
   const id = s(formData, "id");
   if (!id) return;
   const now = new Date();
+  // Remove this project's calendar events (project dates + any reminders) before archiving.
+  const proj = await prisma.project.findUnique({
+    where: { id },
+    select: { dueEventId: true, deliveryEventId: true },
+  });
+  const reminders = await prisma.activity.findMany({
+    where: { projectId: id, calendarEventId: { not: null } },
+    select: { calendarEventId: true },
+  });
+  await Promise.all([
+    deleteEvent(proj?.dueEventId),
+    deleteEvent(proj?.deliveryEventId),
+    ...reminders.map((r) => deleteEvent(r.calendarEventId)),
+  ]);
   // Archive the project + its payments & activities; unlink submissions so they can
   // be re-converted. Nothing is hard-deleted.
   await prisma.payment.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
-  await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
+  await prisma.activity.updateMany({
+    where: { projectId: id },
+    data: { deletedAt: now, calendarEventId: null },
+  });
   await prisma.submission.updateMany({ where: { projectId: id }, data: { projectId: null } });
-  await prisma.project.update({ where: { id }, data: { deletedAt: now } });
+  await prisma.project.update({
+    where: { id },
+    data: { deletedAt: now, dueEventId: null, deliveryEventId: null },
+  });
   await logAudit(profile.email, "archive.project", id);
   revalidateAdmin();
   redirect("/admin/projects/");
@@ -353,6 +419,24 @@ export async function restoreProject(formData: FormData) {
   await prisma.project.update({ where: { id }, data: { deletedAt: null } });
   await prisma.payment.updateMany({ where: { projectId: id }, data: { deletedAt: null } });
   await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: null } });
+
+  // Re-push the project's calendar events (removed on archive), then rebuild the auto-reminder.
+  const proj = await prisma.project.findUnique({
+    where: { id },
+    select: { title: true, dueDate: true, deliveryDate: true },
+  });
+  if (proj) {
+    const { dueEventId, deliveryEventId } = await syncProjectEvents({
+      title: proj.title,
+      dueDate: proj.dueDate,
+      deliveryDate: proj.deliveryDate,
+      dueEventId: null,
+      deliveryEventId: null,
+    });
+    await prisma.project.update({ where: { id }, data: { dueEventId, deliveryEventId } });
+    await syncAutoReminder(id, proj.title, proj.dueDate);
+  }
+
   await logAudit(profile.email, "restore.project", id);
   revalidateAdmin();
 }
