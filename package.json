@@ -21,7 +21,8 @@
     "email:test": "dotenv -e .env.local -- node scripts/test-email.mjs",
     "google:auth": "dotenv -e .env.local -- node scripts/google-auth.mjs",
     "google:calendar": "dotenv -e .env.local -- node scripts/google-calendar-setup.mjs",
-    "calendar:backfill": "dotenv -e .env.local -- node scripts/calendar-backfill.mjs"
+    "calendar:backfill": "dotenv -e .env.local -- node scripts/calendar-backfill.mjs",
+    "e2e": "dotenv -e .env.local -- node scripts/e2e-smoke.mjs"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.5.3",
