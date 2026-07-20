@@ -12,20 +12,19 @@ coming-soon gate (`constructionMode: true`). See the ✅ items below for everyth
 
 **Roadmap order (Sam, 2026-07-03):** (1) 2FA method choice app-or-email ✅ SHIPPED →
 (2) #10 Quotes & Invoices (Venmo + PayPal) ✅ SHIPPED → (3) Newsletter v2 →
-(4) Google Calendar ✅ BUILT (needs one-time OAuth setup — see below) →
+(4) Google Calendar ✅ SHIPPED + LIVE (OAuth setup done 2026-07-15) →
 (5) **Real site content + photos** (copy, portfolio/service images) ← *next* → then flip
 construction mode off to launch.
 
 **Next up:** **Real site content + photos** (roadmap #5) — copy proofread, portfolio/service
 images, address/socials in `site.ts`. Newsletter v2 (#11) remains available if preferred.
+Remaining non-code launch work is tracked in "Beyond code — business/ops gaps" below.
 
-**⚠️ Google Calendar — one-time setup Sam must do (code is shipped):**
-1. `npm run google:auth` → click Allow (now also grants the **Calendar** scope) → copy the
-   printed `GOOGLE_REFRESH_TOKEN` into `.env.local` **and** Vercel (replaces the old one).
-2. `npm run google:calendar` → creates the "Kulworks" calendar → copy the printed
-   `GOOGLE_CALENDAR_ID` into `.env.local` **and** Vercel.
-3. Redeploy. New/edited project dates + reminders now sync automatically. Run
-   `npm run calendar:backfill` once to push the projects/reminders that already exist.
+**Google Calendar — setup complete (2026-07-15).** OAuth app published to Production (so
+refresh tokens don't expire), Calendar API enabled, `GOOGLE_REFRESH_TOKEN` + `GOOGLE_CALENDAR_ID`
+set in `.env.local` + Vercel. Verified live via `npm run e2e` (26/26). Project dates + reminders
+now sync automatically to the "Kulworks" calendar. (If ever re-doing on a new Google project:
+`npm run google:auth` → `npm run google:calendar` → set both env vars → `npm run calendar:backfill`.)
 
 **To run locally on a fresh clone:**
 1. `npm install`
@@ -193,12 +192,12 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 - [x] **Reminders (notify me)** — DONE. `/api/cron/reminders` (secret-protected) emails Sam
       a daily digest of due/overdue reminders; `vercel.json` runs it daily at 13:00 UTC.
       (Cron only fires once deployed to Vercel.)
-- [x] **Google Calendar integration** — BUILT. One-way push to a dedicated **Kulworks**
-      calendar: project due + delivery dates and reminders (incl. the auto 3-day-before) sync
-      as all-day events; edits/deletes in the app update/remove the same events (event ids
+- [x] **Google Calendar integration** — SHIPPED + LIVE (2026-07-15). One-way push to a dedicated
+      **Kulworks** calendar: project due + delivery dates and reminders (incl. the auto 3-day-before)
+      sync as all-day events; edits/deletes in the app update/remove the same events (event ids
       stored on Project/Activity). Best-effort (never blocks a save). `lib/google-calendar.ts`,
-      `scripts/google-calendar-setup.mjs`, `scripts/calendar-backfill.mjs`. **Needs Sam's
-      one-time OAuth setup** — see "Resume here" above.
+      `scripts/google-calendar-setup.mjs`, `scripts/calendar-backfill.mjs`. OAuth setup done +
+      verified live (26/26 e2e).
 - [ ] **File storage for client artwork** — uploads instead of just a link/Drive checkbox.
 
 ## 📨 Newsletter / marketing email (also via Resend — no extra service)
@@ -272,13 +271,13 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 - [x] **9. Error monitoring** — server errors captured to a DB ErrorLog, shown on the Team page. Live.
 
 **Tier 3 — bigger**
-- [ ] **10. Quote & invoice generation** *(NEXT — DISCUSS FIRST)* — build a quote/invoice in
-      admin → email it. Sam wants **auto-send invoice** with **PayPal + Venmo** pay links
-      (Square/Zelle also possible) — likely payment *links/requests*, not embedded checkout.
-      Decisions needed: quote-then-invoice vs. just-invoices; auto-email with pay link.
+- [x] **10. Quote & invoice generation** — SHIPPED. Line-item quotes/invoices in admin, a
+      client-facing page at `/invoice/[token]`, and PayPal/Venmo/Zelle pay links (see
+      `Invoice`/`InvoiceItem` models + `InvoiceEditor`). Only loose end: the PayPal.me handle
+      placeholder in `site.ts` (listed under launch blockers).
 - [ ] **11. Newsletter v2** — segmentation/tags, images, sent-log, open/click stats (scoped above).
 - [x] **12. Google Calendar sync** — due/delivery dates + reminders → dedicated "Kulworks"
-      calendar (one-way push). BUILT; needs Sam's one-time OAuth setup (see "Resume here").
+      calendar (one-way push). SHIPPED + LIVE (OAuth done, verified 26/26 e2e).
 - [x] **13. Scheduled data backup/export** — weekly `/api/cron/backup` emails a JSON backup +
       on-demand download on the Team page. Live.
 
