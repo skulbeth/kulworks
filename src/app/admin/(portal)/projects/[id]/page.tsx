@@ -280,7 +280,7 @@ export default async function ProjectDetailPage({
             + New quote or invoice
           </summary>
           <div className="mt-3 border-t border-border pt-3">
-            <InvoiceEditor projectId={project.id} defaultTaxRate={site.payments.defaultTaxRate} />
+            <InvoiceEditor projectId={project.id} defaultServiceCharge={site.payments.defaultServiceCharge} />
           </div>
         </details>
       </section>

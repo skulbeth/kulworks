@@ -313,7 +313,7 @@ model Invoice {
   projectId String
   client    Client        @relation(fields: [clientId], references: [id])
   clientId  String
-  taxRate   Float         @default(0) // percent, e.g. 8.25
+  taxRate   Float         @default(0) // service-charge percent (e.g. 9). Column name kept for history; it is NOT sales tax.
   notes     String? // shown on the document (terms, thank-you, etc.)
   dueDate   DateTime?
   issuedAt  DateTime? // when it was sent

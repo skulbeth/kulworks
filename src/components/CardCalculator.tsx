@@ -24,7 +24,7 @@ const LAYOUT_FEE = 40; // per layout we design (front or back); each is a templa
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
 const SLEEVE_PER_100: Record<string, number> = { standard: 10, premium: 15 };
-const TAX_RATE = 0.0825; // San Antonio sales tax
+const SERVICE_CHARGE_RATE = 0.09; // flat service charge added to estimates + invoices
 
 const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -64,8 +64,8 @@ export default function CardCalculator() {
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
   const subtotal = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost;
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + tax;
+  const serviceCharge = subtotal * SERVICE_CHARGE_RATE;
+  const total = subtotal + serviceCharge;
 
   // Hand the configured estimate to the quote form (prefills type + details).
   const quoteTypes = layoutCount > 0 ? "card-printing,card-design" : "card-printing";
@@ -79,7 +79,7 @@ export default function CardCalculator() {
     addBox ? "- Custom 3D-printed box: yes" : "- Custom box: no",
     sleeves !== "none" ? `- Sleeves: ${sleeves}` : "- Sleeves: none",
     bulkRate > 0 ? `- Bulk discount applied: ${Math.round(bulkRate * 100)}%` : null,
-    `- Estimated total (incl. 8.25% tax): ${usd(total)}`,
+    `- Estimated total (incl. 9% service charge): ${usd(total)}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -234,8 +234,8 @@ export default function CardCalculator() {
             <span className="font-semibold text-foreground">{usd(subtotal)}</span>
           </div>
           <div className="flex justify-between gap-4 text-muted">
-            <span>Estimated tax (8.25%)</span>
-            <span className="font-semibold text-foreground">{usd(tax)}</span>
+            <span>Service charge (9%)</span>
+            <span className="font-semibold text-foreground">{usd(serviceCharge)}</span>
           </div>
         </div>
 
@@ -247,7 +247,7 @@ export default function CardCalculator() {
         </a>
 
         <p className="mt-auto pt-5 text-xs text-muted/70">
-          Production subtotal plus estimated 8.25% sales tax. Shipping and any local
+          Production subtotal plus a 9% service charge. Shipping and any local
           delivery are not included and may vary. Cards come with rounded corners. Final
           pricing depends on files, finishing, and quantity, so send your project for an
           exact quote.

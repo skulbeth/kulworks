@@ -11,20 +11,21 @@ type Row = { description: string; quantity: string; unitPrice: string };
 // the createInvoiceDoc server action (line items go up as parallel itemDesc/Qty/Price arrays).
 export default function InvoiceEditor({
   projectId,
-  defaultTaxRate,
+  defaultServiceCharge,
 }: {
   projectId: string;
-  defaultTaxRate: number;
+  defaultServiceCharge: number;
 }) {
   const [type, setType] = useState<"INVOICE" | "QUOTE">("INVOICE");
-  const [taxRate, setTaxRate] = useState(String(defaultTaxRate));
+  // Stored per-invoice in the `taxRate` column (name kept for history); it's the service-charge %.
+  const [rate, setRate] = useState(String(defaultServiceCharge));
   const [rows, setRows] = useState<Row[]>([{ description: "", quantity: "1", unitPrice: "" }]);
 
   const numeric = rows.map((r) => ({
     quantity: Number(r.quantity) || 0,
     unitPrice: Number(r.unitPrice) || 0,
   }));
-  const { subtotal, tax, total } = computeTotals(numeric, Number(taxRate) || 0);
+  const { subtotal, serviceCharge, total } = computeTotals(numeric, Number(rate) || 0);
 
   const setRow = (i: number, key: keyof Row, val: string) =>
     setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [key]: val } : r)));
@@ -50,11 +51,11 @@ export default function InvoiceEditor({
           <option value="QUOTE">Quote (estimate)</option>
         </select>
         <label className="text-xs text-muted">
-          Tax %
+          Service charge %
           <input
             name="taxRate"
-            value={taxRate}
-            onChange={(e) => setTaxRate(e.target.value)}
+            value={rate}
+            onChange={(e) => setRate(e.target.value)}
             inputMode="decimal"
             className={`ml-1 w-20 ${field}`}
           />
@@ -118,7 +119,7 @@ export default function InvoiceEditor({
 
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
         <div className="text-sm text-muted">
-          Subtotal {fmtMoney(subtotal)} · Tax {fmtMoney(tax)} ·{" "}
+          Subtotal {fmtMoney(subtotal)} · Service charge {fmtMoney(serviceCharge)} ·{" "}
           <span className="font-bold text-foreground">Total {fmtMoney(total)}</span>
         </div>
         <button className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover">

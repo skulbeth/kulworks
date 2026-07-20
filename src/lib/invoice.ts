@@ -7,12 +7,14 @@ export function lineAmount(it: LineLike): number {
   return Math.round(it.quantity * it.unitPrice * 100) / 100;
 }
 
-/** Subtotal / tax / total for a set of line items at a given tax rate (percent). */
-export function computeTotals(items: LineLike[], taxRate: number) {
+/** Subtotal / service charge / total for a set of line items at a given rate (percent).
+ *  (The `rate` is stored per-invoice in `Invoice.taxRate` — kept that column name for
+ *  history; it now represents the flat service-charge percent, not sales tax.) */
+export function computeTotals(items: LineLike[], rate: number) {
   const subtotal = Math.round(items.reduce((s, it) => s + lineAmount(it), 0) * 100) / 100;
-  const tax = Math.round(subtotal * (taxRate / 100) * 100) / 100;
-  const total = Math.round((subtotal + tax) * 100) / 100;
-  return { subtotal, tax, total };
+  const serviceCharge = Math.round(subtotal * (rate / 100) * 100) / 100;
+  const total = Math.round((subtotal + serviceCharge) * 100) / 100;
+  return { subtotal, serviceCharge, total };
 }
 
 export function docLabel(type: "QUOTE" | "INVOICE"): string {

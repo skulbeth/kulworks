@@ -21,7 +21,7 @@ export default async function InvoiceViewPage({
   });
   if (!inv || inv.deletedAt) notFound();
 
-  const { subtotal, tax, total } = computeTotals(inv.items, inv.taxRate);
+  const { subtotal, serviceCharge, total } = computeTotals(inv.items, inv.taxRate);
   const isInvoice = inv.type === "INVOICE";
   const label = docLabel(inv.type);
   const pay = paymentConfig();
@@ -103,7 +103,7 @@ export default async function InvoiceViewPage({
         <div className="mt-4 ml-auto max-w-xs space-y-1 text-sm">
           <div className="flex justify-between"><span className="text-muted">Subtotal</span><span className="tabular-nums">{fmtMoney(subtotal)}</span></div>
           {inv.taxRate > 0 && (
-            <div className="flex justify-between"><span className="text-muted">Tax ({inv.taxRate}%)</span><span className="tabular-nums">{fmtMoney(tax)}</span></div>
+            <div className="flex justify-between"><span className="text-muted">Service charge ({inv.taxRate}%)</span><span className="tabular-nums">{fmtMoney(serviceCharge)}</span></div>
           )}
           <div className="flex justify-between border-t border-border pt-1 text-base font-bold">
             <span>Total</span><span className="tabular-nums">{fmtMoney(total)}</span>

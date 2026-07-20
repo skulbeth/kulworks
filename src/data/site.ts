@@ -101,8 +101,10 @@ export const site = {
     // Zelle recipient — email and/or phone enrolled at your bank. Shown ONLY in the
     // Zelle box on private invoice pages (never on any public/site page).
     zelle: "sam.kulbeth@gmail.com or (210) 577-3064",
-    // Default sales-tax rate applied to new invoices (percent). San Antonio ≈ 8.25%.
-    defaultTaxRate: 8.25,
+    // Flat service charge added to new invoices + the pricing estimate (percent). Replaces a
+    // separate sales-tax line — Sam covers any tax owed out of this margin. See TODO if this
+    // ever needs to become real itemized sales tax again.
+    defaultServiceCharge: 9,
   },
 } as const;
 
