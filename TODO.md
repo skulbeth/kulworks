@@ -123,17 +123,22 @@ things that actually gate running the business. Roughly by priority:
       one (two DMARC records = both ignored). Later, tighten `p=none` → `quarantine` → `reject`
       once all legit senders confirm passing.
 - [ ] **Confirm access to Mailgun + OnDMARC accounts** — inbound mail (MX) routes through
-      **Mailgun** and SPF is `include:mailgun.org`; DMARC reports go to Mailgun/OnDMARC. Make
-      sure Sam controls those logins (they handle receiving @kulworks.com mail).
-- [ ] **Spam-placement test** — send to Gmail/Outlook/Yahoo and confirm mail lands in inbox.
+      **Mailgun** and SPF is `include:mailgun.org`; DMARC reports go to Mailgun/OnDMARC. You DO
+      need inbound working (customer replies to contact@kulworks.com land there). Inbound-forwarding
+      probe sent 2026-07-15 → if it reached your Gmail, forwarding works; still get the Mailgun
+      login so you can manage/not lose it. Try mailgun.com sign-in with kulworksdesign@gmail.com.
+- [x] **Spam-placement test** — test emails sent 2026-07-15 (placement + inbound) via Resend.
+      Auth is in place (DKIM `resend._domainkey`, SPF, DMARC p=none). Sam to eyeball Gmail
+      placement (inbox vs spam/promotions); re-run anytime by sending a real quote to yourself.
 
 **Reliability / ops:**
-- [ ] **Uptime monitoring** — nothing tells you if the site goes down (free: UptimeRobot).
-- [ ] **Error alerting** — errors log to `ErrorLog` (Team page) but nothing emails you; add a
-      heads-up on new errors.
-- [ ] **Domain auto-renew** — confirm `kulworks.com` auto-renews (Squarespace) so it can't lapse.
-- [ ] **Rotate the Google refresh token** — it was pasted into a chat during setup; re-run
-      `npm run google:auth` once to rotate to a never-shared token (low urgency).
+- [x] **Error alerting** — DONE. `logError` now emails `QUOTE_NOTIFY_EMAIL` on new server errors,
+      throttled to at most one every 15 min (`src/lib/log-error.ts`).
+- [x] **Domain auto-renew** — confirmed ON by Sam (2026-07-15).
+- [ ] **Rotate the Google refresh token** — during setup the live token was pasted into chat, so
+      it's technically still "exposed." Re-run `npm run google:auth` once for a never-shared token,
+      then update `GOOGLE_REFRESH_TOKEN` in `.env.local` + Vercel. Low urgency, needs Sam.
+      *(Uptime monitoring: dropped per Sam 2026-07-15.)*
 
 **On-site polish (code — small, in our control):**
 - [x] **OG share image** — DONE (branded `og-default.png`, `npm run og`).
