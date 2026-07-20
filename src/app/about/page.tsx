@@ -36,7 +36,7 @@ export default function AboutPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <div className="grid items-center gap-10 md:grid-cols-2">
-            <Placeholder label="Maker / studio portrait" ratio="aspect-[4/3]" />
+            <Placeholder label="Maker / studio portrait" src="/images/studio/maker-portrait-smiling.webp" alt="The maker behind Kulworks in the studio" ratio="aspect-[4/3]" />
             <div className="space-y-4 text-lg text-muted">
               <p>
                 Kulworks is a San Antonio maker studio. Card printing is what we do most,

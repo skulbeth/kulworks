@@ -81,7 +81,7 @@ export default async function CardSubPage({
                 )}
               </div>
               <div className="space-y-6">
-                <Placeholder label={`${page.navLabel} sample`} ratio="aspect-[4/3]" />
+                <Placeholder label={`${page.navLabel} sample`} src={page.image} alt={`${page.navLabel} — Kulworks`} ratio="aspect-[4/3]" />
                 {page.specs && (
                   <div className="rounded-2xl border border-border bg-surface p-6">
                     <h2 className="text-sm font-bold uppercase tracking-widest text-muted">

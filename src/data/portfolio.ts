@@ -28,19 +28,19 @@ export const portfolioFilters: { id: PortfolioCategory | "all"; label: string }[
 ];
 
 export const portfolio: PortfolioItem[] = [
-  { title: "Custom Poker Deck", category: "cards", alt: "Custom poker deck with branded card backs" },
-  { title: "Game Prototype Deck", category: "cards", alt: "Prototype game card deck" },
+  { title: "Custom Poker Deck", category: "cards", src: "/images/portfolio/cards/role-to-reign-dice-cards-alt.webp", alt: "Custom poker deck with branded card backs" },
+  { title: "Game Prototype Deck", category: "cards", src: "/images/portfolio/cards/role-to-reign-dice-cards.webp", alt: "Prototype game card deck" },
   { title: "Trading-Style Team Cards", category: "cards", alt: "Sports team trading cards" },
-  { title: "Role to Reign Card Set", category: "cards", alt: "Role to Reign game cards" },
-  { title: "UV-Printed Terrain Tiles", category: "tiles", alt: "UV printed board game terrain tiles" },
-  { title: "Modular Board Hexes", category: "tiles", alt: "Modular hex board tiles" },
+  { title: "Role to Reign Card Set", category: "cards", src: "/images/portfolio/cards/character-cards-in-jig.webp", alt: "Role to Reign game cards" },
+  { title: "UV-Printed Terrain Tiles", category: "tiles", src: "/images/portfolio/tiles/terrain-hexes-hero.webp", alt: "UV printed board game terrain tiles" },
+  { title: "Modular Board Hexes", category: "tiles", src: "/images/portfolio/tiles/terrain-hexes-alt.webp", alt: "Modular hex board tiles" },
   { title: "Custom Tokens", category: "tiles", alt: "UV printed custom game tokens" },
   { title: "Functional Prop Print", category: "filament", alt: "FDM printed functional prop" },
   { title: "Replacement Components", category: "filament", alt: "FDM printed replacement game components" },
   { title: "City Upgrade Pieces", category: "filament", alt: "FDM printed city upgrade pieces" },
-  { title: "High-Detail Miniature", category: "resin", alt: "Resin printed high-detail miniature" },
-  { title: "Character Mini Set", category: "resin", alt: "Resin printed character miniatures" },
+  { title: "High-Detail Miniature", category: "resin", src: "/images/portfolio/resin/miniatures-plate-hero.webp", alt: "Resin printed high-detail miniature" },
+  { title: "Character Mini Set", category: "resin", src: "/images/portfolio/resin/miniatures-cure-glow.webp", alt: "Resin printed character miniatures" },
   { title: "Shapr3D Model: Mini Base", category: "design", alt: "3D model of a miniature base designed in Shapr3D" },
-  { title: "Card Layout & Artwork Prep", category: "design", alt: "Card layout and artwork preparation" },
+  { title: "Card Layout & Artwork Prep", category: "design", src: "/images/portfolio/design/card-layout-artwork.webp", alt: "Card layout and artwork preparation" },
   { title: "Tile Artwork Prep", category: "design", alt: "Board tile artwork preparation" },
 ];

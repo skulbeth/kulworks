@@ -93,7 +93,7 @@ export default function ServicesPage() {
                     </a>
                   )}
                 </div>
-                <Placeholder label={`${s.name} sample`} ratio="aspect-[4/3]" />
+                <Placeholder label={`${s.name} sample`} src={s.image} alt={`${s.name} — Kulworks`} ratio="aspect-[4/3]" />
               </div>
             </RevealOnScroll>
           </Container>

@@ -29,6 +29,8 @@ export interface CardPage {
   h1: string;
   intro: string;
   sections: CardPageSection[];
+  /** Optional sample photo (4:3). Placeholder shown if omitted. */
+  image?: string;
   /** Optional spec/option bullets. */
   specs?: string[];
   keywords?: string[];
@@ -52,6 +54,7 @@ export const cardPages: CardPage[] = [
     slug: "poker-cards",
     navLabel: "Poker Size Playing Cards",
     cardBlurb: "Standard-size custom decks for games, clubs, and keepsakes.",
+    image: "/images/portfolio/cards/role-to-reign-dice-cards-alt.webp",
     title: `Poker Size Playing Card Printing in ${CITY}`,
     metaDescription:
       "Poker size playing card printing with your own backs and faces. The standard size, single decks to short runs, made in San Antonio.",
@@ -126,6 +129,7 @@ export const cardPages: CardPage[] = [
     slug: "game-prototypes",
     navLabel: "Game Prototypes",
     cardBlurb: "Fast proto decks so you can test, tweak, and test again.",
+    image: "/images/portfolio/cards/character-cards-in-jig.webp",
     title: `Board Game & Card Prototype Printing in ${CITY}`,
     metaDescription:
       "Print board game and card game prototypes in San Antonio. Fast-turnaround proto decks and short runs so designers can test before a big print run.",
@@ -278,6 +282,7 @@ export const cardPages: CardPage[] = [
     slug: "card-design",
     navLabel: "Card Design & Fast Prototyping",
     cardBlurb: "We design your cards fast and prototype them locally before a run.",
+    image: "/images/portfolio/cards/prototyping-software.webp",
     title: `Custom Card Design & Fast Prototyping in ${CITY}`,
     metaDescription:
       "Custom card design and fast prototyping in San Antonio. We lay out and design your cards quickly, then prototype a deck locally so you can test before a full run.",

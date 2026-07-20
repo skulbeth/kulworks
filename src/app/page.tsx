@@ -20,11 +20,10 @@ export default function HomePage() {
   const otherServices = services.filter((s) => s.id !== leadService.id);
   const audienceHighlights = audiences.slice(0, 6);
 
-  // Swap these for real photos: drop files in /public/images/studio/ and set `src`.
   const studioSlides = [
-    { label: "Studio / workshop photo 1" },
-    { label: "Studio / workshop photo 2" },
-    { label: "Studio / workshop photo 3" },
+    { label: "At the resin printers", src: "/images/studio/working-at-printers.webp", alt: "Working at the resin printers in the Kulworks studio" },
+    { label: "The Kulworks print bench", src: "/images/studio/printer-bench.webp", alt: "The Kulworks resin printing bench" },
+    { label: "Freshly printed miniatures", src: "/images/studio/maker-holding-minis.webp", alt: "Holding a batch of freshly printed resin miniatures" },
   ];
 
   return (
@@ -205,9 +204,9 @@ export default function HomePage() {
             />
           </RevealOnScroll>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <Placeholder label="Custom Poker Deck" />
-            <Placeholder label="UV-Printed Tiles" />
-            <Placeholder label="Resin Miniature" />
+            <Placeholder label="Custom Poker Deck" src="/images/portfolio/cards/character-cards-in-jig.webp" alt="Custom printed game cards" />
+            <Placeholder label="UV-Printed Tiles" src="/images/portfolio/tiles/terrain-hexes-hero.webp" alt="UV-printed board game terrain tiles" />
+            <Placeholder label="Resin Miniature" src="/images/portfolio/resin/miniatures-plate-hero.webp" alt="Resin-printed miniatures on the build plate" />
           </div>
           <div className="mt-8">
             <Button href="/portfolio/" variant="ghost">Browse the full gallery →</Button>

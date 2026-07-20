@@ -22,6 +22,8 @@ export interface Service {
   highlights?: string[];
   /** Emoji used as a lightweight icon placeholder (swap for an SVG/image later). */
   icon: string;
+  /** Optional sample photo shown on the Services page (4:3). Placeholder shown if omitted. */
+  image?: string;
   /** Set true for the lead service (gets extra prominence). */
   lead?: boolean;
   /** Optional outbound link shown on the Services page (e.g. a portfolio profile). */
@@ -46,6 +48,7 @@ export const services: Service[] = [
       "Card design at conventions, with quick turnaround and delivery, sometimes next day",
     ],
     icon: "🃏",
+    image: "/images/portfolio/cards/character-cards-in-jig.webp",
     lead: true,
   },
   {
@@ -63,6 +66,7 @@ export const services: Service[] = [
       "Bring your artwork or let us prep it for you",
     ],
     icon: "🟧",
+    image: "/images/portfolio/tiles/terrain-hexes-hero.webp",
   },
   {
     id: "fdm",
@@ -95,6 +99,7 @@ export const services: Service[] = [
       "Single pieces or small batches",
     ],
     icon: "🐉",
+    image: "/images/portfolio/resin/miniatures-plate-hero.webp",
   },
   {
     id: "design",
@@ -111,6 +116,7 @@ export const services: Service[] = [
       "Keeps evolving as your game develops and grows",
     ],
     icon: "✏️",
+    image: "/images/portfolio/design/card-layout-artwork.webp",
     link: { label: "See my models on MakerWorld", href: "https://makerworld.com/en/@skulbeth" },
   },
 ];
