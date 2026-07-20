@@ -112,7 +112,8 @@ Migrations are versioned in `prisma/migrations/` (committed).
 | **Google Calendar** | Push project due/delivery dates + reminders (incl. auto 3-day-before) onto a dedicated **Kulworks** calendar as all-day events (one-way, app→calendar; best-effort — never blocks a save) | `GOOGLE_CALENDAR_ID` (+ shared Google OAuth vars above; refresh token needs the Calendar scope) | `lib/google-calendar.ts`, `lib/google-oauth.ts`, `scripts/google-calendar-setup.mjs`, `scripts/calendar-backfill.mjs`, wired in `admin/(portal)/_actions.ts` |
 | **Vercel Cron** | Scheduled reminders + backup | `CRON_SECRET` | `vercel.json` |
 | **Carrier SMS gateway** | Free "new lead" text ping | `NOTIFY_SMS` (e.g. `210…@vtext.com`) | in `/api/quote` |
-| **Squarespace** | Domain + DNS (email forwarding, Resend + Vercel DNS records) | — | (external — Squarespace dashboard) |
+| **Squarespace** | Domain registrar + **DNS host** (all records: MX, SPF, DKIM, DMARC, Vercel) | — | (external — Squarespace dashboard) |
+| **Mailgun + OnDMARC** | **Inbound email** (MX → `mx*.mailgun.org`), root SPF (`include:mailgun.org`), and the live **DMARC** record (`p=none`, reports → Mailgun/OnDMARC). NOTE: this is the real inbound path — NOT Squarespace's built-in email forwarding. Confirm account access. | — | (external — Mailgun / OnDMARC dashboards) |
 | **Vercel** | Hosting + prod env vars | (all of the above) | `vercel.json`, `next.config.mjs` |
 | **Gmail "Send as"** | Sam replies as `contact@kulworks.com` (via Resend SMTP) | — | (external — Gmail settings) |
 
@@ -153,7 +154,7 @@ Testing mode), Vercel, Squarespace (domain).
 
 - **Site down / build failing** → Vercel → Deployments → open the failed build log.
 - **Quote form errors / no submissions saving** → check Supabase env vars in Vercel; check `/admin` → Team → System errors; confirm Supabase project isn't paused.
-- **No emails arriving** → Resend dashboard (Logs); verify `RESEND_*` env vars; confirm `kulworks.com` domain still verified in Resend.
+- **No emails arriving** → *Outbound* (quotes/confirmations/newsletter) is **Resend** → Resend dashboard (Logs), verify `RESEND_*` env vars + `kulworks.com` still verified (DKIM `resend._domainkey`). *Inbound* (mail sent TO @kulworks.com) is **Mailgun** (MX) → check the Mailgun dashboard/routes. DMARC (`_dmarc`, `p=none`) reports go to Mailgun/OnDMARC — do not add a second `_dmarc` record.
 - **Bot challenge blocking real users** → Turnstile keys in Vercel; Cloudflare Turnstile dashboard.
 - **Drive folders not creating** → `GOOGLE_*` env vars; Google Cloud OAuth app still in Testing with Sam as test user; refresh token may need re-issuing (`npm run google:auth`).
 - **Calendar events not appearing** → `GOOGLE_CALENDAR_ID` set in Vercel? Refresh token must include the Calendar scope — if it predates the scope add, re-run `npm run google:auth` and update `GOOGLE_REFRESH_TOKEN`. Sync is best-effort: check server logs (`[calendar] …`) / Team → System errors. Events only sync for dates/reminders saved *after* setup — run `npm run calendar:backfill` for existing ones.

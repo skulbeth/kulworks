@@ -118,8 +118,13 @@ things that actually gate running the business. Roughly by priority:
 - [ ] **Bing Webmaster Tools** — same.
 
 **Deliverability / email:**
-- [ ] **DMARC record** — SPF/DKIM are set via Resend; add a DMARC DNS record to improve inbox
-      placement + prevent spoofing.
+- [x] **DMARC record** — ALREADY IN PLACE (discovered 2026-07-15). A `_dmarc` TXT already
+      exists at `p=none` (monitor), with reports going to Mailgun + OnDMARC. Do NOT add a second
+      one (two DMARC records = both ignored). Later, tighten `p=none` → `quarantine` → `reject`
+      once all legit senders confirm passing.
+- [ ] **Confirm access to Mailgun + OnDMARC accounts** — inbound mail (MX) routes through
+      **Mailgun** and SPF is `include:mailgun.org`; DMARC reports go to Mailgun/OnDMARC. Make
+      sure Sam controls those logins (they handle receiving @kulworks.com mail).
 - [ ] **Spam-placement test** — send to Gmail/Outlook/Yahoo and confirm mail lands in inbox.
 
 **Reliability / ops:**
