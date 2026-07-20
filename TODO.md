@@ -94,8 +94,9 @@ Asked "what else am I missing" (2026-07-15). The software is done; these are the
 things that actually gate running the business. Roughly by priority:
 
 **Legal / money (do before invoicing real customers):**
-- [ ] **Texas Sales & Use Tax permit** — invoices charge 8.25% tax, but collecting/remitting
-      sales tax legally requires registering with the TX Comptroller. Register first.
+- [ ] **Texas Sales & Use Tax permit** — invoices now show a flat 9% *service charge* (not an
+      itemized tax), but if your sales are taxable you still must register with the TX Comptroller
+      and remit sales tax. Relabeling doesn't remove the obligation.
 - [ ] **Vercel plan** — the site is on the **Hobby** plan, which is for *non-commercial* use.
       A real business likely needs **Vercel Pro (~$20/mo)** to comply with their ToS (also
       lifts cron/limits). Verify + upgrade before/at launch.
