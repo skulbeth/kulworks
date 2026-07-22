@@ -100,7 +100,7 @@ export const services: Service[] = [
       "Single pieces or small batches",
     ],
     icon: "🐉",
-    image: "/images/portfolio/resin/miniatures-plate-hero.webp",
+    image: "/images/portfolio/resin/resin-printing.webp",
   },
   {
     id: "design",
