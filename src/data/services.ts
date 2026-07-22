@@ -83,6 +83,7 @@ export const services: Service[] = [
       "Sturdy prints in a range of sizes",
     ],
     icon: "⚙️",
+    image: "/images/portfolio/filament/fdm-city-upgrades.webp",
   },
   {
     id: "resin",

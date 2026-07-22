@@ -28,7 +28,7 @@ export default function PortfolioPage() {
             as="h1"
             eyebrow="Portfolio"
             title="The work"
-            intro="Filter by craft to see what Kulworks makes. These are labeled placeholders for now, replaced with real photos as projects ship."
+            intro="Filter by craft to see what Kulworks makes — real projects across custom cards, UV-printed tiles, filament and resin 3D printing, and design."
           />
         </Container>
       </section>
@@ -36,6 +36,14 @@ export default function PortfolioPage() {
       <section className="border-b border-border">
         <Container className="py-12">
           <PortfolioGrid />
+          <p className="mt-10 text-center text-sm text-muted">
+            This is a sample, not the whole shop. We also make{" "}
+            <span className="text-foreground">UV-printed terrain tiles and custom tokens</span>,{" "}
+            <span className="text-foreground">FDM replacement components and city &amp; terrain upgrade pieces</span>,
+            custom 3D-printed card boxes and inserts, and more.{" "}
+            <a href="/contact/" className="font-semibold text-blue hover:underline">Just ask</a>{" "}
+            and we&apos;ll show you examples or make something new.
+          </p>
         </Container>
       </section>
 

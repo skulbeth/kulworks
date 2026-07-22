@@ -21,9 +21,13 @@ export default function HomePage() {
   const audienceHighlights = audiences.slice(0, 6);
 
   const studioSlides = [
+    { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
+    { label: "A shelf of painted figures", src: "/images/studio/painted-minis-lineup.webp", alt: "A lineup of painted 3D-printed character figures" },
+    { label: "Tumbling dice to a polish", src: "/images/studio/dice-tumbler.webp", alt: "Custom dice tumbling in a polisher in the Kulworks studio" },
     { label: "At the resin printers", src: "/images/studio/working-at-printers.webp", alt: "Working at the resin printers in the Kulworks studio" },
     { label: "The Kulworks print bench", src: "/images/studio/printer-bench.webp", alt: "The Kulworks resin printing bench" },
     { label: "Freshly printed miniatures", src: "/images/studio/maker-holding-minis.webp", alt: "Holding a batch of freshly printed resin miniatures" },
+    { label: "Custom card backs", src: "/images/studio/card-backs.webp", alt: "Animated showcase of custom printed card backs" },
   ];
 
   return (
@@ -200,7 +204,7 @@ export default function HomePage() {
             <SectionHeading
               eyebrow="Portfolio"
               title="A few highlights"
-              intro="Placeholder shots for now. Real photos of the work go here."
+              intro="A few pieces across cards, tiles, and 3D. See the full gallery for the rest."
             />
           </RevealOnScroll>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
