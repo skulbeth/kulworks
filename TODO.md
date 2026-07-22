@@ -64,6 +64,11 @@ should be filled with real info before launch:
 - [ ] **Mailing address / PO box** — Sam doesn't have one yet. Required in marketing-email
       footers (CAN-SPAM) before sending real newsletters; get a PO box, then add to site data.
 - [ ] **Social handles** — `site.ts:59`, still `REPLACE_WITH_HANDLE` placeholders
+- [ ] **PayPal.me handle** — `site.ts`, still `REPLACE_WITH_PAYPAL_ME_HANDLE` (Venmo + Zelle set)
+- [ ] **Proofread every page** in Sam's voice.
+- [~] **Real photos** — MANY DONE (2026-07-21, via a sibling session: 15 WebP images wired into
+      portfolio, services, home carousel, about portrait, and 3 card sub-pages). Remaining slots
+      still on labeled placeholders — see the shot-list below.
 - [x] **OG share image** — DONE. Branded `public/images/og-default.png` (1200×630) generated
       (`npm run og`, `scripts/make-og.mjs`). Swap for real art anytime by replacing the file.
 - [x] **On-page SEO polish (2026-07-15)** — added a real `<h1>` to every page (was `<h2>`
@@ -87,6 +92,23 @@ should be filled with real info before launch:
 - [ ] **Construction-mode flag** — currently `true` (public sees the coming-soon page,
       whole site noindex). Flip to `false` only when content/socials/address are ready and
       this is the real go-live.
+
+### 📸 Remaining photos — shot-list (fill these placeholder slots)
+
+Spec (image optimization is OFF): final-compressed **WebP**; **4:3 ~1200×900** for
+portfolio/service/about/card-page slots, **3:2 ~1200×800** for the home studio carousel.
+Drop the file in the matching `public/images/...` folder and set the `src`/`image` string.
+Alternates for some of these are in `D:\Kulworks\Raw Footage\Website Selects\`.
+
+- [ ] **Filament / FDM** (4 slots): portfolio *Functional Prop Print*, *Replacement Components*,
+      *City Upgrade Pieces* + the **Filament 3D Printing (FDM)** service sample. (Sam to shoot.)
+- [ ] **Design / 3D modeling** (2 slots): portfolio *Shapr3D Model: Mini Base* + *Tile Artwork
+      Prep* — export Shapr3D / artwork-prep screenshots.
+- [ ] **Card types not yet pictured** (6 slots): card sub-pages **tarot-cards**, **trading-cards**,
+      **giant-cards**, **boxes-and-upgrades**; portfolio *Trading-Style Team Cards* + *Custom Tokens*.
+
+Data locations: portfolio items → `src/data/portfolio.ts` (`src`); services → `src/data/services.ts`
+(`image`); card sub-pages → `src/data/cardCluster.ts` (`image`).
 
 ## 🧩 Beyond code — business / ops gaps (the stuff that isn't the site)
 
