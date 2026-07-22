@@ -28,15 +28,14 @@ export const portfolioFilters: { id: PortfolioCategory | "all"; label: string }[
 ];
 
 export const portfolio: PortfolioItem[] = [
-  { title: "Custom Poker Deck", category: "cards", src: "/images/portfolio/cards/role-to-reign-dice-cards-alt.webp", alt: "Custom poker deck with branded card backs" },
-  { title: "Game Prototype Deck", category: "cards", src: "/images/portfolio/cards/role-to-reign-dice-cards.webp", alt: "Prototype game card deck" },
+  { title: "Poker-Sized Cards, Custom Production", category: "cards", src: "/images/portfolio/cards/custom-cards.webp", alt: "Custom poker-sized promo cards printed at Kulworks" },
+  { title: "Game Prototype Deck", category: "cards", src: "/images/portfolio/cards/card-fronts.webp", alt: "Custom game card fronts for a prototype deck" },
   { title: "Custom Deck Creation", category: "cards", src: "/images/portfolio/cards/custom-deck-creation.webp", alt: "Building a custom card deck in our card generator, laying out fronts and card data" },
-  { title: "Role to Reign Card Set", category: "cards", src: "/images/portfolio/cards/character-cards-in-jig.webp", alt: "Role to Reign game cards" },
   { title: "Modular Board Hexes", category: "tiles", src: "/images/portfolio/tiles/board-tiles.webp", alt: "UV-printed modular board game hex tiles" },
   { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "FDM-printed custom prop armor set: breastplate, shield, helmet, and sword" },
   { title: "High-Detail Miniature", category: "resin", src: "/images/portfolio/resin/high-detail-miniature.webp", alt: "Painted high-detail 3D-printed character miniatures" },
   { title: "Character Mini Set", category: "resin", src: "/images/portfolio/resin/miniatures-cure-glow.webp", alt: "Resin printed character miniatures" },
-  { title: "3D Model Showcase (Shapr3D)", category: "design", src: "/images/portfolio/design/race-3d-model.webp", alt: "Custom 3D character model designed in Shapr3D" },
+  { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/race-3d-model.webp", alt: "Custom 3D character model designed and printed by Kulworks" },
   { title: "Card Layout & Artwork Prep", category: "design", src: "/images/portfolio/design/card-layout-photoshop.webp", alt: "Designing and laying out custom character class cards in Photoshop" },
   { title: "Tile Artwork Prep", category: "design", src: "/images/portfolio/design/tile-artwork-prep.webp", alt: "Board tile and map artwork prepared for UV printing" },
 ];

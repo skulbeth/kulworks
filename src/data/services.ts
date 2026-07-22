@@ -117,7 +117,7 @@ export const services: Service[] = [
       "Keeps evolving as your game develops and grows",
     ],
     icon: "✏️",
-    image: "/images/portfolio/design/card-layout-artwork.webp",
+    image: "/images/portfolio/design/cad-3d-design.webp",
     link: { label: "See my models on MakerWorld", href: "https://makerworld.com/en/@skulbeth" },
   },
 ];
