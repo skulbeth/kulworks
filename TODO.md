@@ -100,12 +100,21 @@ portfolio/service/about/card-page slots, **3:2 ~1200×800** for the home studio 
 Drop the file in the matching `public/images/...` folder and set the `src`/`image` string.
 Alternates for some of these are in `D:\Kulworks\Raw Footage\Website Selects\`.
 
-- [ ] **Filament / FDM** (4 slots): portfolio *Functional Prop Print*, *Replacement Components*,
-      *City Upgrade Pieces* + the **Filament 3D Printing (FDM)** service sample. (Sam to shoot.)
-- [ ] **Design / 3D modeling** (2 slots): portfolio *Shapr3D Model: Mini Base* + *Tile Artwork
-      Prep* — export Shapr3D / artwork-prep screenshots.
-- [ ] **Card types not yet pictured** (6 slots): card sub-pages **tarot-cards**, **trading-cards**,
-      **giant-cards**, **boxes-and-upgrades**; portfolio *Trading-Style Team Cards* + *Custom Tokens*.
+- [x] **Filament / FDM** — DONE 2026-07-22 (Custom Prop Print → armor; FDM service → city
+      upgrades). Replacement Components + City Upgrade Pieces items were removed → folded into
+      the portfolio "we also make…" note.
+- [x] **Design / 3D modeling** — DONE 2026-07-22 (3D Model Showcase → animated Shapr3D model;
+      Tile Artwork Prep → Inkarnate; boxes-and-upgrades → Shapr3D CAD box insert).
+- [ ] **Card types not yet pictured** (2 slots remaining): card sub-pages **tarot-cards** and
+      **giant-cards**. (trading-cards, boxes-and-upgrades, and the portfolio card/tile/design/
+      filament slots were filled 2026-07-22.)
+- [ ] **"Who it's for" thumbnails (12)** — Sam wants a small picture for EACH audience card
+      instead of the emoji icon. Items: Sports Teams, Schools & Clubs, Game & Card Designers,
+      Designer Prototypes, Our Own Games, Wedding Venues, Work Parties, Events & Celebrations,
+      Photographers, Local Activities & Market Sellers, Game Stores, Convention Attendees.
+      Small square works best (1:1, ~600×600 WebP). Needs a code change too: add an optional
+      `image?` to the `Audience` type (`src/data/audiences.ts`) and have `AudienceCard` render
+      it in place of the icon when set (shown on home + `/who-its-for`).
 
 Data locations: portfolio items → `src/data/portfolio.ts` (`src`); services → `src/data/services.ts`
 (`image`); card sub-pages → `src/data/cardCluster.ts` (`image`).
