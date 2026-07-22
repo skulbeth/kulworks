@@ -36,7 +36,7 @@ export default function AboutPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <div className="grid items-center gap-10 md:grid-cols-2">
-            <Placeholder label="Maker / studio portrait" src="/images/studio/maker-portrait-smiling.webp" alt="The maker behind Kulworks in the studio" ratio="aspect-[4/3]" />
+            <Placeholder label="Maker / studio portrait" src="/images/studio/maker-portrait.webp" alt="Sam, the maker behind Kulworks, wearing a full set of armor he designed and 3D-printed himself" ratio="aspect-[4/3]" />
             <div className="space-y-4 text-lg text-muted">
               <p>
                 Kulworks is a San Antonio maker studio. Card printing is what we do most,
@@ -53,9 +53,11 @@ export default function AboutPage() {
               <p>
                 We build our own games too.{" "}
                 <span className="font-semibold text-foreground">Role to Reign</span>, our
-                fantasy-inspired game, has 750 world and character-building cards, all
-                designed and printed by us. So we&apos;re not just printing your project,
-                we&apos;re making the same kinds of things we&apos;d want ourselves.
+                fantasy-inspired game, has 750 world- and character-building cards, all
+                designed, printed, and finished by us. We&apos;ve done every step your
+                project needs, from design and prototyping to printing, boxes, and delivery,
+                for our own games. So we don&apos;t just print your project; we know how to
+                make yours, because we&apos;ve already made ours.
               </p>
             </div>
           </div>
@@ -66,9 +68,9 @@ export default function AboutPage() {
         <Container className="py-16">
           <div className="grid gap-6 sm:grid-cols-3">
             {[
-              { h: "Local and US-made", p: "Designed and made in San Antonio, never sent overseas." },
+              { h: "Local and US-made", p: "Designed and made right here in San Antonio." },
               { h: "In-house, end to end", p: "Design through production under one roof, with no outsourcing." },
-              { h: "Maker-credible", p: "We design and ship our own games, not only other people's." },
+              { h: "Maker-credible", p: "We design and ship our own games, so we know how to make yours too." },
             ].map((b) => (
               <div key={b.h} className="rounded-2xl border border-border bg-surface p-6">
                 <h3 className="text-lg font-bold text-gold">{b.h}</h3>
