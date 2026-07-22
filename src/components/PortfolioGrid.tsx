@@ -5,11 +5,14 @@ import {
   portfolio,
   portfolioFilters,
   PortfolioCategory,
+  PortfolioItem,
 } from "@/data/portfolio";
 import Placeholder from "./Placeholder";
+import Lightbox from "./Lightbox";
 
 export default function PortfolioGrid() {
   const [active, setActive] = useState<PortfolioCategory | "all">("all");
+  const [zoom, setZoom] = useState<PortfolioItem | null>(null);
 
   const items =
     active === "all" ? portfolio : portfolio.filter((p) => p.category === active);
@@ -45,13 +48,30 @@ export default function PortfolioGrid() {
             key={item.title}
             className="overflow-hidden rounded-xl border border-border bg-surface transition-transform duration-200 hover:-translate-y-1"
           >
-            <Placeholder
-              label={item.title}
-              src={item.src}
-              alt={item.alt}
-              ratio="aspect-[4/3]"
-              className="rounded-none"
-            />
+            {item.src ? (
+              <button
+                type="button"
+                onClick={() => setZoom(item)}
+                aria-label={`View ${item.title} larger`}
+                className="block w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-blue"
+              >
+                <Placeholder
+                  label={item.title}
+                  src={item.src}
+                  alt={item.alt}
+                  ratio="aspect-[4/3]"
+                  className="rounded-none"
+                />
+              </button>
+            ) : (
+              <Placeholder
+                label={item.title}
+                src={item.src}
+                alt={item.alt}
+                ratio="aspect-[4/3]"
+                className="rounded-none"
+              />
+            )}
             <figcaption className="flex items-center justify-between gap-2 p-4">
               <span className="font-semibold">{item.title}</span>
               <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-xs uppercase tracking-wide text-muted">
@@ -64,6 +84,10 @@ export default function PortfolioGrid() {
 
       {items.length === 0 && (
         <p className="py-12 text-center text-muted">No work in this category yet.</p>
+      )}
+
+      {zoom?.src && (
+        <Lightbox src={zoom.src} alt={zoom.alt} title={zoom.title} onClose={() => setZoom(null)} />
       )}
     </div>
   );
