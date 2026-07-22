@@ -34,9 +34,9 @@ export const portfolio: PortfolioItem[] = [
   { title: "Role to Reign Card Set", category: "cards", src: "/images/portfolio/cards/character-cards-in-jig.webp", alt: "Role to Reign game cards" },
   { title: "Modular Board Hexes", category: "tiles", src: "/images/portfolio/tiles/board-tiles.webp", alt: "UV-printed modular board game hex tiles" },
   { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "FDM-printed custom prop armor set: breastplate, shield, helmet, and sword" },
-  { title: "High-Detail Miniature", category: "resin", src: "/images/portfolio/resin/miniatures-plate-hero.webp", alt: "Resin printed high-detail miniature" },
+  { title: "High-Detail Miniature", category: "resin", src: "/images/portfolio/resin/high-detail-miniature.webp", alt: "Painted high-detail 3D-printed character miniatures" },
   { title: "Character Mini Set", category: "resin", src: "/images/portfolio/resin/miniatures-cure-glow.webp", alt: "Resin printed character miniatures" },
   { title: "3D Model Showcase (Shapr3D)", category: "design", src: "/images/portfolio/design/race-3d-model.webp", alt: "Custom 3D character model designed in Shapr3D" },
-  { title: "Card Layout & Artwork Prep", category: "design", src: "/images/portfolio/design/card-layout-artwork.webp", alt: "Card layout and artwork preparation" },
+  { title: "Card Layout & Artwork Prep", category: "design", src: "/images/portfolio/design/card-layout-photoshop.webp", alt: "Designing and laying out custom character class cards in Photoshop" },
   { title: "Tile Artwork Prep", category: "design", src: "/images/portfolio/design/tile-artwork-prep.webp", alt: "Board tile and map artwork prepared for UV printing" },
 ];
