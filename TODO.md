@@ -89,9 +89,11 @@ should be filled with real info before launch:
       locked out:** Supabase dashboard → Auth → user → remove MFA factor, and/or set
       `Profile.twoFactorEnabled = false`.
 - [x] **Admin phone field** — Profile.phone, required on create, editable; for records.
-- [ ] **Construction-mode flag** — currently `true` (public sees the coming-soon page,
-      whole site noindex). Flip to `false` only when content/socials/address are ready and
-      this is the real go-live.
+- [x] **LAUNCHED (2026-07-23)** — `constructionMode: false`; the real home page is now the
+      public main page and the site is indexable. `ComingSoon.tsx` kept in the repo (not
+      deleted), just no longer rendered. Went live "with what we can" — the items below
+      (socials, PayPal, postal code, tarot/giant + who-it's-for photos, proofread) are
+      post-launch polish, not blockers.
 
 ### 📸 Remaining photos — shot-list (fill these placeholder slots)
 
