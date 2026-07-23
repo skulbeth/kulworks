@@ -18,10 +18,10 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
 ├─ /services              Services overview (5 crafts)          content: src/data/services.ts
 │  └─ /services/card-printing            Card-printing hub (lead service)   content: src/data/cardCluster.ts
 │     ├─ /services/card-printing/poker-cards
-│     ├─ /services/card-printing/tarot-cards
+│     ├─ /services/card-printing/tarot-cards      (HIDDEN: hidden:true — builds but noindexed + unlinked; offered via text)
 │     ├─ /services/card-printing/game-prototypes
 │     ├─ /services/card-printing/trading-cards
-│     ├─ /services/card-printing/giant-cards
+│     ├─ /services/card-printing/giant-cards      (HIDDEN: hidden:true — builds but noindexed + unlinked; offered via text)
 │     ├─ /services/card-printing/boxes-and-upgrades
 │     └─ /services/card-printing/card-design
 ├─ /pricing               Pricing table + card calculator       content: src/data/pricing.ts

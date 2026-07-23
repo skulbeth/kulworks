@@ -107,9 +107,11 @@ Alternates for some of these are in `D:\Kulworks\Raw Footage\Website Selects\`.
       the portfolio "we also make…" note.
 - [x] **Design / 3D modeling** — DONE 2026-07-22 (3D Model Showcase → animated Shapr3D model;
       Tile Artwork Prep → Inkarnate; boxes-and-upgrades → Shapr3D CAD box insert).
-- [ ] **Card types not yet pictured** (2 slots remaining): card sub-pages **tarot-cards** and
-      **giant-cards**. (trading-cards, boxes-and-upgrades, and the portfolio card/tile/design/
-      filament slots were filled 2026-07-22.)
+- [x] **tarot + giant card pages** — HIDDEN 2026-07-23 (no photos). `hidden: true` on those
+      cardCluster entries → filtered from the hub accordion + sitemap + noindex, but the pages
+      still build (restore by removing the flag). Offered on custom order via text on the
+      card-printing hub + the portfolio "just ask" note. Kept in the calculator (already there).
+      Only add photos if/when reviving the dedicated pages.
 - [ ] **"Who it's for" thumbnails (12)** — Sam wants a small picture for EACH audience card
       instead of the emoji icon. Items: Sports Teams, Schools & Clubs, Game & Card Designers,
       Designer Prototypes, Our Own Games, Wedding Venues, Work Parties, Events & Celebrations,
@@ -117,6 +119,17 @@ Alternates for some of these are in `D:\Kulworks\Raw Footage\Website Selects\`.
       Small square works best (1:1, ~600×600 WebP). Needs a code change too: add an optional
       `image?` to the `Audience` type (`src/data/audiences.ts`) and have `AudienceCard` render
       it in place of the icon when set (shown on home + `/who-its-for`).
+- [ ] **Sharper animated clips (optional)** — the 6 animated WebPs (board-tiles, card-fronts,
+      card-backs, race-3d-model, dice-tumbler, custom-cards) are sourced at ~480px and look
+      soft on desktop. Re-export from higher-res recordings (720–1080p) if available.
+- [ ] **Home "portfolio highlights" (3)** — still the older sibling-session shots
+      (character-cards-in-jig, terrain-hexes-hero, miniatures-plate-hero); swap to newer/better
+      ones for consistency (optional).
+- [ ] **Real OG/social-share image** — currently a generated branded placeholder
+      (`public/images/og-default.png`, `npm run og`); a real photo version would be nicer.
+- [ ] **Home hero image or short video (optional, high-impact)** — the hero is text-only.
+- [ ] **Retired UV-printer-screen photo** (`card-layout-artwork.webp`) — kept in repo, not shown;
+      decide whether to place it (a "printing in progress" shot) or leave retired.
 
 Data locations: portfolio items → `src/data/portfolio.ts` (`src`); services → `src/data/services.ts`
 (`image`); card sub-pages → `src/data/cardCluster.ts` (`image`).

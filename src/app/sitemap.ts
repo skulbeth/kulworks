@@ -15,11 +15,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/services/", priority: 0.9, changeFrequency: "monthly" },
     // Card printing is the lead service: hub (with accordions) + full sub-pages.
     { path: "/services/card-printing/", priority: 0.9, changeFrequency: "monthly" },
-    ...cardPages.map((p) => ({
-      path: `/services/card-printing/${p.slug}/`,
-      priority: 0.8,
-      changeFrequency: "monthly" as Freq,
-    })),
+    ...cardPages
+      .filter((p) => !p.hidden)
+      .map((p) => ({
+        path: `/services/card-printing/${p.slug}/`,
+        priority: 0.8,
+        changeFrequency: "monthly" as Freq,
+      })),
     { path: "/portfolio/", priority: 0.8, changeFrequency: "monthly" },
     { path: "/guides/", priority: 0.7, changeFrequency: "monthly" },
     ...guides.map((g) => ({

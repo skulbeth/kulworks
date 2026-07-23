@@ -36,6 +36,9 @@ export interface CardPage {
   keywords?: string[];
   /** Optional outbound link shown on the page (e.g. a tool we design with). */
   link?: { label: string; href: string };
+  /** When true, the page is kept (still builds) but hidden from the hub, sitemap, and
+   *  search (noindex). We offer it on custom order via text instead. Flip to un-hide. */
+  hidden?: boolean;
 }
 
 const CITY = "San Antonio";
@@ -91,6 +94,7 @@ export const cardPages: CardPage[] = [
   {
     slug: "tarot-cards",
     navLabel: "Tarot Cards",
+    hidden: true, // offered on custom order (see hub + portfolio note); no photo yet
     cardBlurb: "Larger tarot-size decks with full custom artwork.",
     title: `Custom Tarot Card Printing in ${CITY}`,
     metaDescription:
@@ -208,6 +212,7 @@ export const cardPages: CardPage[] = [
   {
     slug: "giant-cards",
     navLabel: "Giant & Jumbo Cards",
+    hidden: true, // offered on custom order (see hub + portfolio note); no photo yet
     cardBlurb: "Oversized cards for events, demos, and visibility.",
     title: `Custom Giant & Jumbo Card Printing in ${CITY}`,
     metaDescription:

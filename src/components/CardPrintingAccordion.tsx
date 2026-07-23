@@ -43,7 +43,7 @@ export default function CardPrintingAccordion() {
       {GROUPS.map((g, gi) => {
         const items = g.slugs
           .map((slug) => cardPages.find((p) => p.slug === slug))
-          .filter((p): p is (typeof cardPages)[number] => Boolean(p));
+          .filter((p): p is (typeof cardPages)[number] => !!p && !p.hidden);
         if (!items.length) return null;
         return (
           <div key={g.key} className={gi > 0 ? "mt-10 border-t-2 border-gold/40 pt-10" : ""}>

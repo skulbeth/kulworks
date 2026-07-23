@@ -27,6 +27,8 @@ export async function generateMetadata({
     description: page.metaDescription,
     keywords: page.keywords ? [...page.keywords] : undefined,
     alternates: { canonical: `/services/card-printing/${page.slug}/` },
+    // Hidden pages (offered on custom order) are kept + buildable but not indexed.
+    robots: page.hidden ? { index: false, follow: false } : undefined,
   };
 }
 
