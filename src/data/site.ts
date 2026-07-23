@@ -15,7 +15,7 @@ export const site = {
   // While true, only the "coming soon" landing shows (nav hidden, whole site
   // noindex). Set to false to launch the full site. To preview the full site
   // locally without launching, temporarily use: process.env.NODE_ENV !== "production".
-  constructionMode: true,
+  constructionMode: false,
 
   name: "Kulworks",
   legalName: "Kulworks",

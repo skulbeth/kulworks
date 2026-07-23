@@ -65,7 +65,7 @@ export default function ContactPage() {
             <div className="rounded-2xl border border-border bg-surface p-6">
               <h3 className="font-bold">Where we work</h3>
               <p className="mt-2 text-sm text-muted">
-                Local to San Antonio and the surrounding Hill Country — Bulverde, Blanco, Spring
+                Local to San Antonio and the surrounding Hill Country: Bulverde, Blanco, Spring
                 Branch, New Braunfels, Boerne, Bandera and nearby towns. Not close by? We ship
                 finished work anywhere in the US.
               </p>

@@ -61,10 +61,9 @@ export default function AboutPage() {
                   Role to Reign
                 </a>
                 , our fantasy-inspired game, has 750 world- and character-building cards, all
-                designed, printed, and finished by us right here. We&apos;ve done every step your
+                designed, printed, and finished by us right here. We have done every step your
                 project needs, from design and prototyping to printing, boxes, and delivery,
-                for our own games. So we don&apos;t just print your project; we know how to
-                make yours, because we&apos;ve already made ours.
+                for our own games. We know how to make yours because we have already made ours.
               </p>
             </div>
           </div>

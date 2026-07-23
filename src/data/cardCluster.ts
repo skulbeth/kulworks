@@ -222,7 +222,7 @@ export const cardPages: CardPage[] = [
         body: "Big format means your artwork reads from a distance, which is perfect for trade shows, store displays, parties, and group activities.",
       },
       {
-        h: "Useful, not just novelty",
+        h: "Useful at the table",
         body: "Oversized cards also help with teaching a game to a crowd and with accessibility for players who find standard cards hard to handle.",
       },
       {

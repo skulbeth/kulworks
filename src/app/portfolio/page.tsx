@@ -28,7 +28,7 @@ export default function PortfolioPage() {
             as="h1"
             eyebrow="Portfolio"
             title="The work"
-            intro="Filter by craft to see what Kulworks makes — real projects across custom cards, UV-printed tiles, filament and resin 3D printing, and design."
+            intro="Filter by craft to see what Kulworks makes. Real projects across custom cards, UV-printed tiles, filament and resin 3D printing, and design."
           />
         </Container>
       </section>

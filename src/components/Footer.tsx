@@ -22,7 +22,7 @@ export default function Footer() {
             One studio, many materials. Cards, tiles, and 3D, designed and made in-house.
           </p>
           <p className="mt-3 max-w-xs text-sm text-muted">
-            Based in San Antonio, TX — serving the surrounding Hill Country, and shipping
+            Based in San Antonio, TX. We serve the surrounding Hill Country and ship
             finished work nationwide.
           </p>
           <SocialLinks className="mt-4" />

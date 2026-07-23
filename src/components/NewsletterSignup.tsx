@@ -41,7 +41,7 @@ export default function NewsletterSignup() {
   if (status === "success") {
     return (
       <p className="text-sm font-semibold text-green-600">
-        Thanks — you&apos;re on the list! 🎉
+        Thanks! You&apos;re on the list! 🎉
       </p>
     );
   }

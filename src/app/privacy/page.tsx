@@ -27,12 +27,12 @@ export default function PrivacyPage() {
 
       <h2 className={h2}>Information we collect</h2>
       <p className={p}>
-        <strong>Information you give us</strong> — when you request a quote or contact us: your
+        <strong>Information you give us:</strong> when you request a quote or contact us: your
         name, email, project details, any reference links you share, and (if you provide it) a
         shipping/mailing address. If you subscribe to our newsletter, your email address.
       </p>
       <p className={p}>
-        <strong>Information collected automatically</strong> — we use privacy-friendly,
+        <strong>Information collected automatically:</strong> we use privacy-friendly,
         cookieless analytics to understand site usage: pages viewed, approximate location
         (city/country), device type, and the referring site. We do not use tracking cookies or
         cross-site advertising trackers.
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
       <h2 className={h2}>Email &amp; your choices</h2>
       <p className={p}>
         Transactional emails (e.g., quote confirmations) are part of providing our service. Our
-        newsletter is opt-in, and every newsletter includes an unsubscribe link — you can opt
+        newsletter is opt-in, and every newsletter includes an unsubscribe link, so you can opt
         out at any time. You may also request access to, correction of, or deletion of your
         information by emailing{" "}
         <a href={`mailto:${site.email}`} className="text-blue hover:underline">
