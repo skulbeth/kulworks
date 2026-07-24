@@ -45,9 +45,13 @@ export default function HomePage() {
             </h1>
             <p className="mt-6 max-w-3xl text-lg text-muted sm:text-xl">
               Kulworks is a San Antonio maker studio. We turn your idea into a finished,
-              physical product: custom UV card printing, UV-printed game tiles, 3D printing,
-              and the design work behind all of it. We help you design your cards and build
-              your prototypes, so you can hold your envisioned game and playtest it for real.
+              physical product: custom UV card printing, UV-printed cards for anyone, game
+              tiles, FDM and resin 3D printing, and the design behind it all.
+            </p>
+            <p className="mt-4 max-w-3xl text-lg text-muted sm:text-xl">
+              Game designers, sports teams, schools and clubs, photographers, event hosts,
+              and market sellers all bring us projects. We design your cards, build your
+              prototypes, so you can hold the real thing and know it&apos;s right.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/contact/" variant="primary" size="lg">
