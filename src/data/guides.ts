@@ -25,6 +25,49 @@ export interface Guide {
 
 export const guides: Guide[] = [
   {
+    slug: "custom-card-printing-cost",
+    title: "How Much Does Custom Card Printing Cost?",
+    description:
+      "What custom card printing costs: setup fees, per-card rates, sizes, quantity discounts, design, and finishing, with a real example deck priced out.",
+    datePublished: "2026-07-24",
+    readMinutes: 4,
+    intro:
+      "Price is usually the first question, and the honest answer is that it depends on a few things. Here is what actually drives the cost of a custom card order, with real numbers, so you can ballpark your project before you ask for a quote.",
+    sections: [
+      {
+        h: "What goes into the price",
+        body: [
+          "A few things set the price. There is a one-time setup fee per project that covers getting your files ready to run on the press, and then a per-card rate. For print-ready poker-size cards that rate runs about $0.10 to $0.15 each, and there is no minimum, so a single deck, or even a single card, is fine.",
+          "Card size and quantity move the number too. Larger sizes like tarot cost more per card, roughly two to three times a poker card as you step up in size, while bigger runs earn a discount on printing that starts around 5% at 250 cards and grows from there. Design work, if your files are not already print-ready, plus finishing like a box or sleeves and delivery, are add-ons priced to the project.",
+        ],
+      },
+      {
+        h: "A rough example",
+        body: [
+          "Say you want a single poker-size prototype deck of 54 cards and your files are print-ready. That is a $25 setup fee plus about $0.10 to $0.15 per card, so roughly $30 to $33 for the printing. Add a custom 3D-printed box for around $9 if you want the deck to feel finished, and a complete one-off prototype deck lands in the neighborhood of $40, before delivery. Larger runs cost more in total but less per card.",
+        ],
+      },
+      {
+        h: "Design and finishing add-ons",
+        body: [
+          "If you need the cards designed, card layout is $40 per side, so a front and a back is $80, and that layout is a template all your cards share. Custom 3D-printed boxes start at $9 for a deck under 100 cards, and sleeves run $10 to $15 per hundred depending on the grade.",
+        ],
+      },
+      {
+        h: "How to get an exact number",
+        body: [
+          "These are starting points, not a final quote. The card estimator on our pricing page gives you a quick ballpark for card printing, and when you are ready, send your project details for an exact price. We will tell you what is realistic on both cost and timeline.",
+        ],
+      },
+    ],
+    keywords: [
+      "custom card printing cost",
+      "how much to print custom cards",
+      "cost to print a deck of cards",
+      "custom deck printing price",
+    ],
+  },
+  {
     slug: "poker-vs-tarot-card-sizes",
     title: "Poker vs. Tarot Card Sizes: Which Should You Print?",
     description:

@@ -31,6 +31,7 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
 ├─ /pricing               Pricing table + card calculator       content: src/data/pricing.ts
 ├─ /portfolio             Work grid (filter by craft)           content: src/data/portfolio.ts
 ├─ /guides                Guides & FAQ index          content: src/data/guides.ts + src/data/faq.ts
+│  ├─ /guides/custom-card-printing-cost
 │  ├─ /guides/poker-vs-tarot-card-sizes
 │  ├─ /guides/prep-card-art-for-printing
 │  ├─ /guides/prototype-vs-short-run   (how-many-prototype-copies merged in → redirects here)
