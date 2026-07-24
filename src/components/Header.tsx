@@ -78,6 +78,31 @@ export default function Header() {
 
         {/* Desktop nav */}
         <ul className="hidden items-center gap-7 md:flex">
+          <li>
+            <Link
+              href="/"
+              aria-label="Home"
+              title="Home"
+              className={`flex items-center transition-colors hover:text-blue ${
+                pathname === "/" ? "text-blue" : "text-muted"
+              }`}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+                className="h-5 w-5"
+              >
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5 9.5V21h14V9.5" />
+                <path d="M9.5 21v-6h5v6" />
+              </svg>
+            </Link>
+          </li>
           {navLinks.map((l) => (
             <li key={l.href}>
               <Link
@@ -123,6 +148,22 @@ export default function Header() {
       {open && (
         <div id="mobile-menu" className="border-t border-border bg-background md:hidden">
           <ul className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-3">
+            <li>
+              <Link
+                href="/"
+                onClick={() => setOpen(false)}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 font-semibold ${
+                  pathname === "/" ? "bg-surface text-blue" : "text-muted hover:bg-surface"
+                }`}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
+                  <path d="M3 10.5 12 3l9 7.5" />
+                  <path d="M5 9.5V21h14V9.5" />
+                  <path d="M9.5 21v-6h5v6" />
+                </svg>
+                Home
+              </Link>
+            </li>
             {navLinks.map((l) => (
               <li key={l.href}>
                 <Link

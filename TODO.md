@@ -131,6 +131,16 @@ Alternates for some of these are in `D:\Kulworks\Raw Footage\Website Selects\`.
 - [ ] **Retired UV-printer-screen photo** (`card-layout-artwork.webp`) — kept in repo, not shown;
       decide whether to place it (a "printing in progress" shot) or leave retired.
 
+## 🗺️ UX / information architecture
+
+- [ ] **"Feels like a lot of pages" — nav/workflow map** (Sam, 2026-07-23) — Sam wants a visual
+      map of how all the pages connect (a flow/sitemap diagram), and it may point to simplifying
+      the IA (fewer top-level pages, or grouping). Pages today: Home, About, Services (+ card-
+      printing hub + 5 visible sub-pages), Pricing, Portfolio, Guides (+ 5 guides), Who It's For,
+      Contact, Privacy, Terms. Deliverable: a connections/flow diagram (could be a Mermaid diagram
+      or an Artifact), then decide if anything should be merged/nested. See SITE-STRUCTURE.md for
+      the current page inventory.
+
 Data locations: portfolio items → `src/data/portfolio.ts` (`src`); services → `src/data/services.ts`
 (`image`); card sub-pages → `src/data/cardCluster.ts` (`image`).
 
