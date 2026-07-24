@@ -21,13 +21,8 @@ export const audiences: Audience[] = [
   },
   {
     title: "Game & Card Designers",
-    blurb: "Prototypes through production runs, built by someone who designs games too.",
+    blurb: "Prototypes through production runs, built by someone who designs games too. We're great at that middle ground between a home printer and a full run, so you can test, tweak, and test again.",
     icon: "🎲",
-  },
-  {
-    title: "Designer Prototypes",
-    blurb: "We specialize in prototype work, that clean middle ground between a home printer and a full print run, so you can test, tweak, and test again.",
-    icon: "⚡",
   },
   {
     title: "Our Own Games",
@@ -36,18 +31,8 @@ export const audiences: Audience[] = [
     href: "https://roletoreign.com",
   },
   {
-    title: "Wedding Venues",
-    blurb: "Custom card decks and printed pieces for events and favors.",
-    icon: "💍",
-  },
-  {
-    title: "Work Parties",
-    blurb: "Office parties, team-building, and company events. Custom decks and pieces that make the day.",
-    icon: "💼",
-  },
-  {
     title: "Events & Celebrations",
-    blurb: "Weddings, family reunions, holidays, or any event you can dream up. If you can think of it, we can make cards for it.",
+    blurb: "Weddings and venues, office and work parties, reunions, holidays, or any celebration you can dream up. Custom decks, favors, and printed pieces that make the day.",
     icon: "🎉",
   },
   {

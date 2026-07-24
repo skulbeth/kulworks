@@ -32,7 +32,7 @@ export default function TermsPage() {
 
       <h2 className={h2}>1. Who we are</h2>
       <p className={p}>
-        {site.name} is a maker studio based in San Antonio, Texas. You can reach us at {email} or{" "}
+        {site.name} is a maker shop based in San Antonio, Texas. You can reach us at {email} or{" "}
         {site.telephoneDisplay}.
       </p>
 

@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     "resin miniatures",
     "FDM printing",
     "Shapr3D design",
-    "maker studio San Antonio",
+    "maker shop San Antonio",
   ],
   openGraph: {
     type: "website",
@@ -72,14 +72,14 @@ export const metadata: Metadata = {
     locale: "en_US",
     title: "Kulworks: Custom Card Printing & 3D in San Antonio",
     description:
-      "One studio, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
+      "One shop, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
     images: [{ url: "/images/og-default.png", width: 1200, height: 630, alt: "Kulworks" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Kulworks: Custom Card Printing & 3D in San Antonio",
     description:
-      "One studio, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
+      "One shop, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
     images: ["/images/og-default.png"],
   },
   // While under construction the whole site is noindex; flips to indexable when

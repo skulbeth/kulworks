@@ -17,7 +17,7 @@ export interface Faq {
 export const faqs: Faq[] = [
   {
     q: "Do you print custom playing and poker cards in San Antonio?",
-    a: "Yes. Kulworks is a San Antonio maker studio and custom card printing is our lead service. We print custom playing, poker, and game cards with your own backs and faces, from a single prototype deck to a finished short run.",
+    a: "Yes. Kulworks is a San Antonio maker shop and custom card printing is our lead service. We print custom playing, poker, and game cards with your own backs and faces, from a single prototype deck to a finished short run.",
   },
   {
     q: "What card sizes can you print, and can you do tarot-size cards?",

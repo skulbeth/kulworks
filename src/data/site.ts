@@ -22,7 +22,7 @@ export const site = {
   url: "https://kulworks.com",
   // One-line description reused in metadata + Organization schema.
   description:
-    "Kulworks is a San Antonio multi-craft maker studio. Custom UV card printing, UV-printed board game tiles, FDM and resin 3D printing, and 3D modeling and design, all made in-house.",
+    "Kulworks is a San Antonio multi-craft maker shop. Custom UV card printing, UV-printed board game tiles, FDM and resin 3D printing, and 3D modeling and design, all made in-house.",
   founder: "Sam Kulbeth",
 
   // ---- Contact ----

@@ -111,40 +111,49 @@ export const guides: Guide[] = [
   },
   {
     slug: "prototype-vs-short-run",
-    title: "Prototype Decks vs. Short Runs: How Many Cards to Print First",
+    title: "Prototype Decks vs. Short Runs: How Many Cards to Print",
     description:
-      "When to print a single prototype deck, when to do a short run, and how to test a card game before committing to a big order.",
+      "When to print a single prototype deck, how many copies to make for playtesting, and when to move up to a short run, all without committing to a big factory order.",
     datePublished: "2026-06-27",
-    readMinutes: 4,
+    readMinutes: 5,
     intro:
-      "Printing a game is not one decision, it is a few. Knowing when to print one deck versus a small batch saves money and catches problems early.",
+      "Printing a game is not one decision, it is a few: how many copies to make, and when to move from a prototype to a short run. You do not need a big order to test well. Here is a simple way to decide at each stage.",
     sections: [
       {
-        h: "Start with a prototype deck",
+        h: "Start with one",
         body: [
-          "A single printed prototype tells you things a screen never will: how the cards feel, whether the text is readable, and whether the layout works at the table.",
-          "Print one, play it, and mark what needs to change. Then print the next version. Fast iteration beats a perfect first try.",
+          "A single printed prototype tells you things a screen never will: how the cards feel, whether the text is readable, and whether the layout works at the table. You catch the obvious problems yourself before anyone else sees the deck.",
+          "Print one, play it solo or with one other person, and mark what needs to change. This round is cheap, and it saves you from printing a mistake more than once.",
+        ],
+      },
+      {
+        h: "A few for a playtest group",
+        body: [
+          "Once the game holds up, a small batch of two to five copies lets a table actually play without passing one deck back and forth.",
+          "This is the sweet spot for most designers, and it is exactly the kind of small number we specialize in: no big minimum, and quick reprints when the design changes.",
         ],
       },
       {
         h: "Move to a short run when the design settles",
         body: [
-          "Once the rules and layout are stable, a short run gets you enough copies for a focused playtest group, demos, or early sales without the cost of a large order.",
-          "Short runs are also good for clubs, events, and stores that need a modest number of finished decks.",
+          "When the rules and layout are stable, a short run gets you enough copies for a focused playtest group, demos, early sales, or clean decks to hand a store, a reviewer, or a publisher. Short runs also suit clubs and events that need a modest number of finished decks.",
+          "You need more copies once the game leaves your table: blind playtests, conventions, and review copies all call for extra. Even then it is usually a modest run, not a factory order.",
         ],
       },
       {
         h: "Scale up with confidence",
         body: [
-          "When the game is proven and the art is final, you can commit to a larger run knowing the deck is right.",
-          "At every stage, a real printed deck is the best test. We keep prototypes quick so you can keep improving.",
+          "When the game is proven and the art is final, you can commit to a larger run knowing the deck is right. At every stage a real printed deck is the best test, so print what you need for the stage you are in and scale up only once the design has earned it.",
         ],
       },
     ],
     keywords: [
       "card game prototype vs short run",
       "how many decks to print",
+      "how many prototype copies to print",
+      "playtest copies board game",
       "test a card game before printing",
+      "card game prototype quantity",
     ],
   },
   {
@@ -184,44 +193,6 @@ export const guides: Guide[] = [
       "print and play vs prototype",
       "board game prototype printing",
       "when to print a game prototype",
-    ],
-  },
-  {
-    slug: "how-many-prototype-copies",
-    title: "How Many Prototype Copies Should You Print?",
-    description:
-      "One copy, a few, or more? A simple way to decide how many prototype decks to print for playtesting your card or board game.",
-    datePublished: "2026-07-12",
-    readMinutes: 3,
-    intro:
-      "When you are ready for a real prototype, the next question is how many to print. You do not need a big order to test well. Here is a simple way to decide.",
-    sections: [
-      {
-        h: "Start with one",
-        body: [
-          "A single copy is enough to catch the obvious stuff yourself. You will spot readability problems, layout issues, and rules that do not line up, all before anyone else sees it.",
-          "Print one, play it solo or with one other person, and fix what jumps out. This round is cheap and it saves you from printing a mistake more than once.",
-        ],
-      },
-      {
-        h: "A few for a playtest group",
-        body: [
-          "Once the game holds up, a small batch of two to five copies lets a table actually play without waiting around or passing one deck back and forth.",
-          "This is the sweet spot for most designers, and it is exactly the kind of small number we specialize in. No big minimum, and quick reprints when the design changes.",
-        ],
-      },
-      {
-        h: "More when you take it out into the world",
-        body: [
-          "You need more copies when the game leaves your table. Blind playtests, conventions, sending decks to reviewers, or handing a clean copy to a publisher all call for extra.",
-          "Even then you are usually talking about a modest short run, not a factory order. Print what you need for the stage you are in, and scale up only once the design is proven.",
-        ],
-      },
-    ],
-    keywords: [
-      "how many prototype copies to print",
-      "playtest copies board game",
-      "card game prototype quantity",
     ],
   },
 ];

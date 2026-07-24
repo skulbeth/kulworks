@@ -37,10 +37,10 @@ export default function HomePage() {
         <Container className="relative py-20 sm:py-28">
           <div className="animate-fade-up">
             <p className="mb-4 text-sm font-bold uppercase tracking-[0.25em] text-gold">
-              Multi-craft maker studio
+              Multi-craft maker shop
             </p>
             <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">
-              One studio, many materials.{" "}
+              One shop, many materials.{" "}
               <span className="text-gold text-glow-gold">Cards, tiles, and 3D</span>, designed and made in-house.
             </h1>
             <p className="mt-6 max-w-3xl text-lg text-muted sm:text-xl">
@@ -73,7 +73,7 @@ export default function HomePage() {
               <div>
                 <SectionHeading
                   eyebrow="Inside the shop"
-                  title="One shop, every material"
+                  title="Every material, under one roof"
                   intro="Custom cards, UV-printed tiles, FDM and resin 3D printing, and the design behind it all. From a first prototype deck to a finished run, it's made right here. Take a look."
                 />
                 <div className="mt-6">

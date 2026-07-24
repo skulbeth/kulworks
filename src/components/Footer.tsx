@@ -19,7 +19,7 @@ export default function Footer() {
         <div>
           <span className="font-display text-2xl text-gold">Kulworks</span>
           <p className="mt-3 max-w-xs text-sm text-muted">
-            One studio, many materials. Cards, tiles, and 3D, designed and made in-house.
+            One shop, many materials. Cards, tiles, and 3D, designed and made in-house.
           </p>
           <p className="mt-3 max-w-xs text-sm text-muted">
             Based in San Antonio, TX. We serve the surrounding Hill Country and ship

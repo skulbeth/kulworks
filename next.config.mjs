@@ -19,6 +19,23 @@ const nextConfig = {
   // Emit /about/index.html style URLs — keeps existing trailing-slash URLs stable.
   trailingSlash: true,
 
+  // Permanent redirects for retired URLs (preserve any link equity, avoid 404s).
+  async redirects() {
+    return [
+      {
+        // Merged into the broader "prototype vs. short run" guide (2026-07-24).
+        source: "/guides/how-many-prototype-copies",
+        destination: "/guides/prototype-vs-short-run/",
+        permanent: true,
+      },
+      {
+        source: "/guides/how-many-prototype-copies/",
+        destination: "/guides/prototype-vs-short-run/",
+        permanent: true,
+      },
+    ];
+  },
+
   // Baseline security headers on every response. (A strict Content-Security-Policy is
   // intentionally NOT set here yet — it needs per-route nonces/hashes for the inline
   // theme-init script + JSON-LD, and a wrong CSP silently breaks the site. Tracked in TODO.)

@@ -32,10 +32,9 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
 ├─ /guides                Guides & FAQ index          content: src/data/guides.ts + src/data/faq.ts
 │  ├─ /guides/poker-vs-tarot-card-sizes
 │  ├─ /guides/prep-card-art-for-printing
-│  ├─ /guides/prototype-vs-short-run
-│  ├─ /guides/print-and-play-vs-real-prototype
-│  └─ /guides/how-many-prototype-copies
-├─ /who-its-for           Audience page                          content: src/data/audiences.ts
+│  ├─ /guides/prototype-vs-short-run   (how-many-prototype-copies merged in → redirects here)
+│  └─ /guides/print-and-play-vs-real-prototype
+├─ /who-its-for           Audience page (9 cards)                content: src/data/audiences.ts
 ├─ /contact               Quote form + service area + contact info   src/app/contact/page.tsx
 ├─ /privacy               Privacy Policy                         src/app/privacy/page.tsx
 └─ /terms                 Terms of Service                       src/app/terms/page.tsx
@@ -51,7 +50,7 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
   Service/Breadcrumb/FAQ/Article per page) via `src/lib/structured-data.ts`.
 
 > **Sitemap note:** `/privacy` and `/terms` are intentionally left out of the sitemap (linked in
-> the footer, still crawlable/indexable). All 18 marketing URLs above are in the sitemap.
+> the footer, still crawlable/indexable). All 17 marketing URLs above are in the sitemap.
 
 ---
 
