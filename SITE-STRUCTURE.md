@@ -4,18 +4,21 @@ A human-readable map of every page/URL, what it is, and where its content lives.
 deeper system reference (routes, data models, integrations, "if X breaks"), see
 **[ARCHITECTURE.md](ARCHITECTURE.md)**. Content-editing tips live in **[LAUNCH-TODO.md](LAUNCH-TODO.md)**.
 
-> **Gate:** while `constructionMode: true` in [`src/data/site.ts`](src/data/site.ts), the public
-> only sees the coming-soon landing (home) and the whole site is `noindex`. Inner pages still
-> work by direct URL for previewing.
+> **Status: LIVE (2026-07-23).** `constructionMode: false` in [`src/data/site.ts`](src/data/site.ts) —
+> the real home page is the public main page and the whole site is indexable. `ComingSoon.tsx` is
+> kept in the repo (rendered only if the switch is flipped back to `true`).
 
 ---
 
 ## Public site (marketing)
 
 ```
-/                         Home — hero + overview (shows ComingSoon while gated)     src/app/page.tsx
-├─ /about                 About / studio story                                     src/app/about/page.tsx
-├─ /services              Services overview (5 crafts)          content: src/data/services.ts
+/                         Home — hero, shop carousel, who-it's-for, services,       src/app/page.tsx
+│                         and one prototyping + portfolio section (side-by-side cards)
+├─ /about                 About — maker-shop story; order: intro → machines →       src/app/about/page.tsx
+│                         story → differentiators → CTA
+├─ /services              Services overview (5 crafts); card-printing leads with a   content: src/data/services.ts
+│                         gold "featured highlight" callout (Service.featuredHighlight)
 │  └─ /services/card-printing            Card-printing hub (lead service)   content: src/data/cardCluster.ts
 │     ├─ /services/card-printing/poker-cards
 │     ├─ /services/card-printing/tarot-cards      (HIDDEN: hidden:true — builds but noindexed + unlinked; offered via text)

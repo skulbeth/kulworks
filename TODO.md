@@ -141,6 +141,16 @@ Alternates for some of these are in `D:\Kulworks\Raw Footage\Website Selects\`.
       or an Artifact), then decide if anything should be merged/nested. See SITE-STRUCTURE.md for
       the current page inventory.
 
+- [ ] **Portfolio build-out — clickable items → full showcase pages?** (Sam, 2026-07-23) — idea:
+      the section *below each portfolio image* (title/caption area), when clicked or tapped, takes
+      you to a full location where all the showcases for that piece live (more photos, the story,
+      specs, related work). Not decided yet — **determine the best way to build this out** before
+      implementing. Options to weigh: (a) per-item detail pages (`/portfolio/[slug]/`) driven off
+      `portfolio.ts`, good for SEO and deep links; (b) an expanded lightbox/gallery per item (stays
+      on-page, lighter build, weaker SEO); (c) group items into a few "showcase" collection pages.
+      Today portfolio items only open the single-image lightbox (`Lightbox.tsx` via `PortfolioGrid`).
+      Decide the model, then wire the caption/below-image area as the click target.
+
 Data locations: portfolio items → `src/data/portfolio.ts` (`src`); services → `src/data/services.ts`
 (`image`); card sub-pages → `src/data/cardCluster.ts` (`image`).
 
