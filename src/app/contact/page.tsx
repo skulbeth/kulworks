@@ -81,6 +81,17 @@ export default function ContactPage() {
             </div>
 
             <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="font-bold">How fast?</h3>
+              <p className="mt-2 text-sm text-muted">
+                It depends on the project, but with clean, print-ready files we move fast: most
+                ready-to-print orders turn around in about two days, a print-ready card order can
+                be ready in a day, and board or tile printing (without cutting) often takes about
+                half an hour once the files are set. Design work or new materials add time, so tell
+                us your deadline and we&apos;ll tell you what&apos;s realistic.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-surface p-6">
               <h3 className="font-bold">What happens next</h3>
               <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-muted">
                 <li>You send the details.</li>

@@ -81,7 +81,13 @@ export const faqs: Faq[] = [
     a: "Yes. We print full custom faces and a custom back, or a custom back with standard faces, whatever your project needs.",
   },
   {
-    q: "How long does a custom card order take?",
-    a: "It depends on the size of the run and whether artwork is print-ready. Prototype decks turn around fast. Tell us your timeline in the quote and we will let you know what is realistic.",
+    q: "How fast is your turnaround?",
+    a: "It depends on what the project needs. We keep a supply of cards and boards on hand, so when you bring clean, print-ready files we can move fast. Development and design time varies a lot, and new materials or custom design work add time, so tell us your deadline in the quote and we will tell you what is realistic. As a rule of thumb for print-ready files:",
+    bullets: [
+      "About 2 days for most ready-to-print orders",
+      "Up to around 120 cards printed and ready in a single day",
+      "Most FDM and resin 3D prints finished within about two days",
+      "Board and tile printing without cutting, often about half an hour once the files are ready",
+    ],
   },
 ];
