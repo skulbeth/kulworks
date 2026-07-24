@@ -14,7 +14,8 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
 
 ```
 /                         Home — hero, shop carousel, who-it's-for, services,       src/app/page.tsx
-│                         and one prototyping + portfolio section (side-by-side cards)
+│                         one prototyping + portfolio section (side-by-side cards),
+│                         and a testimonials strip (hidden until real quotes exist)
 ├─ /about                 About — maker-shop story; order: intro → machines →       src/app/about/page.tsx
 │                         story → differentiators → CTA
 ├─ /services              Services overview (5 crafts); card-printing leads with a   content: src/data/services.ts
