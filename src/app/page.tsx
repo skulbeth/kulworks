@@ -8,6 +8,7 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import Placeholder from "@/components/Placeholder";
 import Carousel from "@/components/Carousel";
 import ComingSoon from "@/components/ComingSoon";
+import Testimonials from "@/components/Testimonials";
 import { site } from "@/data/site";
 import { services } from "@/data/services";
 import { audiences } from "@/data/audiences";
@@ -179,6 +180,9 @@ export default function HomePage() {
           </RevealOnScroll>
         </Container>
       </section>
+
+      {/* ===== Social proof (renders only when real testimonials exist) ===== */}
+      <Testimonials />
 
       {/* ===== Closing CTA ===== */}
       <section className="relative overflow-hidden">

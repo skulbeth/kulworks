@@ -66,6 +66,11 @@ should be filled with real info before launch:
 - [ ] **Social handles** — `site.ts:59`, still `REPLACE_WITH_HANDLE` placeholders
 - [ ] **PayPal.me handle** — `site.ts`, still `REPLACE_WITH_PAYPAL_ME_HANDLE` (Venmo + Zelle set)
 - [ ] **Proofread every page** in Sam's voice.
+- [ ] **Real testimonials / social proof** — the home-page testimonials strip is BUILT and wired
+      (`src/components/Testimonials.tsx` + `src/data/testimonials.ts`), but it renders only when
+      `testimonials` has real entries, so nothing shows until Sam adds 2-3 genuine quotes (a Role
+      to Reign playtester, an early client, a convention customer). Format + example are in the
+      data file. Biggest remaining conversion lever alongside the Google Business Profile reviews.
 - [~] **Real photos** — MANY DONE (2026-07-21, via a sibling session: 15 WebP images wired into
       portfolio, services, home carousel, about portrait, and 3 card sub-pages). Remaining slots
       still on labeled placeholders — see the shot-list below.

@@ -21,7 +21,7 @@ export const audiences: Audience[] = [
   },
   {
     title: "Game & Card Designers",
-    blurb: "Prototypes through production runs, built by someone who designs games too. We're great at that middle ground between a home printer and a full run, so you can test, tweak, and test again.",
+    blurb: "Prototypes through production runs, built by someone who designs games too. Print one, test it, tweak it, and print the next version, all without a big minimum.",
     icon: "🎲",
   },
   {

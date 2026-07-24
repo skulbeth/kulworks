@@ -104,6 +104,7 @@ Invoices/quotes have a public view at `/invoice/[token]` (unguessable token).
 | Guides / articles | `src/data/guides.ts` |
 | FAQ | `src/data/faq.ts` |
 | Audiences ("who it's for") | `src/data/audiences.ts` |
+| Testimonials (home social-proof strip; hidden until real quotes added) | `src/data/testimonials.ts` |
 
 Images go in `public/images/{portfolio/<category>, hero, services, studio}/`; point a data
 item's `src` at them (see LAUNCH-TODO.md). The default social image is `public/images/og-default.png`.
