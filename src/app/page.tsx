@@ -25,7 +25,7 @@ export default function HomePage() {
     { label: "Resin prints on the build plate", src: "/images/studio/resin-plate.webp", alt: "Freshly printed resin miniatures lifting off the build plate" },
     { label: "The Kulworks print bench", src: "/images/studio/printer-bench.webp", alt: "The Kulworks resin printing bench" },
     { label: "UV-printing board tiles", src: "/images/studio/uv-tiles-printing.webp", alt: "Printing board game terrain tiles on the UV flatbed printer" },
-    { label: "Freshly printed miniatures", src: "/images/studio/maker-holding-minis.webp", alt: "Holding a batch of freshly printed resin miniatures" },
+    { label: "3D-printed custom prop armor", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "A full set of 3D-printed Roman-style prop armor" },
     { label: "A batch of resin minis", src: "/images/studio/resin-minis-batch.webp", alt: "A batch of freshly printed resin character miniatures" },
   ];
 
