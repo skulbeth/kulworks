@@ -16,7 +16,7 @@ export default function HomePage() {
   // Temporary holding page. Flip site.constructionMode to false to show the real home.
   if (site.constructionMode) return <ComingSoon />;
 
-  const audienceHighlights = audiences.slice(0, 6);
+  const audienceHighlights = audiences.slice(0, 3);
 
   const studioSlides = [
     { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
@@ -68,9 +68,9 @@ export default function HomePage() {
             <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr]">
               <div>
                 <SectionHeading
-                  eyebrow="What we do"
-                  title="Designed and made under one roof"
-                  intro="No outsourcing and no hand-offs. We do the design and the production in-house, across every material we work in. That keeps the quality where we can control it, from a first prototype deck to a finished run of components."
+                  eyebrow="Inside the studio"
+                  title="One studio, every material"
+                  intro="Custom cards, UV-printed tiles, FDM and resin 3D printing, and the design behind it all. From a first prototype deck to a finished run, it's made right here. Take a look."
                 />
                 <div className="mt-6">
                   <Button href="/about/" variant="ghost">About the studio</Button>
@@ -92,18 +92,32 @@ export default function HomePage() {
               intro="A local, in-house studio, not an overseas print broker."
             />
           </RevealOnScroll>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { h: "Local and US-made", p: "Designed and made in San Antonio, start to finish. No overseas shipping or middlemen." },
-              { h: "Everything in-house", p: "Design and production under one roof, so quality and timing stay in our hands." },
-              { h: "Fast custom design", p: "We design and lay out your cards quickly, then prototype before you commit to a full run." },
-              { h: "No minimums, prototype-ready", p: "From a single prototype deck to a full run. We specialize in getting your game prototype ready to hand off to a manufacturer, so you can playtest with real, tangible cards and pieces first." },
-            ].map((f) => (
-              <div key={f.h} className="rounded-2xl border border-border bg-surface p-6">
-                <h3 className="font-bold text-gold">{f.h}</h3>
-                <p className="mt-2 text-sm text-muted">{f.p}</p>
-              </div>
-            ))}
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="font-bold text-gold">Designed and made in-house</h3>
+              <p className="mt-2 text-sm text-muted">
+                Every step, from design to production, happens here in San Antonio. No outsourcing
+                and no overseas middlemen, so quality and timing stay in our hands.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="font-bold text-gold">Fast custom design</h3>
+              <p className="mt-2 text-sm text-muted">
+                We handle the{" "}
+                <Link href="/services/card-printing/card-design/" className="font-semibold text-blue hover:underline">
+                  card design and prototyping
+                </Link>{" "}
+                for you, then prototype before you commit to a full run.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="font-bold text-gold">No minimums, prototype-ready</h3>
+              <p className="mt-2 text-sm text-muted">
+                From a single prototype deck to a full run. We specialize in getting your game
+                prototype ready to hand to a manufacturer, so you can playtest with real, tangible
+                cards and pieces first.
+              </p>
+            </div>
           </div>
         </Container>
       </section>
@@ -127,45 +141,6 @@ export default function HomePage() {
           <div className="mt-8">
             <Button href="/services/" variant="ghost">All services in detail →</Button>
           </div>
-        </Container>
-      </section>
-
-      {/* ===== How it works ===== */}
-      <section className="border-b border-border bg-surface/30">
-        <Container className="py-16">
-          <RevealOnScroll>
-            <SectionHeading
-              eyebrow="How it works"
-              title="From idea to finished product"
-              intro="A simple path from your first message to cards (or prints) in hand."
-            />
-          </RevealOnScroll>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { n: "1", h: "Tell us about it", p: "Send your project, quantities, sizes, and timeline through the quote form." },
-              { n: "2", h: "We quote and plan", p: "We reply with options and a price, then lock the scope with you." },
-              { n: "3", h: "Finalize the files", p: "Bring your artwork or let us design and prep it, then get it print-ready." },
-              { n: "4", h: "We make it in-house", p: "We print, 3D print, and finish your project, then get it to you." },
-            ].map((s) => (
-              <div key={s.n} className="rounded-2xl border border-border bg-surface p-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold/15 font-extrabold text-gold">
-                  {s.n}
-                </div>
-                <h3 className="mt-4 font-bold">{s.h}</h3>
-                <p className="mt-2 text-sm text-muted">{s.p}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-8 text-center text-muted">
-            We do the card{" "}
-            <Link
-              href="/services/card-printing/card-design/"
-              className="font-semibold text-blue hover:underline"
-            >
-              design and prototyping
-            </Link>{" "}
-            ourselves. Bring your own artwork, or we can point you to artists and 3D modelers.
-          </p>
         </Container>
       </section>
 
