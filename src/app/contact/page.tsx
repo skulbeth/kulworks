@@ -8,7 +8,7 @@ import { breadcrumbSchema } from "@/lib/structured-data";
 import { site } from "@/data/site";
 
 export const metadata: Metadata = {
-  title: "Get a Quote",
+  title: "Get a Quote: Custom Card & Game Printing",
   description:
     "Tell Kulworks about your project, whether it's card printing, tiles, 3D printing, or design, and get a quote in San Antonio. We also take projects to game conventions.",
   alternates: { canonical: "/contact/" },

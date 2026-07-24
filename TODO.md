@@ -183,10 +183,25 @@ things that actually gate running the business. Roughly by priority:
 - [ ] **PO box / mailing address** — required in newsletter footers (CAN-SPAM) before real sends.
 
 **Get found / measure (post-launch):**
-- [ ] **Google Business Profile** + reviews + local citations — the single biggest local lever
-      (see the GBP section in LAUNCH-TODO.md). None of this exists yet.
-- [ ] **Google Search Console** — verify `kulworks.com`, submit the sitemap.
-- [ ] **Bing Webmaster Tools** — same.
+- [ ] **Google Business Profile** — the single biggest local lever. Set up as a SERVICE-AREA
+      business: Sam works from home (a shed), so HIDE the residential address and list service
+      areas instead (San Antonio, Bulverde, Blanco, Spring Branch, etc.). Pick a print-shop
+      category, add services, photos, hours, and the kulworks.com link, then verify (phone/video/
+      postcard). Chase Google reviews after. In progress (Sam, 2026-07-24).
+- [x] **Google Search Console** — DONE 2026-07-24: domain verified via DNS TXT, sitemap
+      (`/sitemap.xml`) submitted + processed (Success, 18 pages). NEXT: URL Inspection → Request
+      Indexing on homepage + top pages to speed first crawl. (Site was noindex until launch, so
+      it is not indexed yet as of 07-24 — `site:kulworks.com` returns nothing, which is a normal
+      cold start, not a problem.)
+- [ ] **Bing Webmaster Tools** — verify + submit the sitemap (same idea as Search Console).
+- [ ] **Off-site promotion + first mentions** (Sam, 2026-07-24):
+      - [ ] **Facebook Page** for Kulworks — then send me the URL so I add it to the footer
+            socials + `sameAs` schema (alongside Instagram/YouTube).
+      - [ ] **Facebook posts** announcing the shop and linking kulworks.com.
+      - [ ] **Reddit post** (e.g. r/boardgames, r/sanantonio, local maker/tabletop communities) —
+            genuine and helpful, not spammy, with a link back to the site.
+      - [x] **Backlink from roletoreign.com → kulworks.com** — DONE 2026-07-24 (live in the Role to
+            Reign Artist Credits section; a real followed link, first external trail to the site).
 
 **Deliverability / email:**
 - [x] **DMARC record** — ALREADY IN PLACE (discovered 2026-07-15). A `_dmarc` TXT already

@@ -9,7 +9,7 @@ import { servicesGraph, breadcrumbSchema } from "@/lib/structured-data";
 import { services } from "@/data/services";
 
 export const metadata: Metadata = {
-  title: "Services: Card Printing, UV Tiles & 3D Printing",
+  title: "Services: Card & Board Game Printing, Tiles & 3D",
   description:
     "Custom UV card printing (poker to tarot), UV-printed board game tiles, FDM and resin 3D printing, and 3D modeling and design, all in-house at Kulworks in San Antonio.",
   alternates: { canonical: "/services/" },

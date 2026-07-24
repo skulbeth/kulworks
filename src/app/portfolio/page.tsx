@@ -7,9 +7,9 @@ import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
-  title: "Portfolio",
+  title: "Portfolio: Custom Cards, Tiles & 3D Prints",
   description:
-    "A gallery of Kulworks work: custom cards, UV-printed tiles, filament and resin 3D prints, and design. Filter by craft.",
+    "A gallery of Kulworks work: custom cards, UV-printed board game tiles, filament and resin 3D prints, and design. Filter by craft.",
   alternates: { canonical: "/portfolio/" },
 };
 

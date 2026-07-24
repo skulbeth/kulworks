@@ -8,9 +8,9 @@ import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
-  title: "About",
+  title: "About: A San Antonio Maker Shop",
   description:
-    "Kulworks is a San Antonio multi-craft maker shop that takes projects from design to finished physical product, in-house, across cards, tiles, and 3D printing.",
+    "Kulworks is a San Antonio maker shop that takes projects from design to finished physical product, in-house, across custom cards, board game tiles, and 3D printing.",
   alternates: { canonical: "/about/" },
 };
 

@@ -8,7 +8,7 @@ import { pricing, pricingIntro } from "@/data/pricing";
 import { breadcrumbSchema } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
-  title: "Pricing",
+  title: "Pricing & Card Cost Estimator",
   description:
     "Starting prices for Kulworks card printing, card design, and 3D modeling in San Antonio. Setup fees, per-card rates, and design rates, with final pricing by quote.",
   alternates: { canonical: "/pricing/" },
