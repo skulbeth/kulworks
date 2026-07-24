@@ -35,7 +35,7 @@ export const portfolioFilters: { id: PortfolioCategory | "all"; label: string }[
 export const portfolio: PortfolioItem[] = [
   { title: "Poker-Sized Cards, Custom Production", category: "cards", src: "/images/portfolio/cards/custom-cards.webp", alt: "Custom poker-sized promo cards printed at Kulworks" }, // A
   { title: "Custom Deck Creation", category: "design", src: "/images/portfolio/cards/custom-deck-creation.webp", alt: "Building a custom card deck in our card generator, laying out fronts and card data" }, // S
-  { title: "Game Prototype Deck", category: "cards", src: "/images/portfolio/cards/card-fronts.webp", alt: "Custom game card fronts for a prototype deck" }, // A
+  { title: "Game Prototype Deck Printing", category: "cards", src: "/images/portfolio/cards/card-fronts.webp", alt: "Custom game card fronts for a prototype deck" }, // A
   { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "FDM-printed custom prop armor set: breastplate, shield, helmet, and sword" }, // S
   { title: "Modular Board Hexes", category: "tiles", src: "/images/portfolio/tiles/board-tiles.webp", alt: "UV-printed modular board game hex tiles" }, // A
   { title: "High-Detail Miniature", category: "resin", src: "/images/portfolio/resin/high-detail-miniature.webp", alt: "Painted high-detail 3D-printed character miniatures" }, // S
