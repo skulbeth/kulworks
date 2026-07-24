@@ -202,6 +202,14 @@ things that actually gate running the business. Roughly by priority:
             genuine and helpful, not spammy, with a link back to the site.
       - [x] **Backlink from roletoreign.com → kulworks.com** — DONE 2026-07-24 (live in the Role to
             Reign Artist Credits section; a real followed link, first external trail to the site).
+- [ ] **Make Kulworks UV-printed business cards** (Sam, real-world task, not a site change) — his
+      own cards to hand out at cons, local shops, and networking. Dogfoods the UV card service and
+      doubles as a sample piece. Put the site URL + socials + QR to kulworks.com on them.
+- [ ] **Flesh out other card styles + print examples** (Sam) — produce physical print samples of the
+      other card styles (tarot, giant/jumbo, trading-style, alternate backs/finishes) to show range.
+      These become portfolio photos AND can un-hide the tarot + giant card pages (currently
+      `hidden: true` only for lack of photos — see the "Remaining photos — shot-list" above). Also
+      handy as demo/sample pieces to hand clients.
 
 **Deliverability / email:**
 - [x] **DMARC record** — ALREADY IN PLACE (discovered 2026-07-15). A `_dmarc` TXT already
