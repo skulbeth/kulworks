@@ -154,7 +154,7 @@ export default function HomePage() {
             </div>
 
             {/* Portfolio */}
-            <div className="mt-16 grid items-center gap-10 border-t border-border pt-14 md:grid-cols-2">
+            <div className="mt-12 grid items-center gap-10 md:grid-cols-2">
               <Placeholder
                 label="Custom printed cards"
                 src="/images/portfolio/cards/cards-displayed.webp"
