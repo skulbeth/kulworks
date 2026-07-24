@@ -129,10 +129,11 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ===== Prototype middle ground (condensed from the guide) ===== */}
+      {/* ===== Prototyping + Portfolio (one section) ===== */}
       <section className="border-b border-border bg-surface/30">
         <Container className="py-16">
           <RevealOnScroll>
+            {/* Prototyping pitch (condensed from the guide) */}
             <div className="mx-auto max-w-3xl text-center">
               <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Prototyping</p>
               <h2 className="mt-2 text-3xl font-extrabold sm:text-4xl">
@@ -151,15 +152,9 @@ export default function HomePage() {
                 <Button href="/contact/" variant="gold">Get a quote</Button>
               </div>
             </div>
-          </RevealOnScroll>
-        </Container>
-      </section>
 
-      {/* ===== Portfolio ===== */}
-      <section className="border-b border-border">
-        <Container className="py-16">
-          <RevealOnScroll>
-            <div className="grid items-center gap-10 md:grid-cols-2">
+            {/* Portfolio */}
+            <div className="mt-16 grid items-center gap-10 border-t border-border pt-14 md:grid-cols-2">
               <Placeholder
                 label="Custom printed cards"
                 src="/images/portfolio/cards/cards-displayed.webp"
