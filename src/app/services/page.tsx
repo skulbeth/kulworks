@@ -61,6 +61,12 @@ export default function ServicesPage() {
                   <h2 className="mt-3 text-2xl font-extrabold sm:text-3xl">{s.name}</h2>
                   <p className="mt-2 font-semibold text-gold">{s.tagline}</p>
                   <p className="mt-4 text-lg text-muted">{s.details}</p>
+                  {s.featuredHighlight && (
+                    <div className="mt-5 flex items-start gap-3 rounded-xl border border-gold/40 bg-gold/10 p-4">
+                      <span aria-hidden className="text-xl leading-none text-gold">★</span>
+                      <p className="font-semibold text-foreground">{s.featuredHighlight}</p>
+                    </div>
+                  )}
                   {s.highlights && (
                     <ul className="mt-4 space-y-2 text-muted">
                       {s.highlights.map((h) => (

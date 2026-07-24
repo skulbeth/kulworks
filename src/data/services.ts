@@ -20,6 +20,8 @@ export interface Service {
   details: string;
   /** Optional scannable bullet points shown under the details on the Services page. */
   highlights?: string[];
+  /** Optional emphasized highlight, rendered as a standout callout above the bullets. */
+  featuredHighlight?: string;
   /** Emoji used as a lightweight icon placeholder (swap for an SVG/image later). */
   icon: string;
   /** Optional sample photo shown on the Services page (4:3). Placeholder shown if omitted. */
@@ -39,8 +41,9 @@ export const services: Service[] = [
       "Custom playing, poker, and game cards in sizes from standard poker up to tarot, with your own card backs and faces. We can even design the cards for you.",
     details:
       "Custom card printing is our flagship craft. We print crisp, durable UV cards with custom backs and faces, in sizes from standard poker up to larger tarot cards.",
+    featuredHighlight:
+      "Want a fully custom look? We can design your cards any way you want for an added fee, or start from one of our standard templates.",
     highlights: [
-      "Want a fully custom look? We can design your cards any way you want for an added fee, or you can start from one of our standard templates",
       "Prototypes, one-off decks, and short runs, all with fast turnaround",
       "Custom backs and faces, from poker (2.5 x 3.5 in / 63 x 88 mm) up to tarot (2.75 x 4.75 in / 70 x 121 mm)",
       "We design the card structure, fill it with your content, and go straight to print, the whole process under one roof",
