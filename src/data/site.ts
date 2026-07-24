@@ -73,14 +73,12 @@ export const site = {
   priceRange: "$$",
 
   // ---- Social profiles ----
-  // TODO: replace the REPLACE_WITH_HANDLE bits with your real handles. Any link
-  // still containing "REPLACE_WITH_HANDLE" is treated as a placeholder: it shows
-  // in the footer (so you have the slot) but is left OUT of the sameAs schema so
-  // we never tell Google about a profile that does not exist yet.
+  // Any link still containing "REPLACE_WITH_HANDLE" is treated as a placeholder:
+  // it's left OUT of the footer icons and the sameAs schema until a real handle
+  // is set. (Instagram is the Role to Reign account; YouTube is @kulworks.)
   social: [
-    { name: "Instagram", url: "https://instagram.com/REPLACE_WITH_HANDLE" },
-    { name: "YouTube", url: "https://youtube.com/@REPLACE_WITH_HANDLE" },
-    { name: "TikTok", url: "https://tiktok.com/@REPLACE_WITH_HANDLE" },
+    { name: "Instagram", url: "https://www.instagram.com/roletoreign/" },
+    { name: "YouTube", url: "https://www.youtube.com/@kulworks" },
   ],
 
   // ---- Other public profiles (used for schema sameAs, not footer icons) ----
