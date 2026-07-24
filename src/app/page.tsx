@@ -16,17 +16,18 @@ export default function HomePage() {
   // Temporary holding page. Flip site.constructionMode to false to show the real home.
   if (site.constructionMode) return <ComingSoon />;
 
-  const leadService = services.find((s) => s.lead) ?? services[0];
-  const otherServices = services.filter((s) => s.id !== leadService.id);
   const audienceHighlights = audiences.slice(0, 6);
 
   const studioSlides = [
     { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
+    { label: "UV-printing custom cards", src: "/images/studio/uv-cards-printing.webp", alt: "Printing custom cards on the UV flatbed printer" },
     { label: "A shelf of painted figures", src: "/images/studio/painted-minis-lineup.webp", alt: "A lineup of painted 3D-printed character figures" },
-    { label: "Tumbling dice to a polish", src: "/images/studio/dice-tumbler.webp", alt: "Custom dice tumbling in a polisher in the Kulworks studio" },
-    { label: "At the resin printers", src: "/images/studio/working-at-printers.webp", alt: "Working at the resin printers in the Kulworks studio" },
+    { label: "Resin prints on the build plate", src: "/images/studio/resin-plate.webp", alt: "Freshly printed resin miniatures lifting off the build plate" },
     { label: "The Kulworks print bench", src: "/images/studio/printer-bench.webp", alt: "The Kulworks resin printing bench" },
+    { label: "UV-printing board tiles", src: "/images/studio/uv-tiles-printing.webp", alt: "Printing board game terrain tiles on the UV flatbed printer" },
     { label: "Freshly printed miniatures", src: "/images/studio/maker-holding-minis.webp", alt: "Holding a batch of freshly printed resin miniatures" },
+    { label: "A batch of resin minis", src: "/images/studio/resin-minis-batch.webp", alt: "A batch of freshly printed resin character miniatures" },
+    { label: "Tumbling dice to a polish", src: "/images/studio/dice-tumbler.webp", alt: "Custom dice tumbling in a polisher in the Kulworks studio" },
     { label: "Custom card backs", src: "/images/studio/card-backs.webp", alt: "Animated showcase of custom printed card backs" },
   ];
 
@@ -118,17 +119,10 @@ export default function HomePage() {
               intro="Card printing is what we do most. If it needs designing, printing, or making, there's a good chance we can help."
             />
           </RevealOnScroll>
-          {/* Flagship: card printing, given the most room */}
-          <div className="mt-10">
-            <ServiceCard service={leadService} featured />
-          </div>
-          {/* The rest */}
-          <p className="mt-10 text-xs font-bold uppercase tracking-[0.2em] text-gold">
-            We also offer
-          </p>
-          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {otherServices.map((s) => (
-              <ServiceCard key={s.id} service={s} />
+          {/* All five services as equal sections; card printing (lead) first + badged. */}
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((s) => (
+              <ServiceCard key={s.id} service={s} featured={s.lead} />
             ))}
           </div>
           <div className="mt-8">
@@ -208,9 +202,11 @@ export default function HomePage() {
             />
           </RevealOnScroll>
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <Placeholder label="Custom Poker Deck" src="/images/portfolio/cards/character-cards-in-jig.webp" alt="Custom printed game cards" />
-            <Placeholder label="UV-Printed Tiles" src="/images/portfolio/tiles/terrain-hexes-hero.webp" alt="UV-printed board game terrain tiles" />
-            <Placeholder label="Resin Miniature" src="/images/portfolio/resin/miniatures-plate-hero.webp" alt="Resin-printed miniatures on the build plate" />
+            <Placeholder label="Custom cards on the UV printer" src="/images/studio/uv-card-printer.webp" alt="Custom cards printing on the UV flatbed printer" ratio="aspect-[4/3]" />
+            <Placeholder label="FDM printing in progress" src="/images/studio/fdm-printer.webp" alt="A part printing on the FDM printer's build plate" ratio="aspect-[4/3]" />
+            <Placeholder label="A finished custom deck" src="/images/portfolio/cards/cards-displayed.webp" alt="A fanned stack of finished custom printed cards" ratio="aspect-[4/3]" />
+            <Placeholder label="UV-printed map tiles" src="/images/portfolio/tiles/map-tiles.webp" alt="Assembled UV-printed board game map tiles" ratio="aspect-[4/3]" />
+            <Placeholder label="3D modeling in Shapr3D" src="/images/portfolio/design/cad-3d-model.webp" alt="Designing a custom 3D model in Shapr3D" ratio="aspect-[4/3]" />
           </div>
           <div className="mt-8">
             <Button href="/portfolio/" variant="ghost">Browse the full gallery →</Button>

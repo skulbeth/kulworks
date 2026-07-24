@@ -43,6 +43,7 @@ export const services: Service[] = [
       "Prototypes, one-off decks, and short runs, all with fast turnaround",
       "Custom backs and faces, from poker (2.5 x 3.5 in / 63 x 88 mm) up to tarot (2.75 x 4.75 in / 70 x 121 mm)",
       "We design the card structure, fill it with your content, and go straight to print, the whole process under one roof",
+      "Want a fully custom look? We can design your cards any way you want for an added fee, or you can start from one of our standard templates",
       "Custom 3D-printed card boxes and sleeve upgrades, offered in tiers",
       "Cards come with rounded corners (the only corner option right now)",
       "Card design at conventions, with quick turnaround and delivery, sometimes next day",

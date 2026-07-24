@@ -34,13 +34,13 @@ export const portfolioFilters: { id: PortfolioCategory | "all"; label: string }[
 // custom-cards, card-fronts, board-tiles, race-3d-model).
 export const portfolio: PortfolioItem[] = [
   { title: "Poker-Sized Cards, Custom Production", category: "cards", src: "/images/portfolio/cards/custom-cards.webp", alt: "Custom poker-sized promo cards printed at Kulworks" }, // A
-  { title: "Custom Deck Creation", category: "cards", src: "/images/portfolio/cards/custom-deck-creation.webp", alt: "Building a custom card deck in our card generator, laying out fronts and card data" }, // S
+  { title: "Custom Deck Creation", category: "design", src: "/images/portfolio/cards/custom-deck-creation.webp", alt: "Building a custom card deck in our card generator, laying out fronts and card data" }, // S
   { title: "Game Prototype Deck", category: "cards", src: "/images/portfolio/cards/card-fronts.webp", alt: "Custom game card fronts for a prototype deck" }, // A
   { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "FDM-printed custom prop armor set: breastplate, shield, helmet, and sword" }, // S
   { title: "Modular Board Hexes", category: "tiles", src: "/images/portfolio/tiles/board-tiles.webp", alt: "UV-printed modular board game hex tiles" }, // A
   { title: "High-Detail Miniature", category: "resin", src: "/images/portfolio/resin/high-detail-miniature.webp", alt: "Painted high-detail 3D-printed character miniatures" }, // S
-  { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/race-3d-model.webp", alt: "Custom 3D character model designed and printed by Kulworks" }, // A
-  { title: "Character Mini Set", category: "resin", src: "/images/portfolio/resin/miniatures-cure-glow.webp", alt: "Resin printed character miniatures" }, // S
+  { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/cad-3d-model.webp", alt: "Designing a custom 3D model in Shapr3D" }, // A
+  { title: "Resin Printing (minis and more!)", category: "resin", src: "/images/portfolio/resin/miniatures-cure-glow.webp", alt: "Resin printed character miniatures" }, // S
   { title: "Card Layout & Artwork Prep", category: "design", src: "/images/portfolio/design/card-layout-photoshop.webp", alt: "Designing and laying out custom character class cards in Photoshop" }, // S
   { title: "Tile Artwork Prep", category: "design", src: "/images/portfolio/design/tile-artwork-prep.webp", alt: "Board tile and map artwork prepared for UV printing" }, // S
 ];

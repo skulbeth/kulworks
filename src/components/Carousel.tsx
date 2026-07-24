@@ -94,6 +94,8 @@ export default function Carousel({
                 <img
                   src={slide.src}
                   alt={slide.alt ?? slide.label}
+                  loading={idx === 0 ? "eager" : "lazy"}
+                  decoding="async"
                   className="absolute inset-0 h-full w-full bg-background object-cover"
                 />
               ) : (
