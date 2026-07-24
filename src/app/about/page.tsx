@@ -108,6 +108,31 @@ export default function AboutPage() {
         </Container>
       </section>
 
+      {/* ===== Our machines ===== */}
+      <section className="border-b border-border">
+        <Container className="py-16">
+          <SectionHeading
+            eyebrow="The gear"
+            title="Showcasing our machines"
+            intro="The printers behind the work: resin, UV flatbed, and FDM, all running in-house."
+          />
+          <div className="mt-10 grid gap-6 sm:grid-cols-3">
+            <figure>
+              <Placeholder label="Resin printers" src="/images/studio/machine-resin.webp" alt="Resin printer and wash-and-cure station in the Kulworks shop" ratio="aspect-[4/3]" className="rounded-2xl" />
+              <figcaption className="mt-3 text-center font-semibold">Resin printing</figcaption>
+            </figure>
+            <figure>
+              <Placeholder label="UV flatbed printer" src="/images/studio/machine-uv.webp" alt="UV flatbed printer printing a custom card" ratio="aspect-[4/3]" className="rounded-2xl" />
+              <figcaption className="mt-3 text-center font-semibold">UV flatbed printing</figcaption>
+            </figure>
+            <figure>
+              <Placeholder label="Filament (FDM) printers" src="/images/studio/machine-fdm.webp" alt="FDM filament printers with spools in the Kulworks shop" ratio="aspect-[4/3]" className="rounded-2xl" />
+              <figcaption className="mt-3 text-center font-semibold">Filament (FDM) printing</figcaption>
+            </figure>
+          </div>
+        </Container>
+      </section>
+
       <section>
         <Container className="py-16 text-center">
           <h2 className="text-2xl font-extrabold sm:text-3xl">Let&apos;s build something.</h2>
