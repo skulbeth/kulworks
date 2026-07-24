@@ -36,14 +36,16 @@ export default function PortfolioPage() {
       <section className="border-b border-border">
         <Container className="py-12">
           <PortfolioGrid />
-          <p className="mt-10 text-center text-sm text-muted">
+          <p className="mx-auto mt-10 max-w-3xl text-center text-lg text-muted">
             This is a sample, not the whole shop. We also make{" "}
             <span className="text-foreground">UV-printed terrain tiles and custom tokens</span>,{" "}
             <span className="text-foreground">FDM replacement components and city &amp; terrain upgrade pieces</span>,
             custom 3D-printed card boxes and inserts,{" "}
             <span className="text-foreground">tarot and giant/jumbo card sizes</span> on custom order, and more.{" "}
             <a href="/contact/" className="font-semibold text-blue hover:underline">Just ask</a>{" "}
-            and we&apos;ll show you examples or make something new.
+            and we&apos;ll show you examples or make something new. You can also browse our custom 3D
+            (non-proprietary) models on{" "}
+            <a href="https://makerworld.com/en/@skulbeth" target="_blank" rel="noopener noreferrer" className="font-semibold text-blue hover:underline">MakerWorld</a>.
           </p>
         </Container>
       </section>

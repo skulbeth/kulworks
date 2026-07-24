@@ -129,26 +129,29 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ===== Portfolio highlights ===== */}
+      {/* ===== Portfolio ===== */}
       <section className="border-b border-border">
         <Container className="py-16">
           <RevealOnScroll>
-            <SectionHeading
-              eyebrow="Portfolio"
-              title="A few highlights"
-              intro="A few pieces across cards, tiles, and 3D. See the full gallery for the rest."
-            />
+            <div className="grid items-center gap-10 md:grid-cols-2">
+              <Placeholder
+                label="Custom printed cards"
+                src="/images/portfolio/cards/cards-displayed.webp"
+                alt="A fanned stack of finished custom printed cards"
+                ratio="aspect-[4/3]"
+              />
+              <div>
+                <SectionHeading
+                  eyebrow="Portfolio"
+                  title="See the work"
+                  intro="A sample of what we make, across cards, tiles, and 3D. The full gallery has the rest, and it keeps growing."
+                />
+                <Button href="/portfolio/" variant="gold" size="lg" className="mt-8">
+                  Browse the full gallery →
+                </Button>
+              </div>
+            </div>
           </RevealOnScroll>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <Placeholder label="Custom cards on the UV printer" src="/images/studio/uv-card-printer.webp" alt="Custom cards printing on the UV flatbed printer" ratio="aspect-[4/3]" />
-            <Placeholder label="FDM printing in progress" src="/images/studio/fdm-printer.webp" alt="A part printing on the FDM printer's build plate" ratio="aspect-[4/3]" />
-            <Placeholder label="A finished custom deck" src="/images/portfolio/cards/cards-displayed.webp" alt="A fanned stack of finished custom printed cards" ratio="aspect-[4/3]" />
-            <Placeholder label="UV-printed map tiles" src="/images/portfolio/tiles/map-tiles.webp" alt="Assembled UV-printed board game map tiles" ratio="aspect-[4/3]" />
-            <Placeholder label="3D modeling in Shapr3D" src="/images/portfolio/design/cad-3d-model.webp" alt="Designing a custom 3D model in Shapr3D" ratio="aspect-[4/3]" />
-          </div>
-          <div className="mt-8">
-            <Button href="/portfolio/" variant="ghost">Browse the full gallery →</Button>
-          </div>
         </Container>
       </section>
 
