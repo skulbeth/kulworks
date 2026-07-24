@@ -133,9 +133,9 @@ export default function HomePage() {
       <section className="border-b border-border bg-surface/30">
         <Container className="py-16">
           <RevealOnScroll>
-            <div className="grid items-center gap-12 md:grid-cols-2">
+            <div className="grid items-stretch gap-6 md:grid-cols-2">
               {/* Prototyping pitch (condensed from the guide) */}
-              <div>
+              <div className="flex flex-col rounded-2xl border border-border bg-surface p-8">
                 <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Prototyping</p>
                 <h2 className="mt-2 text-3xl font-extrabold sm:text-4xl">
                   Between a home printer and a factory
@@ -146,7 +146,7 @@ export default function HomePage() {
                   pieces in small numbers, with no huge minimum, so your game looks and plays like the
                   real thing while you&apos;re still refining it.
                 </p>
-                <div className="mt-7 flex flex-wrap gap-3">
+                <div className="mt-auto flex flex-wrap gap-3 pt-7">
                   <Button href="/guides/print-and-play-vs-real-prototype/" variant="ghost">
                     Print-and-play vs. a real prototype →
                   </Button>
@@ -155,7 +155,7 @@ export default function HomePage() {
               </div>
 
               {/* Portfolio */}
-              <div>
+              <div className="flex flex-col rounded-2xl border border-border bg-surface p-8">
                 <Placeholder
                   label="Custom printed cards"
                   src="/images/portfolio/cards/cards-displayed.webp"
@@ -164,14 +164,16 @@ export default function HomePage() {
                   className="rounded-2xl"
                 />
                 <SectionHeading
-                  className="mt-8"
+                  className="mt-6"
                   eyebrow="Portfolio"
                   title="See the work"
                   intro="A sample of what we make, across cards, tiles, and 3D. The full gallery has the rest, and it keeps growing."
                 />
-                <Button href="/portfolio/" variant="gold" size="lg" className="mt-6">
-                  Browse the full gallery →
-                </Button>
+                <div className="mt-auto pt-6">
+                  <Button href="/portfolio/" variant="gold" size="lg">
+                    Browse the full gallery →
+                  </Button>
+                </div>
               </div>
             </div>
           </RevealOnScroll>
