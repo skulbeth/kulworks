@@ -27,8 +27,6 @@ export default function HomePage() {
     { label: "UV-printing board tiles", src: "/images/studio/uv-tiles-printing.webp", alt: "Printing board game terrain tiles on the UV flatbed printer" },
     { label: "Freshly printed miniatures", src: "/images/studio/maker-holding-minis.webp", alt: "Holding a batch of freshly printed resin miniatures" },
     { label: "A batch of resin minis", src: "/images/studio/resin-minis-batch.webp", alt: "A batch of freshly printed resin character miniatures" },
-    { label: "Tumbling dice to a polish", src: "/images/studio/dice-tumbler.webp", alt: "Custom dice tumbling in a polisher in the Kulworks studio" },
-    { label: "Custom card backs", src: "/images/studio/card-backs.webp", alt: "Animated showcase of custom printed card backs" },
   ];
 
   return (

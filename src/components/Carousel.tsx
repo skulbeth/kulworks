@@ -34,6 +34,10 @@ export default function Carousel({
   const [pauseTimeout, setPauseTimeout] = useState<NodeJS.Timeout | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  // On-demand loading: only fetch a slide's image once it's the current slide (or an
+  // immediate neighbour, so the next swipe is ready). Heavy animated slides therefore
+  // don't all download on page load — big win on mobile. Once loaded, a slide stays loaded.
+  const [loaded, setLoaded] = useState<Set<number>>(() => new Set([0]));
 
   const length = slides.length;
   const next = () => setCurrent((prev) => (prev + 1) % length);
@@ -75,6 +79,17 @@ export default function Carousel({
     return () => clearInterval(timer);
   }, [autoPlay, autoPlayInterval, paused, length]);
 
+  // Grow the "loaded" set to include the current slide + its neighbours.
+  useEffect(() => {
+    setLoaded((prev) => {
+      const nxt = new Set(prev);
+      nxt.add(current);
+      nxt.add((current + 1) % length);
+      nxt.add((current - 1 + length) % length);
+      return nxt;
+    });
+  }, [current, length]);
+
   return (
     <div
       className="relative w-full max-w-full overflow-hidden rounded-2xl border border-border shadow-lg"
@@ -89,7 +104,7 @@ export default function Carousel({
         {slides.map((slide, idx) => (
           <div key={idx} className="w-full flex-shrink-0">
             <div className={`relative w-full ${ratio}`}>
-              {slide.src ? (
+              {slide.src && loaded.has(idx) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={slide.src}
@@ -98,6 +113,9 @@ export default function Carousel({
                   decoding="async"
                   className="absolute inset-0 h-full w-full bg-background object-cover"
                 />
+              ) : slide.src ? (
+                // Not reached yet — hold the layout with a neutral panel until it loads.
+                <div className="absolute inset-0 bg-surface2" aria-hidden />
               ) : (
                 <div
                   role="img"
