@@ -44,7 +44,7 @@ export default function HomePage() {
               <span className="text-gold text-glow-gold">Cards, tiles, and 3D</span>, designed and made in-house.
             </h1>
             <p className="mt-6 max-w-3xl text-lg text-muted sm:text-xl">
-              Kulworks is a San Antonio maker studio. We turn your idea into a finished,
+              Kulworks is a San Antonio maker shop. We turn your idea into a finished,
               physical product: custom UV card printing, UV-printed cards for anyone, game
               tiles, FDM and resin 3D printing, and the design behind it all.
             </p>
@@ -72,12 +72,12 @@ export default function HomePage() {
             <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr]">
               <div>
                 <SectionHeading
-                  eyebrow="Inside the studio"
-                  title="One studio, every material"
+                  eyebrow="Inside the shop"
+                  title="One shop, every material"
                   intro="Custom cards, UV-printed tiles, FDM and resin 3D printing, and the design behind it all. From a first prototype deck to a finished run, it's made right here. Take a look."
                 />
                 <div className="mt-6">
-                  <Button href="/about/" variant="ghost">About the studio</Button>
+                  <Button href="/about/" variant="ghost">About the shop</Button>
                 </div>
               </div>
               <Carousel slides={studioSlides} />
@@ -86,42 +86,23 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ===== Why Kulworks (the edge) ===== */}
+      {/* ===== Who it's for ===== */}
       <section className="border-b border-border bg-surface/30">
         <Container className="py-16">
           <RevealOnScroll>
             <SectionHeading
-              eyebrow="Why Kulworks"
-              title="What sets us apart"
-              intro="A local, in-house studio, not an overseas print broker."
+              eyebrow="Who it's for"
+              title="Built for makers, teams, and sellers"
+              intro="Game designers, sports clubs, photographers, market-day sellers. If you need it made, you're in the right place."
             />
           </RevealOnScroll>
-          <div className="mt-10 grid gap-6 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold text-gold">Designed and made in-house</h3>
-              <p className="mt-2 text-sm text-muted">
-                Every step, from design to production, happens here in San Antonio. No outsourcing
-                and no overseas middlemen, so quality and timing stay in our hands.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold text-gold">Fast custom design</h3>
-              <p className="mt-2 text-sm text-muted">
-                We handle the{" "}
-                <Link href="/services/card-printing/card-design/" className="font-semibold text-blue hover:underline">
-                  card design and prototyping
-                </Link>{" "}
-                for you, then prototype before you commit to a full run.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold text-gold">No minimums, prototype-ready</h3>
-              <p className="mt-2 text-sm text-muted">
-                From a single prototype deck to a full run. We specialize in getting your game
-                prototype ready to hand to a manufacturer, so you can playtest with real, tangible
-                cards and pieces first.
-              </p>
-            </div>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {audienceHighlights.map((a) => (
+              <AudienceCard key={a.title} audience={a} />
+            ))}
+          </div>
+          <div className="mt-8">
+            <Button href="/who-its-for/" variant="ghost">See everyone we work with →</Button>
           </div>
         </Container>
       </section>
@@ -144,27 +125,6 @@ export default function HomePage() {
           </div>
           <div className="mt-8">
             <Button href="/services/" variant="ghost">All services in detail →</Button>
-          </div>
-        </Container>
-      </section>
-
-      {/* ===== Who it's for ===== */}
-      <section className="border-b border-border bg-surface/30">
-        <Container className="py-16">
-          <RevealOnScroll>
-            <SectionHeading
-              eyebrow="Who it's for"
-              title="Built for makers, teams, and sellers"
-              intro="Game designers, sports clubs, photographers, market-day sellers. If you need it made, you're in the right place."
-            />
-          </RevealOnScroll>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {audienceHighlights.map((a) => (
-              <AudienceCard key={a.title} audience={a} />
-            ))}
-          </div>
-          <div className="mt-8">
-            <Button href="/who-its-for/" variant="ghost">See everyone we work with →</Button>
           </div>
         </Container>
       </section>

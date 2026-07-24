@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
 import Placeholder from "@/components/Placeholder";
@@ -27,7 +28,7 @@ export default function AboutPage() {
           <SectionHeading
             as="h1"
             eyebrow="About"
-            title="A San Antonio maker studio, end to end"
+            title="A San Antonio maker shop, end to end"
             intro="Kulworks takes an idea all the way to a finished, physical thing you can hold, without bouncing between vendors or sending it overseas."
           />
         </Container>
@@ -36,10 +37,10 @@ export default function AboutPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <div className="grid items-center gap-10 md:grid-cols-2">
-            <Placeholder label="Maker / studio portrait" src="/images/studio/maker-portrait.webp" alt="Sam, the maker behind Kulworks, wearing a full set of armor he designed and 3D-printed himself" ratio="aspect-[4/3]" />
+            <Placeholder label="Maker / shop portrait" src="/images/studio/maker-portrait.webp" alt="Sam, the maker behind Kulworks, wearing a full set of armor he designed and 3D-printed himself" ratio="aspect-[4/3]" />
             <div className="space-y-4 text-lg text-muted">
               <p>
-                Kulworks is a San Antonio maker studio. Card printing is what we do most,
+                Kulworks is a San Antonio maker shop. Card printing is what we do most,
                 and we work across materials: custom UV cards, UV-printed board game tiles,
                 FDM and resin 3D printing, plus the design work behind all of it. Everything
                 is made in-house, right here, not sent overseas.
@@ -72,17 +73,37 @@ export default function AboutPage() {
 
       <section className="border-b border-border bg-surface/30">
         <Container className="py-16">
-          <div className="grid gap-6 sm:grid-cols-3">
-            {[
-              { h: "Local and US-made", p: "Designed and made right here in San Antonio." },
-              { h: "In-house, end to end", p: "Design through production under one roof, with no outsourcing." },
-              { h: "Maker-credible", p: "We design and ship our own games, so we know how to make yours too." },
-            ].map((b) => (
-              <div key={b.h} className="rounded-2xl border border-border bg-surface p-6">
-                <h3 className="text-lg font-bold text-gold">{b.h}</h3>
-                <p className="mt-2 text-muted">{b.p}</p>
-              </div>
-            ))}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="text-lg font-bold text-gold">Local and in-house</h3>
+              <p className="mt-2 text-muted">
+                Every step, design through production, is made right here in San Antonio, with no
+                outsourcing and no overseas middlemen.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="text-lg font-bold text-gold">Fast custom design</h3>
+              <p className="mt-2 text-muted">
+                We handle the{" "}
+                <Link href="/services/card-printing/card-design/" className="font-semibold text-blue hover:underline">
+                  card design and prototyping
+                </Link>{" "}
+                for you, then prototype before you commit to a full run.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="text-lg font-bold text-gold">No minimums, prototype-ready</h3>
+              <p className="mt-2 text-muted">
+                From a single deck to a full run. We get your prototype ready to hand to a
+                manufacturer, so you can playtest with real, tangible pieces first.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="text-lg font-bold text-gold">Maker-credible</h3>
+              <p className="mt-2 text-muted">
+                We design and ship our own games, so we know how to make yours too.
+              </p>
+            </div>
           </div>
         </Container>
       </section>
