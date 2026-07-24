@@ -129,6 +129,32 @@ export default function HomePage() {
         </Container>
       </section>
 
+      {/* ===== Prototype middle ground (condensed from the guide) ===== */}
+      <section className="border-b border-border bg-surface/30">
+        <Container className="py-16">
+          <RevealOnScroll>
+            <div className="mx-auto max-w-3xl text-center">
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Prototyping</p>
+              <h2 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+                Between a home printer and a factory
+              </h2>
+              <p className="mt-5 text-lg text-muted">
+                Printing at home is a great, cheap way to start. A factory run of a thousand copies
+                is a big leap. The gap between them is where we live: clean, table-ready cards and
+                pieces in small numbers, with no huge minimum, so your game looks and plays like the
+                real thing while you&apos;re still refining it.
+              </p>
+              <div className="mt-7 flex flex-wrap justify-center gap-3">
+                <Button href="/guides/print-and-play-vs-real-prototype/" variant="ghost">
+                  Print-and-play vs. a real prototype →
+                </Button>
+                <Button href="/contact/" variant="gold">Get a quote</Button>
+              </div>
+            </div>
+          </RevealOnScroll>
+        </Container>
+      </section>
+
       {/* ===== Portfolio ===== */}
       <section className="border-b border-border">
         <Container className="py-16">
