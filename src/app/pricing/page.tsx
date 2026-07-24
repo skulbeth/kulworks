@@ -27,6 +27,14 @@ export default function PricingPage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <SectionHeading as="h1" eyebrow="Pricing" title="What it costs" intro={pricingIntro} />
+          <p className="mt-6 max-w-3xl text-lg text-muted">
+            The estimator below is for <strong className="text-foreground">card printing only</strong>.
+            Everything else (UV-printed tiles, FDM and resin 3D printing, and custom design) is priced
+            per project, so reach out for a custom quote.
+          </p>
+          <div className="mt-6">
+            <Button href="/contact/" variant="gold" size="lg">Get a custom quote</Button>
+          </div>
         </Container>
       </section>
 
@@ -36,7 +44,7 @@ export default function PricingPage() {
           <SectionHeading
             eyebrow="Estimator"
             title="Estimate your card order"
-            intro="A quick ballpark for card printing. Adjust the options to see a live estimate."
+            intro="A quick ballpark for card printing only. Adjust the options to see a live estimate. For tiles, 3D printing, or design work, ask us for a custom quote."
           />
           <div className="mt-10">
             <CardCalculator />

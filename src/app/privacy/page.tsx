@@ -34,8 +34,10 @@ export default function PrivacyPage() {
       <p className={p}>
         <strong>Information collected automatically:</strong> we use privacy-friendly,
         cookieless analytics to understand site usage: pages viewed, approximate location
-        (city/country), device type, and the referring site. We do not use tracking cookies or
-        cross-site advertising trackers.
+        (city/country), device type, and the referring site. To count unique visitors and
+        prevent abuse, we store a one-way salted hash derived from your IP address; we do not
+        store your raw IP address, and we do not use tracking cookies or cross-site advertising
+        trackers.
       </p>
 
       <h2 className={h2}>How we use it</h2>

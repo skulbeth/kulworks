@@ -46,7 +46,8 @@ export default function HomePage() {
             <p className="mt-6 max-w-3xl text-lg text-muted sm:text-xl">
               Kulworks is a San Antonio maker studio. We turn your idea into a finished,
               physical product: custom UV card printing, UV-printed game tiles, 3D printing,
-              and the design work behind all of it.
+              and the design work behind all of it. We help you design your cards and build
+              your prototypes, so you can hold your envisioned game and playtest it for real.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/contact/" variant="primary" size="lg">
@@ -96,7 +97,7 @@ export default function HomePage() {
               { h: "Local and US-made", p: "Designed and made in San Antonio, start to finish. No overseas shipping or middlemen." },
               { h: "Everything in-house", p: "Design and production under one roof, so quality and timing stay in our hands." },
               { h: "Fast custom design", p: "We design and lay out your cards quickly, then prototype before you commit to a full run." },
-              { h: "No minimums", p: "From a single prototype deck to a full run. Order exactly what you need." },
+              { h: "No minimums, prototype-ready", p: "From a single prototype deck to a full run. We specialize in getting your game prototype ready to hand off to a manufacturer, so you can playtest with real, tangible cards and pieces first." },
             ].map((f) => (
               <div key={f.h} className="rounded-2xl border border-border bg-surface p-6">
                 <h3 className="font-bold text-gold">{f.h}</h3>

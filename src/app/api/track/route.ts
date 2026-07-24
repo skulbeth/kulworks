@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { visitorHash } from "@/lib/visitor";
 import { logError } from "@/lib/log-error";
 
 export const runtime = "nodejs";
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
         city: request.headers.get("x-vercel-ip-city"),
         device: deviceFromUA(ua),
         sessionId: typeof sessionId === "string" ? sessionId.slice(0, 100) : null,
+        visitorHash: visitorHash(clientIp(request)),
       },
     });
     return NextResponse.json({ ok: true });

@@ -277,17 +277,19 @@ model RateLimit {
 
 // ── Cookieless page-view analytics ──
 model PageView {
-  id        String   @id @default(cuid())
-  path      String
-  referrer  String?
-  country   String?
-  city      String?
-  device    String?
-  sessionId String?
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  path        String
+  referrer    String?
+  country     String?
+  city        String?
+  device      String?
+  sessionId   String? // anonymous per-session id (sessionStorage)
+  visitorHash String? // short salted hash of IP — stable per-visitor id; raw IP never stored
+  createdAt   DateTime @default(now())
 
   @@index([path])
   @@index([createdAt])
+  @@index([visitorHash])
 }
 
 // ── Quotes & Invoices (a document sent to a client; INVOICE also carries pay links) ──
