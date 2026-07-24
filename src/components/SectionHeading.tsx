@@ -8,15 +8,17 @@ export default function SectionHeading({
   intro,
   center = false,
   as: As = "h2",
+  className = "",
 }: {
   eyebrow?: string;
   title: ReactNode;
   intro?: ReactNode;
   center?: boolean;
   as?: "h1" | "h2";
+  className?: string;
 }) {
   return (
-    <div className={`max-w-3xl ${center ? "mx-auto text-center" : ""}`}>
+    <div className={`max-w-3xl ${center ? "mx-auto text-center" : ""} ${className}`}>
       {eyebrow && (
         <p className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-gold">
           {eyebrow}

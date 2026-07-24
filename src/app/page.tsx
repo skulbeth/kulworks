@@ -129,45 +129,47 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ===== Prototyping + Portfolio (one section) ===== */}
+      {/* ===== Prototyping + Portfolio (one section, side by side) ===== */}
       <section className="border-b border-border bg-surface/30">
         <Container className="py-16">
           <RevealOnScroll>
-            {/* Prototyping pitch (condensed from the guide) */}
-            <div className="mx-auto max-w-3xl text-center">
-              <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Prototyping</p>
-              <h2 className="mt-2 text-3xl font-extrabold sm:text-4xl">
-                Between a home printer and a factory
-              </h2>
-              <p className="mt-5 text-lg text-muted">
-                Printing at home is a great, cheap way to start. A factory run of a thousand copies
-                is a big leap. The gap between them is where we live: clean, table-ready cards and
-                pieces in small numbers, with no huge minimum, so your game looks and plays like the
-                real thing while you&apos;re still refining it.
-              </p>
-              <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Button href="/guides/print-and-play-vs-real-prototype/" variant="ghost">
-                  Print-and-play vs. a real prototype →
-                </Button>
-                <Button href="/contact/" variant="gold">Get a quote</Button>
-              </div>
-            </div>
-
-            {/* Portfolio */}
-            <div className="mt-12 grid items-center gap-10 md:grid-cols-2">
-              <Placeholder
-                label="Custom printed cards"
-                src="/images/portfolio/cards/cards-displayed.webp"
-                alt="A fanned stack of finished custom printed cards"
-                ratio="aspect-[4/3]"
-              />
+            <div className="grid items-center gap-12 md:grid-cols-2">
+              {/* Prototyping pitch (condensed from the guide) */}
               <div>
+                <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Prototyping</p>
+                <h2 className="mt-2 text-3xl font-extrabold sm:text-4xl">
+                  Between a home printer and a factory
+                </h2>
+                <p className="mt-5 text-lg text-muted">
+                  Printing at home is a great, cheap way to start. A factory run of a thousand copies
+                  is a big leap. The gap between them is where we live: clean, table-ready cards and
+                  pieces in small numbers, with no huge minimum, so your game looks and plays like the
+                  real thing while you&apos;re still refining it.
+                </p>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  <Button href="/guides/print-and-play-vs-real-prototype/" variant="ghost">
+                    Print-and-play vs. a real prototype →
+                  </Button>
+                  <Button href="/contact/" variant="gold">Get a quote</Button>
+                </div>
+              </div>
+
+              {/* Portfolio */}
+              <div>
+                <Placeholder
+                  label="Custom printed cards"
+                  src="/images/portfolio/cards/cards-displayed.webp"
+                  alt="A fanned stack of finished custom printed cards"
+                  ratio="aspect-[4/3]"
+                  className="rounded-2xl"
+                />
                 <SectionHeading
+                  className="mt-8"
                   eyebrow="Portfolio"
                   title="See the work"
                   intro="A sample of what we make, across cards, tiles, and 3D. The full gallery has the rest, and it keeps growing."
                 />
-                <Button href="/portfolio/" variant="gold" size="lg" className="mt-8">
+                <Button href="/portfolio/" variant="gold" size="lg" className="mt-6">
                   Browse the full gallery →
                 </Button>
               </div>
