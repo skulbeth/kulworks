@@ -5,12 +5,14 @@ import {
   updateSubmissionStatus,
   convertSubmissionToProject,
   deleteSubmission,
+  sendClientEmail,
 } from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
   type ExplorerItem,
 } from "../_components/RecordExplorer";
 import ConfirmButton from "../_components/ConfirmButton";
+import CopyButton from "../_components/CopyButton";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +90,20 @@ export default async function SubmissionsPage({
           <p className="whitespace-pre-wrap">{s.message}</p>
         </Field>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Phone">{fmtText(s.phone)}</Field>
+          <Field label="Email">
+            <div className="flex items-center gap-2">
+              <a href={`mailto:${s.email}`} className="text-blue hover:underline">
+                {s.email}
+              </a>
+              <CopyButton text={s.email} label="Copy" />
+            </div>
+          </Field>
+          <Field label="Phone">
+            <div className="flex items-center gap-2">
+              {fmtText(s.phone)}
+              {s.phone && <CopyButton text={s.phone} label="Copy" />}
+            </div>
+          </Field>
           <Field label="Reference / artwork">{fmtText(s.reference)}</Field>
           <Field label="Shared Drive folder">
             {s.driveFolderUrl ? (
@@ -108,7 +123,19 @@ export default async function SubmissionsPage({
           </Field>
           <Field label="Received">{fmtDateTime(s.createdAt)}</Field>
           <Field label="Linked client">
-            {s.client ? `${s.client.name} <${s.client.email}>` : "—"}
+            {s.client ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/admin/clients/${s.client.id}/`}
+                  className="text-blue hover:underline"
+                >
+                  {s.client.name} &lt;{s.client.email}&gt;
+                </Link>
+                <CopyButton text={s.client.email} label="Copy" />
+              </div>
+            ) : (
+              "—"
+            )}
           </Field>
         </div>
         {s.sessionId && (journeys.get(s.sessionId)?.length ?? 0) > 0 && (
@@ -119,6 +146,43 @@ export default async function SubmissionsPage({
               ))}
             </ol>
           </Field>
+        )}
+        {s.client && (
+          <div className="rounded-xl border border-border bg-surface2/40 p-3">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+              Email {s.client.name}
+            </div>
+            <form action={sendClientEmail} className="space-y-2">
+              <input type="hidden" name="clientId" value={s.client.id} />
+              <input
+                name="subject"
+                required
+                placeholder="Subject"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-blue focus:outline-none"
+              />
+              <textarea
+                name="body"
+                required
+                rows={4}
+                placeholder="Write your reply or quote… (blank lines start new paragraphs)"
+                className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-blue focus:outline-none"
+              />
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" name="includeDriveFolder" className="h-4 w-4 accent-primary" />
+                Create &amp; attach a shared Drive folder link
+              </label>
+              <ConfirmButton
+                message={`Send this email to ${s.email}?`}
+                className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"
+              >
+                Send email →
+              </ConfirmButton>
+            </form>
+            <p className="mt-2 text-xs text-muted">
+              Sends from contact@kulworks.com (replies come to you) and is logged on the client.
+              You&apos;ll land on the client page after sending.
+            </p>
+          </div>
         )}
         <div className="flex flex-wrap items-center gap-3 border-t border-border pt-3">
           <form action={updateSubmissionStatus} className="flex items-center gap-2">
