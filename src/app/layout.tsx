@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     template: "%s | Kulworks",
   },
   description:
-    "Custom card and board game printing in San Antonio: poker through tarot decks, board game prototypes, tiles, and short runs. Kulworks also does FDM and resin 3D printing and 3D design, all made in-house.",
+    "Custom card and board game printing in San Antonio: poker through tarot decks, board game prototypes, tiles, and small-run manufacturing. Kulworks also does FDM and resin 3D printing and 3D design, all made in-house.",
   applicationName: "Kulworks",
   alternates: { canonical: "/" },
   keywords: [
@@ -57,6 +57,7 @@ export const metadata: Metadata = {
     "playing card printing",
     "tarot card printing",
     "board game prototype printing",
+    "small-run board game manufacturing San Antonio",
     "game prototype cards",
     "UV printing board game tiles",
     "3D printing San Antonio",

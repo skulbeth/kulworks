@@ -144,7 +144,7 @@ export const cardPages: CardPage[] = [
     sections: [
       {
         h: "The clean middle ground",
-        body: "There is a big gap between printing cards at home and cutting them out with scissors, and paying a factory for a thousand of them. That gap is what we specialize in. We get you clean, table ready prototype cards and pieces in small numbers, so your game looks and plays like the real thing while you are still working out the design. We are not a big manufacturer, and for this stage that is the point. You get quality, quick turnaround, and no huge minimum.",
+        body: "There is a big gap between printing cards at home and cutting them out with scissors, and paying a factory for a thousand of them. That gap is what we specialize in. We get you clean, table ready prototype cards and pieces in small numbers, so your game looks and plays like the real thing while you are still working out the design. We are not a big overseas factory, and for this stage that is the point. What we are is a small-run manufacturing shop: real, finished cards and pieces made in-house, with quality, quick turnaround, and no huge minimum.",
       },
       {
         h: "Test before you commit",
