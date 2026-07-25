@@ -45,7 +45,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Kulworks: Custom Card & Board Game Printing in San Antonio",
+    default: "Kulworks: Custom Card, Board Game & 3D Printing in San Antonio",
     template: "%s | Kulworks",
   },
   description:
@@ -71,14 +71,14 @@ export const metadata: Metadata = {
     url: SITE_URL,
     siteName: "Kulworks",
     locale: "en_US",
-    title: "Kulworks: Custom Card & Board Game Printing in San Antonio",
+    title: "Kulworks: Custom Card, Board Game & 3D Printing in San Antonio",
     description:
       "One shop, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
     images: [{ url: "/images/og-default.png", width: 1200, height: 630, alt: "Kulworks" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kulworks: Custom Card & Board Game Printing in San Antonio",
+    title: "Kulworks: Custom Card, Board Game & 3D Printing in San Antonio",
     description:
       "One shop, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
     images: ["/images/og-default.png"],
