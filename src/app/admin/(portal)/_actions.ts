@@ -736,7 +736,7 @@ export async function createSubmissionDriveFolder(formData: FormData) {
 export async function setSubmissionFolderLink(formData: FormData) {
   const { profile } = await requireProfile();
   const id = s(formData, "id");
-  const url = s(formData, "url").trim();
+  const url = (s(formData, "url") ?? "").trim();
   if (!id) return;
   const submission = await prisma.submission.findUnique({ where: { id } });
   if (!submission) return;
