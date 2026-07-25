@@ -7,6 +7,7 @@ import {
   deleteSubmission,
   sendClientEmail,
   createSubmissionDriveFolder,
+  setSubmissionFolderLink,
 } from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
@@ -132,6 +133,19 @@ export default async function SubmissionsPage({
                 </form>
               </div>
             )}
+            {/* Or paste / replace a link manually (a folder you made, or one the client sent). */}
+            <form action={setSubmissionFolderLink} className="mt-2 flex flex-wrap items-center gap-2">
+              <input type="hidden" name="id" value={s.id} />
+              <input
+                name="url"
+                defaultValue={s.driveFolderUrl ?? ""}
+                placeholder="or paste a folder / storage link"
+                className="min-w-0 flex-1 rounded-lg border border-border bg-surface2 px-2 py-1 text-xs focus:border-blue focus:outline-none"
+              />
+              <button className="rounded-lg border border-border px-2 py-1 text-xs font-semibold hover:border-blue hover:text-blue">
+                {s.driveFolderUrl ? "Update link" : "Add link"}
+              </button>
+            </form>
           </Field>
           <Field label="Received">{fmtDateTime(s.createdAt)}</Field>
           <Field label="Linked client">

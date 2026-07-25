@@ -731,6 +731,24 @@ export async function createSubmissionDriveFolder(formData: FormData) {
   redirect(`/admin/submissions/?open=${id}`);
 }
 
+// Manually set/replace the storage link on a submission (a folder Sam made himself, or a
+// link the client sent — Drive, Dropbox, WeTransfer, etc.). Empty clears it.
+export async function setSubmissionFolderLink(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  const url = s(formData, "url").trim();
+  if (!id) return;
+  const submission = await prisma.submission.findUnique({ where: { id } });
+  if (!submission) return;
+  await prisma.submission.update({
+    where: { id },
+    data: { driveFolderUrl: url || null, ...(url ? { driveFolder: true } : {}) },
+  });
+  await logAudit(profile.email, "submission.folderlink", url || "(cleared)");
+  revalidateAdmin();
+  redirect(`/admin/submissions/?open=${id}`);
+}
+
 // ── Manual progress update to a project's client (only when Sam chooses) ──
 export async function sendProjectUpdate(formData: FormData) {
   const { profile } = await requireProfile();
