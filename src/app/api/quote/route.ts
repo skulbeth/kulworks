@@ -7,7 +7,6 @@ import { sendMail } from "@/lib/email";
 import { site } from "@/data/site";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
-import { driveConfigured, createClientFolder } from "@/lib/google-drive";
 import { logError } from "@/lib/log-error";
 
 // Prisma needs the Node.js runtime (not Edge).
@@ -99,36 +98,10 @@ export async function POST(request: Request) {
       },
     });
 
-    // If they asked for a shared Drive folder and Drive is configured, auto-create one,
-    // email them the link, and save it on the submission. Non-blocking.
-    if (driveFolder && driveConfigured()) {
-      try {
-        const folderUrl = await createClientFolder(
-          `${name} — ${new Date().toISOString().slice(0, 10)}`
-        );
-        if (folderUrl) {
-          await prisma.submission.update({
-            where: { id: submission.id },
-            data: { driveFolderUrl: folderUrl },
-          });
-          await sendMail({
-            to: email,
-            replyTo: site.email,
-            subject: "Your Kulworks file-sharing folder",
-            text: [
-              `Hi ${name},`,
-              "",
-              "Here's a shared folder to drop your artwork and project files into:",
-              folderUrl,
-              "",
-              "— Kulworks",
-            ].join("\n"),
-          });
-        }
-      } catch (e) {
-        console.error("[/api/quote] drive folder failed:", e);
-      }
-    }
+    // NOTE: the shared Drive folder is NOT auto-created on request anymore — we only flag
+    // it (driveFolder). Sam creates the folder on demand from the admin (Submissions →
+    // "Create shared folder") and shares the link when he replies. This avoids spinning up
+    // an empty folder for every request, and avoids duplicate folders later.
 
     // Notify Sam of the new request. Reply-To is the customer, so hitting Reply in
     // the inbox goes straight to them. Non-blocking — never fail the save on email.

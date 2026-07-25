@@ -6,6 +6,7 @@ import {
   convertSubmissionToProject,
   deleteSubmission,
   sendClientEmail,
+  createSubmissionDriveFolder,
 } from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
@@ -107,18 +108,29 @@ export default async function SubmissionsPage({
           <Field label="Reference / artwork">{fmtText(s.reference)}</Field>
           <Field label="Shared Drive folder">
             {s.driveFolderUrl ? (
-              <a
-                href={s.driveFolderUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue hover:underline"
-              >
-                Open folder →
-              </a>
-            ) : s.driveFolder ? (
-              "Requested"
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href={s.driveFolderUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue hover:underline"
+                >
+                  Open folder →
+                </a>
+                <CopyButton text={s.driveFolderUrl} label="Copy link" />
+              </div>
             ) : (
-              "No"
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-muted">
+                  {s.driveFolder ? "Requested, not created yet" : "None"}
+                </span>
+                <form action={createSubmissionDriveFolder}>
+                  <input type="hidden" name="id" value={s.id} />
+                  <button className="rounded-lg border border-border px-2 py-1 text-xs font-semibold hover:border-blue hover:text-blue">
+                    Create shared folder
+                  </button>
+                </form>
+              </div>
             )}
           </Field>
           <Field label="Received">{fmtDateTime(s.createdAt)}</Field>
@@ -167,10 +179,17 @@ export default async function SubmissionsPage({
                 placeholder="Write your reply or quote… (blank lines start new paragraphs)"
                 className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-blue focus:outline-none"
               />
-              <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" name="includeDriveFolder" className="h-4 w-4 accent-primary" />
-                Create &amp; attach a shared Drive folder link
-              </label>
+              {s.driveFolderUrl && (
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    name="attachFolderUrl"
+                    value={s.driveFolderUrl}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  Include the shared Drive folder link
+                </label>
+              )}
               <ConfirmButton
                 message={`Send this email to ${s.email}?`}
                 className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"

@@ -676,7 +676,12 @@ export async function sendClientEmail(formData: FormData) {
   if (!client) return;
 
   let folderNote = "";
-  if (formData.get("includeDriveFolder") === "on" && driveConfigured()) {
+  const attachFolderUrl = s(formData, "attachFolderUrl");
+  if (attachFolderUrl) {
+    // Reuse an existing folder (e.g. the one already created for this submission) — no duplicate.
+    body += `\n\nShared folder to exchange files: ${attachFolderUrl}`;
+    folderNote = " (Drive folder link included)";
+  } else if (formData.get("includeDriveFolder") === "on" && driveConfigured()) {
     const url = await createClientFolder(
       `${client.name} — ${new Date().toISOString().slice(0, 10)}`
     );
@@ -700,6 +705,30 @@ export async function sendClientEmail(formData: FormData) {
   await logAudit(profile.email, "email.client", client.email);
   revalidateAdmin();
   redirect(`/admin/clients/${clientId}/`);
+}
+
+// Create a shared Drive folder for a submission on demand (Sam presses the button, rather
+// than one being auto-created for every request). Stores the link on the submission.
+export async function createSubmissionDriveFolder(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const submission = await prisma.submission.findUnique({ where: { id } });
+  if (!submission) return;
+  if (!submission.driveFolderUrl && driveConfigured()) {
+    const url = await createClientFolder(
+      `${submission.name} — ${new Date().toISOString().slice(0, 10)}`
+    );
+    if (url) {
+      await prisma.submission.update({
+        where: { id },
+        data: { driveFolderUrl: url, driveFolder: true },
+      });
+      await logAudit(profile.email, "submission.drivefolder", submission.email);
+    }
+  }
+  revalidateAdmin();
+  redirect(`/admin/submissions/?open=${id}`);
 }
 
 // ── Manual progress update to a project's client (only when Sam chooses) ──
