@@ -683,7 +683,7 @@ export async function sendClientEmail(formData: FormData) {
     folderNote = " (Drive folder link included)";
   } else if (formData.get("includeDriveFolder") === "on" && driveConfigured()) {
     const url = await createClientFolder(
-      `${client.name} — ${new Date().toISOString().slice(0, 10)}`
+      `C - ${client.name} - ${new Date().toISOString().slice(0, 10)}`
     );
     if (url) {
       body += `\n\nShared folder to exchange files: ${url}`;
@@ -717,7 +717,7 @@ export async function createSubmissionDriveFolder(formData: FormData) {
   if (!submission) return;
   if (!submission.driveFolderUrl && driveConfigured()) {
     const url = await createClientFolder(
-      `${submission.name} — ${new Date().toISOString().slice(0, 10)}`
+      `C - ${submission.name} - ${new Date().toISOString().slice(0, 10)}`
     );
     if (url) {
       await prisma.submission.update({

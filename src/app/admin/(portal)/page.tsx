@@ -6,10 +6,13 @@ import { completeReminder } from "./_actions";
 export const dynamic = "force-dynamic";
 
 const ACTIVE_STAGES = ["LEAD", "QUOTED", "APPROVED", "IN_PRODUCTION"] as const;
+const DAY = 24 * 60 * 60 * 1000;
 
 export default async function DashboardPage() {
   const now = new Date();
-  const [newSubs, activeProjects, clientCount, reminders, upcoming, recentSubs] =
+  const newLeadCutoff = new Date(now.getTime() - 2 * DAY); // NEW & sitting 2+ days
+  const followUpCutoff = new Date(now.getTime() - 4 * DAY); // CONTACTED/QUOTED, quiet 4+ days
+  const [newSubs, activeProjects, clientCount, reminders, upcoming, recentSubs, followUps] =
     await Promise.all([
       prisma.submission.count({ where: { status: "NEW", deletedAt: null } }),
       prisma.project.count({ where: { stage: { in: [...ACTIVE_STAGES] }, deletedAt: null } }),
@@ -31,7 +34,20 @@ export default async function DashboardPage() {
         orderBy: { createdAt: "desc" },
         take: 5,
       }),
+      prisma.submission.findMany({
+        where: {
+          deletedAt: null,
+          OR: [
+            { status: "NEW", createdAt: { lt: newLeadCutoff } },
+            { status: { in: ["CONTACTED", "QUOTED"] }, updatedAt: { lt: followUpCutoff } },
+          ],
+        },
+        orderBy: { createdAt: "asc" }, // oldest / most urgent first
+        take: 10,
+      }),
     ]);
+
+  const daysAgo = (d: Date) => Math.max(0, Math.floor((now.getTime() - new Date(d).getTime()) / DAY));
 
   return (
     <div className="space-y-8">
@@ -42,6 +58,39 @@ export default async function DashboardPage() {
         <Stat label="Active projects" value={activeProjects} href="/admin/projects/" />
         <Stat label="Clients" value={clientCount} href="/admin/clients/" />
       </div>
+
+      {/* Needs follow-up — leads sitting too long */}
+      {followUps.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-bold">Needs follow-up</h2>
+          <ul className="space-y-2">
+            {followUps.map((s) => {
+              const isNew = s.status === "NEW";
+              const days = daysAgo(isNew ? s.createdAt : s.updatedAt);
+              return (
+                <li key={s.id}>
+                  <Link
+                    href={`/admin/submissions/?open=${s.id}`}
+                    className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-gold/40 bg-gold/5 px-4 py-3 hover:border-gold"
+                  >
+                    <span className="shrink-0 rounded-full bg-gold/15 px-2 py-0.5 text-xs font-semibold text-gold">
+                      {isNew ? "Reply soon" : "Follow up"}
+                    </span>
+                    <span className="font-semibold">{s.name}</span>
+                    <span className="min-w-0 text-sm text-muted">{s.email}</span>
+                    <span className="rounded-full bg-surface2 px-2 py-0.5 text-xs font-semibold text-muted">
+                      {s.status}
+                    </span>
+                    <span className="ml-auto text-sm font-semibold text-gold">
+                      {isNew ? "waiting" : "quiet"} {days} day{days === 1 ? "" : "s"}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* Reminders */}
       <section>
