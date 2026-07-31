@@ -342,3 +342,26 @@ model InvoiceItem {
 
   @@index([invoiceId])
 }
+
+// Simple runtime key/value settings (e.g. the trade-show photo-upload toggle),
+// flippable from the admin without a redeploy.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// Photo drop from the public /upload page (QR at trade shows). Images live in the
+// Supabase "uploads" bucket; storagePaths holds their paths.
+model Upload {
+  id           String    @id @default(cuid())
+  name         String?
+  contact      String? // optional email or phone, so Sam can follow up
+  note         String? // "what you want printed"
+  storagePaths String[] // paths in the Supabase uploads bucket
+  status       String    @default("NEW") // NEW | HANDLED
+  deletedAt    DateTime? // soft delete
+  createdAt    DateTime  @default(now())
+
+  @@index([createdAt])
+}

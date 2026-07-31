@@ -7,6 +7,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 const tabs = [
   { href: "/admin/", label: "Dashboard" },
   { href: "/admin/submissions/", label: "Submissions" },
+  { href: "/admin/uploads/", label: "Uploads" },
   { href: "/admin/projects/", label: "Projects" },
   { href: "/admin/clients/", label: "Clients" },
   { href: "/admin/subscribers/", label: "Subscribers" },

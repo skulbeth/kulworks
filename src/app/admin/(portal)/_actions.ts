@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
 import { resend, FROM, sendMail } from "@/lib/email";
+import { uploadsEnabled, setUploadsEnabled, removeUploadFiles } from "@/lib/uploads";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -747,6 +748,42 @@ export async function setSubmissionFolderLink(formData: FormData) {
   await logAudit(profile.email, "submission.folderlink", url || "(cleared)");
   revalidateAdmin();
   redirect(`/admin/submissions/?open=${id}`);
+}
+
+// ── Trade-show photo uploads (public /upload page) ──
+export async function toggleUploads() {
+  const { profile } = await requireProfile();
+  const now = await uploadsEnabled();
+  await setUploadsEnabled(!now);
+  await logAudit(profile.email, "uploads.toggle", !now ? "on" : "off");
+  revalidateAdmin();
+  redirect("/admin/uploads/");
+}
+
+export async function markUploadHandled(formData: FormData) {
+  await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  await prisma.upload.update({ where: { id }, data: { status: "HANDLED" } });
+  revalidateAdmin();
+  redirect("/admin/uploads/");
+}
+
+export async function deleteUpload(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const upload = await prisma.upload.findUnique({ where: { id } });
+  if (!upload) return;
+  // Remove the image files from storage, then soft-delete the record.
+  await removeUploadFiles(upload.storagePaths);
+  await prisma.upload.update({
+    where: { id },
+    data: { deletedAt: new Date(), storagePaths: [] },
+  });
+  await logAudit(profile.email, "uploads.delete", id);
+  revalidateAdmin();
+  redirect("/admin/uploads/");
 }
 
 // ── Manual progress update to a project's client (only when Sam chooses) ──
