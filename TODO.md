@@ -298,7 +298,14 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       stored on Project/Activity). Best-effort (never blocks a save). `lib/google-calendar.ts`,
       `scripts/google-calendar-setup.mjs`, `scripts/calendar-backfill.mjs`. OAuth setup done +
       verified live (26/26 e2e).
-- [ ] **File storage for client artwork** — uploads instead of just a link/Drive checkbox.
+- [x] **Trade-show photo uploads** — DONE 2026-07-31. Public `/upload` (QR target) lets people
+      send up to 5 photos with optional name/contact/note → private Supabase `uploads` bucket +
+      email to Sam (signed links) + admin **Uploads** tab (thumbnails, mark handled, delete).
+      Runtime on/off toggle + printable QR in the admin; OFF by default. This also stands up the
+      **Supabase Storage** plumbing (`src/lib/uploads.ts`, bucket setup script) that the in-form
+      artwork upload below can reuse.
+- [ ] **File storage for client artwork** — in-form uploads on the quote form (not just a
+      link/Drive checkbox). Storage infra now exists (see trade-show uploads above) — reuse it.
 
 ## 📨 Newsletter / marketing email (also via Resend — no extra service)
 

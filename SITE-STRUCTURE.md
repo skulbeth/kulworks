@@ -39,7 +39,8 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
 ├─ /who-its-for           Audience page (9 cards)                content: src/data/audiences.ts
 ├─ /contact               Quote form + service area + contact info   src/app/contact/page.tsx
 ├─ /privacy               Privacy Policy                         src/app/privacy/page.tsx
-└─ /terms                 Terms of Service                       src/app/terms/page.tsx
+├─ /terms                 Terms of Service                       src/app/terms/page.tsx
+└─ /upload                Trade-show photo drop (QR target; noindex; not in sitemap; gated by admin toggle)
 ```
 
 **Chrome & fallbacks**
@@ -69,6 +70,7 @@ Full detail in [ARCHITECTURE.md §2](ARCHITECTURE.md). Quick map:
 /admin/clients[/id]       CRM: contact info, projects, activity, email composer
 /admin/subscribers        Newsletter list (+ CSV)
 /admin/newsletter         Compose + send a Resend broadcast
+/admin/uploads            Trade-show photo uploads: open/close toggle, printable QR, photo list
 /admin/analytics          Page-view analytics
 /admin/team               Team members, password/2FA, audit log, backups, system errors
 /admin/archive            Soft-deleted items + restore
@@ -81,6 +83,7 @@ Admin mutations live in `src/app/admin/(portal)/_actions.ts` (server actions, au
 ## API routes — `/api`
 
 ```
+POST /api/upload          Trade-show photo drop (public /upload page) → Supabase "uploads" bucket + email  (toggle-gated)
 POST /api/quote           Save quote → notify Sam + confirm customer + SMS + optional Drive folder
 POST /api/subscribe       Newsletter signup → Subscriber + Resend Audience
 POST /api/track           Cookieless page-view beacon
