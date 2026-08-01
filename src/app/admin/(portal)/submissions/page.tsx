@@ -15,6 +15,7 @@ import RecordExplorer, {
 } from "../_components/RecordExplorer";
 import ConfirmButton from "../_components/ConfirmButton";
 import CopyButton from "../_components/CopyButton";
+import { signedUploadUrl } from "@/lib/uploads";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +69,19 @@ export default async function SubmissionsPage({
     }
   }
 
+  // Signed URLs for any attached order photos (only card-builder orders have these).
+  const imageMap = new Map<string, string[]>();
+  await Promise.all(
+    submissions
+      .filter((s) => s.storagePaths?.length)
+      .map(async (s) => {
+        const urls = (
+          await Promise.all(s.storagePaths.map((p) => signedUploadUrl(p)))
+        ).filter(Boolean) as string[];
+        imageMap.set(s.id, urls);
+      })
+  );
+
   const items: ExplorerItem[] = submissions.map((s) => ({
     id: s.id,
     title: s.name,
@@ -91,6 +105,22 @@ export default async function SubmissionsPage({
         <Field label="Project details">
           <p className="whitespace-pre-wrap">{s.message}</p>
         </Field>
+        {(imageMap.get(s.id)?.length ?? 0) > 0 && (
+          <Field label="Attached photos">
+            <div className="flex flex-wrap gap-2">
+              {imageMap.get(s.id)!.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt={`Attachment ${i + 1}`}
+                    className="h-28 w-28 rounded-lg border border-border object-cover"
+                  />
+                </a>
+              ))}
+            </div>
+          </Field>
+        )}
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Email">
             <div className="flex items-center gap-2">
