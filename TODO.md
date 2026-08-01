@@ -306,6 +306,16 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       artwork upload below can reuse.
 - [ ] **File storage for client artwork** — in-form uploads on the quote form (not just a
       link/Drive checkbox). Storage infra now exists (see trade-show uploads above) — reuse it.
+- [~] **"Design your cards" builder** — v1 SHIPPED 2026-08-01 (`/order`). Browse card DESIGNS,
+      pick one, fill that design's own fields + attach photos → lands in Submissions with the art
+      attached. Data-driven: each design is one entry in `src/data/cardTemplates.ts` + a preview
+      image (no new DB table per design; all orders share the Submission table + uploads bucket).
+      NEXT: (1) Sam supplies real designs — a front preview + field list each (baseball/basketball
+      derived from his mockups; swap the temporary stock previews under card-printing images for
+      real ones in `public/images/card-templates/`); (2) **categories + filtering** on the gallery
+      once there are many (add `category` to the template type + filter UI); (3) optional
+      **admin-managed designs** (move templates to a DB table + "Manage designs" admin CRUD) only if
+      Sam wants to add designs without editing code.
 
 ## 📨 Newsletter / marketing email (also via Resend — no extra service)
 

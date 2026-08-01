@@ -28,6 +28,8 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
 │     ├─ /services/card-printing/giant-cards      (HIDDEN: hidden:true — builds but noindexed + unlinked; offered via text)
 │     ├─ /services/card-printing/boxes-and-upgrades
 │     └─ /services/card-printing/card-design
+├─ /order                 "Design your cards" builder: browse designs → per-design fields +   content: src/data/cardTemplates.ts
+│                         photo slots → lands in Submissions with art attached (storagePaths)
 ├─ /pricing               Pricing table + card calculator       content: src/data/pricing.ts
 ├─ /portfolio             Work grid (filter by craft)           content: src/data/portfolio.ts
 ├─ /guides                Guides & FAQ index          content: src/data/guides.ts + src/data/faq.ts
@@ -83,6 +85,7 @@ Admin mutations live in `src/app/admin/(portal)/_actions.ts` (server actions, au
 ## API routes — `/api`
 
 ```
+POST /api/order           Card-builder order → uploads photos + creates a Submission (art attached) + emails
 POST /api/upload          Trade-show photo drop (public /upload page) → Supabase "uploads" bucket + email  (toggle-gated)
 POST /api/quote           Save quote → notify Sam + confirm customer + SMS + optional Drive folder
 POST /api/subscribe       Newsletter signup → Subscriber + Resend Audience
