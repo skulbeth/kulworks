@@ -316,6 +316,10 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       once there are many (add `category` to the template type + filter UI); (3) optional
       **admin-managed designs** (move templates to a DB table + "Manage designs" admin CRUD) only if
       Sam wants to add designs without editing code.
+      CURRENT STATE (2026-08-01): built + working but **unlinked, noindexed, and out of the sitemap**
+      (placeholder designs only). Sam will prepare + print real designs first, then re-link it
+      (card-printing CTA), remove `robots.index:false` in `app/order/page.tsx`, and re-add `/order/`
+      to `sitemap.ts`.
 
 ## 📨 Newsletter / marketing email (also via Resend — no extra service)
 

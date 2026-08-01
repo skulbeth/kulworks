@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description:
     "Pick a card design, fill in your details, and attach your photos. Kulworks prints custom trading cards, player cards, and more in San Antonio.",
   alternates: { canonical: "/order/" },
+  // Not linked or indexed yet — placeholder designs. Remove once real designs are in
+  // and the page is ready to be linked + added back to the sitemap.
+  robots: { index: false, follow: false },
 };
 
 export default function OrderPage() {

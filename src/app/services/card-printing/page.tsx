@@ -50,15 +50,11 @@ export default function CardPrintingHub() {
         <Container className="py-16 text-center">
           <h2 className="text-2xl font-extrabold sm:text-3xl">Ready to print your cards?</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted">
-            Pick a design and fill in your details, or tell me about your deck and I&apos;ll come
-            back with options and a quote.
+            Tell me about your deck and I&apos;ll come back with options and a quote.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-3">
-            <Button href="/order/" variant="gold" size="lg">
-              Design your cards →
-            </Button>
-            <Button href="/contact/?type=card-printing" variant="ghost" size="lg">
-              Or get a quote
+          <div className="mt-6 flex justify-center">
+            <Button href="/contact/?type=card-printing" variant="gold" size="lg">
+              Get a Quote
             </Button>
           </div>
         </Container>

@@ -29,7 +29,9 @@ deeper system reference (routes, data models, integrations, "if X breaks"), see
 │     ├─ /services/card-printing/boxes-and-upgrades
 │     └─ /services/card-printing/card-design
 ├─ /order                 "Design your cards" builder: browse designs → per-design fields +   content: src/data/cardTemplates.ts
-│                         photo slots → lands in Submissions with art attached (storagePaths)
+│                         photo slots → lands in Submissions with art attached (storagePaths).
+│                         NOT linked + noindex + not in sitemap yet (placeholder designs) —
+│                         re-link (card-printing CTA), un-noindex, and re-add to sitemap once real.
 ├─ /pricing               Pricing table + card calculator       content: src/data/pricing.ts
 ├─ /portfolio             Work grid (filter by craft)           content: src/data/portfolio.ts
 ├─ /guides                Guides & FAQ index          content: src/data/guides.ts + src/data/faq.ts
