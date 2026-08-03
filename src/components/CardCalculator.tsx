@@ -86,7 +86,7 @@ export default function CardCalculator() {
   const quoteHref = `/contact/?type=${quoteTypes}&details=${encodeURIComponent(summary)}`;
 
   const inputCls =
-    "w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-foreground focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
+    "w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base text-foreground focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
   const labelCls = "mb-1.5 block text-sm font-semibold";
 
   const rows: { label: string; value: number; show: boolean }[] = [

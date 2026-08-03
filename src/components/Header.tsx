@@ -152,7 +152,7 @@ export default function Header() {
               <Link
                 href="/"
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-2 rounded-lg px-3 py-2 font-semibold ${
+                className={`flex items-center gap-2 rounded-lg px-3 py-2.5 font-semibold ${
                   pathname === "/" ? "bg-surface text-blue" : "text-muted hover:bg-surface"
                 }`}
               >
@@ -169,7 +169,7 @@ export default function Header() {
                 <Link
                   href={l.href}
                   onClick={() => setOpen(false)}
-                  className={`block rounded-lg px-3 py-2 font-semibold ${
+                  className={`block rounded-lg px-3 py-2.5 font-semibold ${
                     isActive(l.href) ? "bg-surface text-blue" : "text-muted hover:bg-surface"
                   }`}
                 >
@@ -181,7 +181,7 @@ export default function Header() {
               <Link
                 href="/contact/"
                 onClick={() => setOpen(false)}
-                className="block rounded-full bg-primary px-4 py-2 text-center font-bold text-black"
+                className="block rounded-full bg-primary px-4 py-3 text-center font-bold text-black"
               >
                 Get a Quote
               </Link>

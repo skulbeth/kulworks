@@ -63,12 +63,12 @@ export default function NewsletterSignup() {
         required
         placeholder="you@email.com"
         aria-label="Email address"
-        className="flex-1 rounded-lg border border-border bg-surface2 px-3 py-2 text-sm text-foreground placeholder:text-muted/60 focus:border-blue focus:outline-none"
+        className="flex-1 rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base text-foreground placeholder:text-muted/60 focus:border-blue focus:outline-none"
       />
         <button
           type="submit"
           disabled={status === "submitting"}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-black transition-colors hover:bg-primary-hover disabled:opacity-60"
+          className="rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-black transition-colors hover:bg-primary-hover disabled:opacity-60"
         >
           {status === "submitting" ? "…" : "Subscribe"}
         </button>

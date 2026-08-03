@@ -188,7 +188,7 @@ export default function OrderBuilder() {
           </div>
           <div>
             <label className="mb-1 block text-sm font-semibold">Phone (optional)</label>
-            <input name="phone" autoComplete="tel" className={input} />
+            <input name="phone" type="tel" autoComplete="tel" className={input} />
           </div>
         </div>
 
