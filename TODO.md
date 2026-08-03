@@ -226,6 +226,14 @@ things that actually gate running the business. Roughly by priority:
       placement (inbox vs spam/promotions); re-run anytime by sending a real quote to yourself.
 
 **Reliability / ops:**
+- [ ] **⚠️ FIX: production `SUPABASE_SECRET_KEY` is invalid** (found 2026-08-03) — Supabase returns
+      "Invalid API key" for service-key ops on the LIVE site. Breaks **adding/inviting team members**
+      AND the **photo-upload (`/upload`) + card-order (`/order`) Storage** features (all use
+      `createAdminClient()` → `SUPABASE_SECRET_KEY`). The local `.env.local` key IS valid (verified).
+      FIX (Sam): set `SUPABASE_SECRET_KEY` in **Vercel → Production** to the current Supabase secret
+      key (Supabase → Settings → API keys → secret), or copy the working local value, then redeploy.
+      After: add sam.kulbeth@gmail.com as OWNER via the Team form. The team-create error now reports
+      this accurately (`error=serverkey`) instead of a misleading "email in use."
 - [x] **Error alerting** — DONE. `logError` now emails `QUOTE_NOTIFY_EMAIL` on new server errors,
       throttled to at most one every 15 min (`src/lib/log-error.ts`).
 - [x] **Domain auto-renew** — confirmed ON by Sam (2026-07-15).
