@@ -208,6 +208,10 @@ export const cardPages: CardPage[] = [
       "sports team card printing",
       "school team trading cards",
     ],
+    link: {
+      label: "Need sports photos? Contact our favorite photographer, The Hill Country Lens",
+      href: "https://thehillcountrylens.com/",
+    },
   },
   {
     slug: "giant-cards",
