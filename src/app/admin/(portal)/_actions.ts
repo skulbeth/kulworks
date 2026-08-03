@@ -463,6 +463,15 @@ export async function restorePayment(formData: FormData) {
 // ── Team members (OWNER only) ──
 // Add a team member. One form: enter a password to create their login
 // immediately, or leave it blank to email them an invite to set their own password.
+/** Map a Supabase auth-admin error message to a team-page error code. */
+function classifyAuthError(msg?: string): "emailtaken" | "serverkey" | "create" {
+  const m = (msg ?? "").toLowerCase();
+  if (m.includes("already") || m.includes("registered")) return "emailtaken";
+  if (m.includes("api key") || m.includes("invalid") || m.includes("unauthorized") || m.includes("jwt"))
+    return "serverkey";
+  return "create";
+}
+
 export async function addTeamMember(formData: FormData) {
   const { profile } = await requireProfile();
   if (profile.role !== "OWNER") redirect("/admin/team/?error=perm");
@@ -486,7 +495,7 @@ export async function addTeamMember(formData: FormData) {
     });
     if (error || !data?.user) {
       await logAudit(profile.email, "team.create.failed", `${email}: ${error?.message ?? "unknown"}`);
-      redirect("/admin/team/?error=create");
+      redirect(`/admin/team/?error=${classifyAuthError(error?.message)}`);
     }
     await prisma.profile.upsert({
       where: { id: data.user.id },
@@ -503,8 +512,9 @@ export async function addTeamMember(formData: FormData) {
     redirectTo: `${SITE_URL}/auth/callback?next=/admin/reset/`,
   });
   if (error || !data?.user) {
-    await logAudit(profile.email, "team.invite.failed", email);
-    redirect("/admin/team/?error=invite");
+    await logAudit(profile.email, "team.invite.failed", `${email}: ${error?.message ?? "unknown"}`);
+    const code = classifyAuthError(error?.message);
+    redirect(`/admin/team/?error=${code === "create" ? "invite" : code}`);
   }
   await prisma.profile.upsert({
     where: { id: data.user.id },

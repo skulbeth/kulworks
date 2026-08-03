@@ -29,7 +29,10 @@ const ERROR_MSG: Record<string, string> = {
   perm: "Only an owner can manage admins.",
   missing: "Please fill in all the required fields.",
   weak: "Password must be at least 8 characters.",
-  create: "Couldn't create that admin. The email may already be in use.",
+  create: "Couldn't create that admin. Try again, or check the audit log below.",
+  emailtaken: "That email is already registered as an admin.",
+  serverkey:
+    "Couldn't reach Supabase with the server key. SUPABASE_SECRET_KEY looks wrong or missing in production — update it in Vercel and redeploy. (Details in the audit log.)",
   update: "Couldn't apply that change. Try again.",
   notfound: "That admin no longer exists.",
   self: "You can't remove your own account.",
