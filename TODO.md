@@ -226,14 +226,13 @@ things that actually gate running the business. Roughly by priority:
       placement (inbox vs spam/promotions); re-run anytime by sending a real quote to yourself.
 
 **Reliability / ops:**
-- [ ] **⚠️ FIX: production `SUPABASE_SECRET_KEY` is invalid** (found 2026-08-03) — Supabase returns
-      "Invalid API key" for service-key ops on the LIVE site. Breaks **adding/inviting team members**
-      AND the **photo-upload (`/upload`) + card-order (`/order`) Storage** features (all use
-      `createAdminClient()` → `SUPABASE_SECRET_KEY`). The local `.env.local` key IS valid (verified).
-      FIX (Sam): set `SUPABASE_SECRET_KEY` in **Vercel → Production** to the current Supabase secret
-      key (Supabase → Settings → API keys → secret), or copy the working local value, then redeploy.
-      After: add sam.kulbeth@gmail.com as OWNER via the Team form. The team-create error now reports
-      this accurately (`error=serverkey`) instead of a misleading "email in use."
+- [x] **Production `SUPABASE_SECRET_KEY` fixed** (2026-08-03) — was invalid in Vercel ("Invalid API
+      key" for all service-key ops on live). Sam updated it in Vercel Production + redeployed;
+      verified by successfully adding `sam.kulbeth@gmail.com` as OWNER via the Team form (and logging
+      in). The photo-upload (`/upload`) + card-order (`/order`) Storage features use the same key, so
+      they should now work on live too — worth a quick live spot-check when convenient (toggle uploads
+      on, send a test photo; run a test order). Team-create errors now classify accurately
+      (`emailtaken`/`serverkey`).
 - [x] **Error alerting** — DONE. `logError` now emails `QUOTE_NOTIFY_EMAIL` on new server errors,
       throttled to at most one every 15 min (`src/lib/log-error.ts`).
 - [x] **Domain auto-renew** — confirmed ON by Sam (2026-07-15).
