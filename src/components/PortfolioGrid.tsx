@@ -87,7 +87,13 @@ export default function PortfolioGrid() {
       )}
 
       {zoom?.src && (
-        <Lightbox src={zoom.src} alt={zoom.alt} title={zoom.title} onClose={() => setZoom(null)} />
+        <Lightbox
+          src={zoom.src}
+          alt={zoom.alt}
+          title={zoom.title}
+          images={zoom.images}
+          onClose={() => setZoom(null)}
+        />
       )}
     </div>
   );

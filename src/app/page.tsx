@@ -88,9 +88,9 @@ export default function HomePage() {
         <Container className="py-16">
           <RevealOnScroll>
             <SectionHeading
-              eyebrow="Services"
-              title="Five crafts, one point of contact"
-              intro="Card printing is what we do most. If it needs designing, printing, or making, there's a good chance we can help."
+              eyebrow="Services & who it's for"
+              title="Five crafts, made for teams, designers, and sellers"
+              intro="Card printing is what we do most, for sports teams, schools, clubs, and game and card designers. If it needs designing, printing, or making, there's a good chance we can help."
             />
           </RevealOnScroll>
           {/* All five services as equal sections; card printing (lead) first + badged. */}
