@@ -37,8 +37,9 @@ export const portfolio: PortfolioItem[] = [
   {
     title: "Custom Card Design & Printing",
     category: "cards",
-    src: "/images/portfolio/cards/sports-cards.webp",
+    src: "/images/portfolio/cards/cards-variety.webp",
     images: [
+      "/images/portfolio/cards/cards-variety.webp",
       "/images/portfolio/cards/sports-cards.webp",
       "/images/portfolio/cards/cards-showcase.webp",
       "/images/portfolio/cards/game-cards.webp",
