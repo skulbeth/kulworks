@@ -41,6 +41,7 @@ export const portfolio: PortfolioItem[] = [
     images: [
       "/images/portfolio/cards/cards-variety.webp",
       "/images/portfolio/design/card-layout-photoshop.webp",
+      "/images/portfolio/cards/card-printing-clip.webp",
       "/images/portfolio/cards/sports-cards.webp",
       "/images/portfolio/cards/cards-showcase.webp",
       "/images/portfolio/cards/game-cards.webp",
@@ -61,13 +62,14 @@ export const portfolio: PortfolioItem[] = [
     src: "/images/portfolio/tiles/board-tiles.webp",
     images: [
       "/images/portfolio/tiles/board-tiles.webp",
+      "/images/portfolio/tiles/board-printing.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
     ],
-    alt: "UV-printed modular board game hex tiles, plus tile and map artwork prepped for printing",
+    alt: "UV-printed modular board game hex tiles, printing in progress on the flatbed, and tile artwork prepped for print",
   },
   { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/cad-3d-model.webp", alt: "Designing a custom 3D model in Shapr3D" },
   {
-    title: "Resin Printing (minis and more!)",
+    title: "3D Printing- Resin, and Filament (minis and more!)",
     category: "resin",
     src: "/images/portfolio/resin/high-detail-miniature.webp",
     images: [

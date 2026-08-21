@@ -57,7 +57,16 @@ export default function ServicesPage() {
                       Lead Service
                     </span>
                   )}
-                  <div className="text-4xl">{s.icon}</div>
+                  {s.iconImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={s.iconImage}
+                      alt=""
+                      className="h-16 w-16 rounded-lg border border-border object-cover"
+                    />
+                  ) : (
+                    <div className="text-4xl">{s.icon}</div>
+                  )}
                   <h2 className="mt-3 text-2xl font-extrabold sm:text-3xl">{s.name}</h2>
                   <p className="mt-2 font-semibold text-gold">{s.tagline}</p>
                   <p className="mt-4 text-lg text-muted">{s.details}</p>

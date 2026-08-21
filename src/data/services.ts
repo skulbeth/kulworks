@@ -54,8 +54,8 @@ export const services: Service[] = [
       "Card design at conventions, with quick turnaround and delivery, sometimes next day",
     ],
     icon: "🃏",
-    iconImage: "/images/portfolio/cards/sports-cards.webp",
-    image: "/images/portfolio/cards/character-cards-in-jig.webp",
+    iconImage: "/images/portfolio/cards/card-icon.webp",
+    image: "/images/portfolio/cards/cards-variety.webp",
     lead: true,
   },
   {
@@ -73,6 +73,7 @@ export const services: Service[] = [
       "Bring your artwork or let us prep it for you",
     ],
     icon: "🟧",
+    iconImage: "/images/portfolio/tiles/terrain-hexes-hero.webp",
     image: "/images/portfolio/tiles/terrain-hexes-hero.webp",
   },
   {
@@ -90,6 +91,7 @@ export const services: Service[] = [
       "Sturdy prints in a range of sizes",
     ],
     icon: "⚙️",
+    iconImage: "/images/portfolio/filament/fdm-city-upgrades.webp",
     image: "/images/portfolio/filament/fdm-city-upgrades.webp",
   },
   {
@@ -107,6 +109,7 @@ export const services: Service[] = [
       "Single pieces or small batches",
     ],
     icon: "🐉",
+    iconImage: "/images/portfolio/resin/resin-printing.webp",
     image: "/images/portfolio/resin/resin-printing.webp",
   },
   {
@@ -124,6 +127,7 @@ export const services: Service[] = [
       "Keeps evolving as your game develops and grows",
     ],
     icon: "✏️",
+    iconImage: "/images/portfolio/design/cad-3d-design.webp",
     image: "/images/portfolio/design/cad-3d-design.webp",
     link: { label: "See my models on MakerWorld", href: "https://makerworld.com/en/@skulbeth" },
   },
