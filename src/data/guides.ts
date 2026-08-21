@@ -128,7 +128,7 @@ export const guides: Guide[] = [
       {
         h: "Bleed and safe zone",
         body: [
-          "Bleed is extra art that extends past the trim line, usually about 1/8 inch (3 mm) on each side. It means that if the cut shifts slightly, you still get color to the edge instead of a thin white sliver.",
+          "Bleed is extra art that extends past the trim line, about 1 to 2 mm on each side (up to 3 mm is fine). It means that if the cut shifts slightly, you still get color to the edge instead of a thin white sliver.",
           "The safe zone is the opposite: keep text, logos, and anything important a little inside the trim line so it never gets cut off.",
         ],
       },
