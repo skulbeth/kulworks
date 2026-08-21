@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtMoney, fmtText } from "@/lib/format";
+import { createProject } from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
   type ExplorerItem,
@@ -36,6 +37,9 @@ const stageLabel: Record<string, string> = {
   CLOSED: "Closed",
   LOST: "Lost",
 };
+
+const ADD_FIELD =
+  "rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base focus:border-blue focus:outline-none";
 
 export default async function ProjectsPage() {
   const projects = await prisma.project.findMany({
@@ -148,6 +152,21 @@ export default async function ProjectsPage() {
     <div>
       <h1 className="mb-1 text-2xl font-bold">Projects</h1>
       <p className="mb-6 text-muted">Tracked jobs — pipeline, specs, costs, and dates.</p>
+      <details className="mb-6 rounded-xl border border-border bg-surface p-4">
+        <summary className="cursor-pointer select-none font-semibold text-blue">+ Add a project</summary>
+        <form action={createProject} className="mt-4 grid gap-3 sm:grid-cols-2">
+          <input name="title" required placeholder="Project title" className={`${ADD_FIELD} sm:col-span-2`} />
+          <input name="clientName" required placeholder="Client name" className={ADD_FIELD} />
+          <input name="clientEmail" type="email" required placeholder="Client email" className={ADD_FIELD} />
+          <button className="rounded-full bg-primary px-5 py-2.5 font-bold text-black hover:bg-primary-hover sm:col-span-2">
+            Add project
+          </button>
+        </form>
+        <p className="mt-2 text-xs text-muted">
+          Enter the client&apos;s email. If they already exist, the project attaches to them; otherwise a new client is created.
+        </p>
+      </details>
+
       <RecordExplorer columns={columns} items={items} filename="kulworks-projects" />
     </div>
   );

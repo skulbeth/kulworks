@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtText } from "@/lib/format";
+import { createClientManual } from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
   type ExplorerItem,
@@ -16,6 +17,9 @@ const columns: ExplorerColumn[] = [
   { key: "projects", label: "Projects" },
   { key: "since", label: "Since" },
 ];
+
+const ADD_FIELD =
+  "rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base focus:border-blue focus:outline-none";
 
 export default async function ClientsPage() {
   const clients = await prisma.client.findMany({
@@ -104,6 +108,21 @@ export default async function ClientsPage() {
     <div>
       <h1 className="mb-1 text-2xl font-bold">Clients</h1>
       <p className="mb-6 text-muted">Everyone who&apos;s reached out or become a customer.</p>
+
+      <details className="mb-6 rounded-xl border border-border bg-surface p-4">
+        <summary className="cursor-pointer select-none font-semibold text-blue">+ Add a client</summary>
+        <form action={createClientManual} className="mt-4 grid gap-3 sm:grid-cols-2">
+          <input name="name" required placeholder="Name" className={ADD_FIELD} />
+          <input name="email" type="email" required placeholder="Email" className={ADD_FIELD} />
+          <input name="phone" type="tel" placeholder="Phone (optional)" className={ADD_FIELD} />
+          <input name="company" placeholder="Company (optional)" className={ADD_FIELD} />
+          <textarea name="notes" rows={2} placeholder="Notes (optional)" className={`${ADD_FIELD} sm:col-span-2`} />
+          <button className="rounded-full bg-primary px-5 py-2.5 font-bold text-black hover:bg-primary-hover sm:col-span-2">
+            Add client
+          </button>
+        </form>
+      </details>
+
       <RecordExplorer columns={columns} items={items} filename="kulworks-clients" />
     </div>
   );

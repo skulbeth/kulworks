@@ -21,7 +21,7 @@ const RANGES: { key: RangeKey; label: string; ms: number | null }[] = [
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string; exclude?: string }>;
+  searchParams: Promise<{ range?: string; showme?: string }>;
 }) {
   const sp = await searchParams;
   const range = (RANGES.find((r) => r.key === sp.range)?.key ?? "30d") as RangeKey;
@@ -32,7 +32,9 @@ export default async function AnalyticsPage({
 
   // Identify the admin's own traffic (current IP) so we can flag/exclude it.
   const myHash = visitorHash(ipFromHeaders(await headers()));
-  const excludeMe = sp.exclude === "me" && !!myHash;
+  // Hide the admin's own visits by DEFAULT; ?showme=1 reveals them.
+  const showMe = sp.showme === "1";
+  const excludeMe = !showMe && !!myHash;
   // Keep rows with no visitorHash (real visitors can lack one); only drop MY hash.
   const notMe = excludeMe
     ? { OR: [{ visitorHash: { not: myHash } }, { visitorHash: null }] }
@@ -203,8 +205,8 @@ export default async function AnalyticsPage({
   const topCity = topCities[0]?.city ?? null;
   const topPagePath = topPages[0]?.path ?? null;
 
-  const excludeHref = (r: RangeKey, ex: boolean) =>
-    `/admin/analytics/?range=${r}${ex ? "&exclude=me" : ""}`;
+  const hrefWith = (r: RangeKey, show: boolean) =>
+    `/admin/analytics/?range=${r}${show ? "&showme=1" : ""}`;
 
   return (
     <div className="space-y-8">
@@ -217,7 +219,7 @@ export default async function AnalyticsPage({
           {/* Hide-my-visits toggle */}
           {myHash && (
             <Link
-              href={excludeHref(range, !excludeMe)}
+              href={hrefWith(range, !showMe)}
               className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
                 excludeMe
                   ? "bg-blue text-white"
@@ -233,7 +235,7 @@ export default async function AnalyticsPage({
             {RANGES.map((r) => (
               <Link
                 key={r.key}
-                href={excludeHref(r.key, excludeMe)}
+                href={hrefWith(r.key, showMe)}
                 className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
                   r.key === range
                     ? "bg-primary text-black"
@@ -277,7 +279,7 @@ export default async function AnalyticsPage({
               {yourViews === 1 ? "" : "s"}. Excluding you, there {uniqueExcludingYou === 1 ? "is" : "are"}{" "}
               <span className="font-bold">{uniqueExcludingYou}</span> unique visitor
               {uniqueExcludingYou === 1 ? "" : "s"}.{" "}
-              <Link href={excludeHref(range, true)} className="font-semibold text-blue hover:underline">
+              <Link href={hrefWith(range, false)} className="font-semibold text-blue hover:underline">
                 Hide my visits everywhere →
               </Link>
             </p>

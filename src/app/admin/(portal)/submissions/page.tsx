@@ -8,6 +8,7 @@ import {
   sendClientEmail,
   createSubmissionDriveFolder,
   setSubmissionFolderLink,
+  createSubmissionManual,
 } from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
@@ -20,6 +21,8 @@ import { signedUploadUrl } from "@/lib/uploads";
 export const dynamic = "force-dynamic";
 
 const SUBMISSION_STATUSES = ["NEW", "CONTACTED", "QUOTED", "WON", "LOST"];
+const ADD_FIELD =
+  "rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base focus:border-blue focus:outline-none";
 
 const columns: ExplorerColumn[] = [
   { key: "created", label: "Received" },
@@ -298,6 +301,21 @@ export default async function SubmissionsPage({
     <div>
       <h1 className="mb-1 text-2xl font-bold">Submissions</h1>
       <p className="mb-6 text-muted">Raw quote requests from the website form.</p>
+
+      <details className="mb-6 rounded-xl border border-border bg-surface p-4">
+        <summary className="cursor-pointer select-none font-semibold text-blue">+ Add a submission manually</summary>
+        <form action={createSubmissionManual} className="mt-4 grid gap-3 sm:grid-cols-2">
+          <input name="name" required placeholder="Name" className={ADD_FIELD} />
+          <input name="email" type="email" required placeholder="Email" className={ADD_FIELD} />
+          <input name="phone" type="tel" placeholder="Phone (optional)" className={ADD_FIELD} />
+          <input name="projectType" placeholder="Requested (e.g. card-printing)" className={ADD_FIELD} />
+          <textarea name="message" required rows={3} placeholder="Project details" className={`${ADD_FIELD} sm:col-span-2`} />
+          <button className="rounded-full bg-primary px-5 py-2.5 font-bold text-black hover:bg-primary-hover sm:col-span-2">
+            Add submission
+          </button>
+        </form>
+      </details>
+
       <RecordExplorer
         columns={columns}
         items={items}

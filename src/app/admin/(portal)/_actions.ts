@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
-import { resend, FROM, sendMail } from "@/lib/email";
+import { resend, FROM, sendMail, addSubscriberToAudience } from "@/lib/email";
 import { uploadsEnabled, setUploadsEnabled, removeUploadFiles } from "@/lib/uploads";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
@@ -232,6 +232,88 @@ export async function createProjectForClient(formData: FormData) {
   });
   revalidateAdmin();
   redirect(`/admin/projects/${project.id}/`);
+}
+
+// ── Manual "add" from the admin list pages ──
+export async function createClientManual(formData: FormData) {
+  const { profile } = await requireProfile();
+  const name = s(formData, "name");
+  const email = s(formData, "email")?.toLowerCase();
+  if (!name || !email) redirect("/admin/clients/?error=missing");
+  const existing = await prisma.client.findUnique({ where: { email } });
+  if (existing) redirect(`/admin/clients/${existing.id}/`);
+  const client = await prisma.client.create({
+    data: {
+      name,
+      email,
+      phone: s(formData, "phone"),
+      company: s(formData, "company"),
+      notes: s(formData, "notes"),
+    },
+  });
+  await logAudit(profile.email, "create.client", email);
+  revalidateAdmin();
+  redirect(`/admin/clients/${client.id}/`);
+}
+
+export async function createSubmissionManual(formData: FormData) {
+  const { profile } = await requireProfile();
+  const name = s(formData, "name");
+  const email = s(formData, "email")?.toLowerCase();
+  const phone = s(formData, "phone");
+  const projectType = s(formData, "projectType");
+  const message = s(formData, "message");
+  if (!name || !email || !message) redirect("/admin/submissions/?error=missing");
+  const client = await prisma.client.upsert({
+    where: { email },
+    create: { name, email, phone },
+    update: phone ? { phone } : {},
+  });
+  const submission = await prisma.submission.create({
+    data: { name, email, phone, projectType: projectType || null, message, clientId: client.id, status: "NEW" },
+  });
+  await logAudit(profile.email, "create.submission", email);
+  revalidateAdmin();
+  redirect(`/admin/submissions/?open=${submission.id}`);
+}
+
+export async function createProject(formData: FormData) {
+  const { profile } = await requireProfile();
+  const title = s(formData, "title");
+  const clientName = s(formData, "clientName");
+  const clientEmail = s(formData, "clientEmail")?.toLowerCase();
+  if (!title || !clientName || !clientEmail) redirect("/admin/projects/?error=missing");
+  const client = await prisma.client.upsert({
+    where: { email: clientEmail },
+    create: { name: clientName, email: clientEmail },
+    update: {},
+  });
+  const project = await prisma.project.create({
+    data: { title, clientId: client.id, stage: "LEAD" },
+  });
+  await logAudit(profile.email, "create.project", title);
+  revalidateAdmin();
+  redirect(`/admin/projects/${project.id}/`);
+}
+
+export async function addSubscriberManual(formData: FormData) {
+  const { profile } = await requireProfile();
+  const email = s(formData, "email")?.toLowerCase();
+  if (!email) redirect("/admin/subscribers/?error=missing");
+  const existing = await prisma.subscriber.findUnique({ where: { email } });
+  if (existing) redirect("/admin/subscribers/?exists=1");
+  let resendId: string | null = null;
+  try {
+    resendId = await addSubscriberToAudience(email);
+  } catch {
+    /* best effort — still save locally */
+  }
+  await prisma.subscriber.create({
+    data: { email, source: "admin", resendContactId: resendId },
+  });
+  await logAudit(profile.email, "create.subscriber", email);
+  revalidateAdmin();
+  redirect("/admin/subscribers/?added=1");
 }
 
 // ── Clients ──
