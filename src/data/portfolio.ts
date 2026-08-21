@@ -68,7 +68,18 @@ export const portfolio: PortfolioItem[] = [
     ],
     alt: "UV-printed modular board game hex tiles, printing and cutting pieces on the flatbed, and tile artwork prepped for print",
   },
-  { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/cad-3d-model.webp", alt: "Designing a custom 3D model in Shapr3D" },
+  {
+    title: "Custom 3D Models",
+    category: "design",
+    src: "/images/portfolio/design/cad-3d-model.webp",
+    images: [
+      "/images/portfolio/design/cad-3d-model.webp",
+      "/images/portfolio/design/shapr3d-library.webp",
+      "/images/portfolio/design/droideka-model.webp",
+      "/images/portfolio/design/model-render.webp",
+    ],
+    alt: "Custom 3D models designed in Shapr3D: a full library of parts and props, a rotating droideka model, and finished renders",
+  },
   {
     title: "3D Printing- Resin, and Filament (minis and more!)",
     category: "resin",
