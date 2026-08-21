@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
- * Image lightbox. Tap/click a thumbnail to open; dismiss by tapping outside, the X,
- * a vertical swipe, or Escape. Pass `images` (2+) to make it a gallery: left/right
- * arrows, dots, horizontal swipe, and Arrow keys navigate. Works for static and
- * animated (WebP/GIF) images alike. Respects prefers-reduced-motion.
+ * Image lightbox, rendered via a portal to <body> so it always covers the full
+ * viewport (never trapped inside a transformed/animated ancestor). Tapping the image
+ * advances in gallery mode; tapping anywhere else (backdrop), the X, a vertical swipe,
+ * or Escape closes. Every image sits in a fixed-size frame so the size doesn't jump
+ * between slides. Works for static and animated (WebP/GIF) images alike.
  */
 export default function Lightbox({
   src,
@@ -27,6 +29,7 @@ export default function Lightbox({
 
   const [i, setI] = useState(start);
   const [shown, setShown] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
   const closing = useRef(false);
 
@@ -40,6 +43,7 @@ export default function Lightbox({
   const prev = () => setI((n) => (n - 1 + list.length) % list.length);
 
   useEffect(() => {
+    setMounted(true);
     const raf = requestAnimationFrame(() => setShown(true));
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
@@ -57,10 +61,12 @@ export default function Lightbox({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (!mounted) return null;
+
   const navBtn =
     "absolute top-1/2 z-10 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-6xl leading-none text-white transition-colors hover:bg-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white";
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -81,7 +87,7 @@ export default function Lightbox({
         }
         if (Math.max(Math.abs(dx), Math.abs(dy)) > 60) close();
       }}
-      className={`fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm transition-opacity duration-200 motion-reduce:transition-none ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/85 p-4 backdrop-blur-sm transition-opacity duration-200 motion-reduce:transition-none ${
         shown ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -108,43 +114,45 @@ export default function Lightbox({
         </>
       )}
 
-      <figure className="m-0 flex max-h-[90vh] max-w-6xl flex-col items-center">
+      {/* Fixed-size frame so images don't change scale between slides. The frame area
+          around the image is transparent; clicks on it bubble up and close. */}
+      <div className="flex h-[78vh] w-full max-w-5xl items-center justify-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={list[i]}
           alt={alt}
           onClick={(e) => {
-            // Tapping the image itself advances (gallery). Anywhere else — backdrop or the
-            // area around the image — bubbles up and closes.
             if (gallery) {
               e.stopPropagation();
               next();
             }
           }}
-          className={`max-h-[82vh] w-auto rounded-lg object-contain shadow-2xl transition-transform duration-200 motion-reduce:transition-none ${
+          className={`max-h-full max-w-full rounded-lg object-contain shadow-2xl transition-transform duration-200 motion-reduce:transition-none ${
             shown ? "scale-100" : "scale-95"
-          } ${gallery ? "cursor-pointer" : ""}`}
+          } ${gallery ? "cursor-pointer" : "cursor-zoom-out"}`}
         />
-        {(title || gallery) && (
-          <figcaption className="mt-3 text-center text-sm text-white/80">
-            {title}
-            {gallery && <span className="text-white/60"> · {i + 1}/{list.length}</span>}
-          </figcaption>
-        )}
-        {gallery && (
-          <div className="mt-3 flex flex-wrap justify-center gap-2">
-            {list.map((_, idx) => (
-              <button
-                key={idx}
-                type="button"
-                aria-label={`Go to image ${idx + 1}`}
-                onClick={(e) => { e.stopPropagation(); setI(idx); }}
-                className={`h-2 rounded-full transition-all ${idx === i ? "w-6 bg-white" : "w-2 bg-white/50 hover:bg-white/80"}`}
-              />
-            ))}
-          </div>
-        )}
-      </figure>
-    </div>
+      </div>
+
+      {(title || gallery) && (
+        <div className="mt-3 text-center text-sm text-white/80">
+          {title}
+          {gallery && <span className="text-white/60"> · {i + 1}/{list.length}</span>}
+        </div>
+      )}
+      {gallery && (
+        <div className="mt-3 flex max-w-full flex-wrap justify-center gap-2 px-4">
+          {list.map((_, idx) => (
+            <button
+              key={idx}
+              type="button"
+              aria-label={`Go to image ${idx + 1}`}
+              onClick={(e) => { e.stopPropagation(); setI(idx); }}
+              className={`h-2 rounded-full transition-all ${idx === i ? "w-6 bg-white" : "w-2 bg-white/50 hover:bg-white/80"}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>,
+    document.body
   );
 }

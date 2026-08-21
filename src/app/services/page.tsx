@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Container from "@/components/Container";
 import Button from "@/components/Button";
 import SectionHeading from "@/components/SectionHeading";
-import Placeholder from "@/components/Placeholder";
 import RevealOnScroll from "@/components/RevealOnScroll";
 import JsonLd from "@/components/JsonLd";
 import { servicesGraph, breadcrumbSchema } from "@/lib/structured-data";
 import { services } from "@/data/services";
 import { examplesForService } from "@/data/portfolio";
 import ServiceExamples from "@/components/ServiceExamples";
+import ServiceImage from "@/components/ServiceImage";
 
 export const metadata: Metadata = {
   title: "Services: Card & Board Game Printing, Tiles & 3D",
@@ -111,7 +111,13 @@ export default function ServicesPage() {
                     </a>
                   )}
                 </div>
-                <Placeholder label={`${s.name} sample`} src={s.image} alt={`${s.name} sample from Kulworks`} ratio="aspect-[4/3]" />
+                <ServiceImage
+                  label={`${s.name} sample`}
+                  src={s.image}
+                  alt={`${s.name} sample from Kulworks`}
+                  images={examplesForService(s.id)}
+                  title={s.name}
+                />
               </div>
             </RevealOnScroll>
           </Container>
