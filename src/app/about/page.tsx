@@ -5,6 +5,7 @@ import SectionHeading from "@/components/SectionHeading";
 import Placeholder from "@/components/Placeholder";
 import Button from "@/components/Button";
 import JsonLd from "@/components/JsonLd";
+import SocialLinks from "@/components/SocialLinks";
 import { breadcrumbSchema } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
@@ -138,6 +139,10 @@ export default function AboutPage() {
           <h2 className="text-2xl font-extrabold sm:text-3xl">Let&apos;s build something.</h2>
           <div className="mt-6 flex justify-center">
             <Button href="/contact/" variant="gold" size="lg">Get a Quote</Button>
+          </div>
+          <div className="mt-8">
+            <p className="text-sm font-semibold text-muted">Follow along</p>
+            <SocialLinks className="mt-3 justify-center" />
           </div>
         </Container>
       </section>

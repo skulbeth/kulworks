@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { site } from "@/data/site";
 import ThemeToggle from "@/components/ThemeToggle";
+import SocialLinks from "@/components/SocialLinks";
 
 const navLinks = [
   { href: "/services/", label: "Services" },
@@ -123,6 +124,9 @@ export default function Header() {
               Get a Quote
             </Link>
           </li>
+          <li className="hidden lg:block">
+            <SocialLinks />
+          </li>
           <li>
             <ThemeToggle />
           </li>
@@ -185,6 +189,9 @@ export default function Header() {
               >
                 Get a Quote
               </Link>
+            </li>
+            <li className="pt-3">
+              <SocialLinks className="justify-center" />
             </li>
           </ul>
         </div>
