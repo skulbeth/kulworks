@@ -13,7 +13,7 @@ import ServiceImage from "@/components/ServiceImage";
 export const metadata: Metadata = {
   title: "Services: Card & Board Game Printing, Tiles & 3D",
   description:
-    "Custom UV card printing (poker to tarot), UV-printed board game tiles, FDM and resin 3D printing, and 3D modeling and design, all in-house at Kulworks in San Antonio.",
+    "Custom UV card printing (standard poker size, custom sizes on request), UV-printed board game tiles, FDM and resin 3D printing, and 3D modeling and design, all in-house at Kulworks in San Antonio.",
   alternates: { canonical: "/services/" },
 };
 
