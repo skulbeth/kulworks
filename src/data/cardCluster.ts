@@ -293,7 +293,7 @@ export const cardPages: CardPage[] = [
     slug: "card-design",
     navLabel: "Card Design & Fast Prototyping",
     cardBlurb: "We design your cards fast and prototype them locally before a run.",
-    image: "/images/portfolio/cards/prototyping-software.webp",
+    image: "/images/portfolio/cards/custom-deck-creation.webp",
     title: `Custom Card Design & Fast Prototyping in ${CITY}`,
     metaDescription:
       "Custom card design and fast prototyping in San Antonio. We lay out and design your cards quickly, then prototype a deck locally so you can test before a full run.",
