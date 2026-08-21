@@ -127,7 +127,7 @@ export default function Lightbox({
               next();
             }
           }}
-          className={`max-h-full max-w-full rounded-lg object-contain shadow-2xl transition-transform duration-200 motion-reduce:transition-none ${
+          className={`h-full w-full rounded-lg object-contain transition-transform duration-200 motion-reduce:transition-none ${
             shown ? "scale-100" : "scale-95"
           } ${gallery ? "cursor-pointer" : "cursor-zoom-out"}`}
         />
