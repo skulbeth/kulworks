@@ -133,11 +133,11 @@ export async function sendWeeklyStatsEmail() {
   if (busiestN) lines.push(`• Busiest day: ${busiest} (${busiestN} views)`);
 
   lines.push("", `NEW SUBSCRIBERS this week: ${newSubs.length}`);
-  if (newSubs.length) newSubs.forEach((s) => lines.push(`   - ${s.email}`));
+  if (newSubs.length) lines.push("   (see the Subscribers tab in the admin for the list)");
 
   lines.push("", `NEW LEADS (quote requests) this week: ${newSubmissions.length}`);
   if (newSubmissions.length)
-    newSubmissions.forEach((s) => lines.push(`   - ${s.name} <${s.email}>${s.projectType ? ` — ${s.projectType}` : ""}`));
+    newSubmissions.forEach((s) => lines.push(`   - ${s.name}${s.projectType ? ` — ${s.projectType}` : ""}`));
 
   lines.push(
     "",
