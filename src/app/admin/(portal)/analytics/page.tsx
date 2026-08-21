@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDateTime, toDateInput } from "@/lib/format";
 import { ipFromHeaders, visitorHash } from "@/lib/visitor";
+import { rememberOwnerHash } from "@/lib/owner-visits";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,8 @@ export default async function AnalyticsPage({
   // Hide the admin's own visits by DEFAULT; ?showme=1 reveals them.
   const showMe = sp.showme === "1";
   const excludeMe = !showMe && !!myHash;
+  // Remember this admin's hash so background jobs (weekly stats email) can exclude it too.
+  if (myHash) await rememberOwnerHash(myHash);
   // Keep rows with no visitorHash (real visitors can lack one); only drop MY hash.
   const notMe = excludeMe
     ? { OR: [{ visitorHash: { not: myHash } }, { visitorHash: null }] }
