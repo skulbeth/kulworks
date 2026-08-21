@@ -58,7 +58,7 @@ export default function Lightbox({
   }, []);
 
   const navBtn =
-    "absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-3xl leading-none text-white transition-colors hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white";
+    "absolute top-1/2 z-10 flex h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full bg-white/15 text-6xl leading-none text-white transition-colors hover:bg-white/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-white";
 
   return (
     <div
@@ -111,8 +111,12 @@ export default function Lightbox({
       <figure
         className="m-0 flex max-h-[90vh] max-w-6xl flex-col items-center"
         onClick={(e) => {
-          // In gallery mode keep the image clickable area from closing (use X/arrows/outside).
-          if (gallery) e.stopPropagation();
+          // In gallery mode, tapping the image advances to the next one (close via X,
+          // tapping outside, a vertical swipe, or Esc).
+          if (gallery) {
+            e.stopPropagation();
+            next();
+          }
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -121,7 +125,7 @@ export default function Lightbox({
           alt={alt}
           className={`max-h-[82vh] w-auto rounded-lg object-contain shadow-2xl transition-transform duration-200 motion-reduce:transition-none ${
             shown ? "scale-100" : "scale-95"
-          }`}
+          } ${gallery ? "cursor-pointer" : ""}`}
         />
         {(title || gallery) && (
           <figcaption className="mt-3 text-center text-sm text-white/80">
