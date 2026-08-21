@@ -7,6 +7,8 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import JsonLd from "@/components/JsonLd";
 import { servicesGraph, breadcrumbSchema } from "@/lib/structured-data";
 import { services } from "@/data/services";
+import { examplesForService } from "@/data/portfolio";
+import ServiceExamples from "@/components/ServiceExamples";
 
 export const metadata: Metadata = {
   title: "Services: Card & Board Game Printing, Tiles & 3D",
@@ -90,6 +92,7 @@ export default function ServicesPage() {
                     <Button href={`/contact/?type=${s.id}`} variant="primary">
                       Request {s.name}
                     </Button>
+                    <ServiceExamples images={examplesForService(s.id)} title={s.name} />
                     {s.id === "card-printing" && (
                       <Button href="/services/card-printing/" variant="ghost">
                         Explore card printing

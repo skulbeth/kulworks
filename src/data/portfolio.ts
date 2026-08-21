@@ -55,7 +55,7 @@ export const portfolio: PortfolioItem[] = [
     ],
     alt: "Custom cards by Kulworks: card layout and design, sports trading cards, game and prototype decks, and keepsake cards, fronts and backs",
   },
-  { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "FDM-printed custom prop armor set: breastplate, shield, helmet, and sword" },
+  { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", images: ["/images/portfolio/filament/custom-prop-armor.webp", "/images/portfolio/filament/fdm-city-upgrades.webp"], alt: "FDM-printed custom prop armor set, plus FDM city and terrain upgrade pieces" },
   {
     title: "Modular Board Hexes",
     category: "tiles",
@@ -104,3 +104,21 @@ export const portfolio: PortfolioItem[] = [
     alt: "3D-printed miniatures, models, flags, and parts by Kulworks, in resin and filament, painted and raw",
   },
 ];
+
+// Which portfolio category represents each service (for "See examples" on /services).
+const SERVICE_CATEGORY: Record<string, PortfolioCategory> = {
+  "card-printing": "cards",
+  "uv-tiles": "tiles",
+  fdm: "filament",
+  resin: "resin",
+  design: "design",
+};
+
+/** All example image paths for a service, flattening gallery items in its category. */
+export function examplesForService(serviceId: string): string[] {
+  const cat = SERVICE_CATEGORY[serviceId];
+  if (!cat) return [];
+  return portfolio
+    .filter((p) => p.category === cat)
+    .flatMap((p) => p.images ?? (p.src ? [p.src] : []));
+}
