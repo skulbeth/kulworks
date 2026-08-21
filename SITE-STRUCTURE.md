@@ -93,7 +93,8 @@ POST /api/quote           Save quote → notify Sam + confirm customer + SMS + o
 POST /api/subscribe       Newsletter signup → Subscriber + Resend Audience
 POST /api/track           Cookieless page-view beacon
 GET  /api/cron/reminders  Daily due/overdue reminders digest email       (CRON_SECRET)
-GET  /api/cron/backup     Weekly JSON backup email                       (CRON_SECRET)
+GET  /api/cron/backup     Weekly JSON backup email + weekly stats digest (CRON_SECRET)
+GET  /api/cron/weekly-stats  Weekly site-stats digest email (also fired by the Monday backup cron)  (CRON_SECRET)
 GET  /api/admin/backup    On-demand JSON backup download                 (logged-in)
 GET  /auth/callback       OAuth code exchange (password reset / invite)
 ```
