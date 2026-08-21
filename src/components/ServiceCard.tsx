@@ -20,7 +20,16 @@ export default function ServiceCard({
           Lead Service
         </span>
       )}
-      <div className="text-4xl">{service.icon}</div>
+      {service.iconImage ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={service.iconImage}
+          alt=""
+          className="h-14 w-14 rounded-lg border border-border object-cover"
+        />
+      ) : (
+        <div className="text-4xl">{service.icon}</div>
+      )}
       <h3 className="mt-4 text-xl font-bold">{service.name}</h3>
       <p className="mt-1 text-sm font-semibold text-gold">{service.tagline}</p>
       <p className="mt-3 flex-1 text-muted">{service.description}</p>

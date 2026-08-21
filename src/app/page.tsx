@@ -3,7 +3,6 @@ import Container from "@/components/Container";
 import Button from "@/components/Button";
 import SectionHeading from "@/components/SectionHeading";
 import ServiceCard from "@/components/ServiceCard";
-import AudienceCard from "@/components/AudienceCard";
 import RevealOnScroll from "@/components/RevealOnScroll";
 import Placeholder from "@/components/Placeholder";
 import Carousel from "@/components/Carousel";
@@ -11,13 +10,10 @@ import ComingSoon from "@/components/ComingSoon";
 import Testimonials from "@/components/Testimonials";
 import { site } from "@/data/site";
 import { services } from "@/data/services";
-import { audiences } from "@/data/audiences";
 
 export default function HomePage() {
   // Temporary holding page. Flip site.constructionMode to false to show the real home.
   if (site.constructionMode) return <ComingSoon />;
-
-  const audienceHighlights = audiences.slice(0, 3);
 
   const studioSlides = [
     { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
@@ -84,27 +80,6 @@ export default function HomePage() {
               <Carousel slides={studioSlides} />
             </div>
           </RevealOnScroll>
-        </Container>
-      </section>
-
-      {/* ===== Who it's for ===== */}
-      <section className="border-b border-border bg-surface/30">
-        <Container className="py-16">
-          <RevealOnScroll>
-            <SectionHeading
-              eyebrow="Who it's for"
-              title="Built for makers, teams, and sellers"
-              intro="Game designers, sports clubs, photographers, market-day sellers. If you need it made, you're in the right place."
-            />
-          </RevealOnScroll>
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {audienceHighlights.map((a) => (
-              <AudienceCard key={a.title} audience={a} />
-            ))}
-          </div>
-          <div className="mt-8">
-            <Button href="/who-its-for/" variant="ghost">See everyone we work with →</Button>
-          </div>
         </Container>
       </section>
 

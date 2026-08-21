@@ -24,6 +24,8 @@ export interface Service {
   featuredHighlight?: string;
   /** Emoji used as a lightweight icon placeholder (swap for an SVG/image later). */
   icon: string;
+  /** Optional small image icon; when set, it replaces the emoji on the service card. */
+  iconImage?: string;
   /** Optional sample photo shown on the Services page (4:3). Placeholder shown if omitted. */
   image?: string;
   /** Set true for the lead service (gets extra prominence). */
@@ -38,7 +40,7 @@ export const services: Service[] = [
     name: "UV Card Printing",
     tagline: "Custom decks, prototypes to finished runs.",
     description:
-      "Custom playing, poker, and game cards in sizes from standard poker up to tarot, with your own card backs and faces. We can even design the cards for you.",
+      "Custom cards for sports teams, schools, clubs, and game & card designers. We print standard poker-size cards with your own backs and faces, and can design the cards for you.",
     details:
       "Custom card printing is our flagship craft. We print crisp, durable UV cards with custom backs and faces, in sizes from standard poker up to larger tarot cards.",
     featuredHighlight:
@@ -52,6 +54,7 @@ export const services: Service[] = [
       "Card design at conventions, with quick turnaround and delivery, sometimes next day",
     ],
     icon: "🃏",
+    iconImage: "/images/portfolio/cards/sports-cards.webp",
     image: "/images/portfolio/cards/character-cards-in-jig.webp",
     lead: true,
   },
