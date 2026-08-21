@@ -108,21 +108,19 @@ export default function Lightbox({
         </>
       )}
 
-      <figure
-        className="m-0 flex max-h-[90vh] max-w-6xl flex-col items-center"
-        onClick={(e) => {
-          // In gallery mode, tapping the image advances to the next one (close via X,
-          // tapping outside, a vertical swipe, or Esc).
-          if (gallery) {
-            e.stopPropagation();
-            next();
-          }
-        }}
-      >
+      <figure className="m-0 flex max-h-[90vh] max-w-6xl flex-col items-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={list[i]}
           alt={alt}
+          onClick={(e) => {
+            // Tapping the image itself advances (gallery). Anywhere else — backdrop or the
+            // area around the image — bubbles up and closes.
+            if (gallery) {
+              e.stopPropagation();
+              next();
+            }
+          }}
           className={`max-h-[82vh] w-auto rounded-lg object-contain shadow-2xl transition-transform duration-200 motion-reduce:transition-none ${
             shown ? "scale-100" : "scale-95"
           } ${gallery ? "cursor-pointer" : ""}`}
