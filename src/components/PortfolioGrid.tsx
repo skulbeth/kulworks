@@ -20,7 +20,7 @@ export default function PortfolioGrid() {
   return (
     <div>
       {/* Filter bar */}
-      <div className="mb-8 flex flex-wrap gap-2" role="tablist" aria-label="Filter portfolio">
+      <div className="mb-6 flex flex-wrap gap-1.5" role="tablist" aria-label="Filter portfolio">
         {portfolioFilters.map((f) => {
           const selected = active === f.id;
           return (
@@ -29,7 +29,7 @@ export default function PortfolioGrid() {
               role="tab"
               aria-selected={selected}
               onClick={() => setActive(f.id)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                 selected
                   ? "bg-primary text-black"
                   : "border border-border bg-surface text-muted hover:border-blue hover:text-blue"

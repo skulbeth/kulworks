@@ -40,6 +40,7 @@ export const portfolio: PortfolioItem[] = [
     src: "/images/portfolio/cards/cards-variety.webp",
     images: [
       "/images/portfolio/cards/cards-variety.webp",
+      "/images/portfolio/design/card-layout-photoshop.webp",
       "/images/portfolio/cards/sports-cards.webp",
       "/images/portfolio/cards/cards-showcase.webp",
       "/images/portfolio/cards/game-cards.webp",
@@ -51,13 +52,28 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/cards/keepsake-card-backs.webp",
       "/images/portfolio/cards/custom-deck-creation.webp",
     ],
-    alt: "Custom cards by Kulworks: sports trading cards, game and prototype decks, and keepsake cards, fronts and backs",
+    alt: "Custom cards by Kulworks: card layout and design, sports trading cards, game and prototype decks, and keepsake cards, fronts and backs",
   },
-  { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "FDM-printed custom prop armor set: breastplate, shield, helmet, and sword" }, // S
-  { title: "Modular Board Hexes", category: "tiles", src: "/images/portfolio/tiles/board-tiles.webp", alt: "UV-printed modular board game hex tiles" }, // A
-  { title: "High-Detail Miniature", category: "resin", src: "/images/portfolio/resin/high-detail-miniature.webp", alt: "Painted high-detail 3D-printed character miniatures" }, // S
-  { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/cad-3d-model.webp", alt: "Designing a custom 3D model in Shapr3D" }, // A
-  { title: "Resin Printing (minis and more!)", category: "resin", src: "/images/portfolio/resin/miniatures-cure-glow.webp", alt: "Resin printed character miniatures" }, // S
-  { title: "Card Layout & Artwork Prep", category: "design", src: "/images/portfolio/design/card-layout-photoshop.webp", alt: "Designing and laying out custom character class cards in Photoshop" }, // S
-  { title: "Tile Artwork Prep", category: "design", src: "/images/portfolio/design/tile-artwork-prep.webp", alt: "Board tile and map artwork prepared for UV printing" }, // S
+  { title: "Custom Prop Print", category: "filament", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "FDM-printed custom prop armor set: breastplate, shield, helmet, and sword" },
+  {
+    title: "Modular Board Hexes",
+    category: "tiles",
+    src: "/images/portfolio/tiles/board-tiles.webp",
+    images: [
+      "/images/portfolio/tiles/board-tiles.webp",
+      "/images/portfolio/design/tile-artwork-prep.webp",
+    ],
+    alt: "UV-printed modular board game hex tiles, plus tile and map artwork prepped for printing",
+  },
+  { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/cad-3d-model.webp", alt: "Designing a custom 3D model in Shapr3D" },
+  {
+    title: "Resin Printing (minis and more!)",
+    category: "resin",
+    src: "/images/portfolio/resin/high-detail-miniature.webp",
+    images: [
+      "/images/portfolio/resin/high-detail-miniature.webp",
+      "/images/portfolio/resin/miniatures-cure-glow.webp",
+    ],
+    alt: "High-detail resin-printed character miniatures, painted and fresh off the printer",
+  },
 ];

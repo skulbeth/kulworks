@@ -42,12 +42,12 @@ export const services: Service[] = [
     description:
       "Custom cards for sports teams, schools, clubs, and game & card designers. We print standard poker-size cards with your own backs and faces, and can design the cards for you.",
     details:
-      "Custom card printing is our flagship craft. We print crisp, durable UV cards with custom backs and faces, in sizes from standard poker up to larger tarot cards.",
+      "Custom card printing is our flagship craft. We print crisp, durable UV cards with custom backs and faces in standard poker size, with custom sizes available upon request.",
     featuredHighlight:
       "Want a fully custom look? We can design your cards any way you want for an added fee, or start from one of our standard templates.",
     highlights: [
       "Prototypes, one-off decks, and short runs, all with fast turnaround",
-      "Custom backs and faces, from poker (2.5 x 3.5 in / 63 x 88 mm) up to tarot (2.75 x 4.75 in / 70 x 121 mm)",
+      "Custom backs and faces on standard poker size (2.5 x 3.5 in / 63 x 88 mm), with custom sizes available upon request",
       "We design the card structure, fill it with your content, and go straight to print, the whole process under one roof",
       "Custom 3D-printed card boxes and sleeve upgrades, offered in tiers",
       "Cards come with rounded corners (the only corner option right now)",
