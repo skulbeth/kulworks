@@ -63,9 +63,10 @@ export const portfolio: PortfolioItem[] = [
     images: [
       "/images/portfolio/tiles/board-tiles.webp",
       "/images/portfolio/tiles/board-printing.webp",
+      "/images/portfolio/tiles/chopping-piece.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
     ],
-    alt: "UV-printed modular board game hex tiles, printing in progress on the flatbed, and tile artwork prepped for print",
+    alt: "UV-printed modular board game hex tiles, printing and cutting pieces on the flatbed, and tile artwork prepped for print",
   },
   { title: "Custom 3D Models", category: "design", src: "/images/portfolio/design/cad-3d-model.webp", alt: "Designing a custom 3D model in Shapr3D" },
   {
