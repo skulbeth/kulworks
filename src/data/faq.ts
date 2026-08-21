@@ -20,12 +20,12 @@ export const faqs: Faq[] = [
     a: "Yes. Kulworks is a San Antonio maker shop and custom card printing is our lead service. We print custom playing, poker, and game cards with your own backs and faces, from a single prototype deck to a finished short run.",
   },
   {
-    q: "What card sizes can you print, and can you do tarot-size cards?",
-    a: "Yes, tarot size included. The sizes we print:",
+    q: "What card sizes do you print?",
+    a: "Standard poker size is our go-to, and our pricing is built around it. Other sizes are available as a custom order, just ask:",
     bullets: [
       "Poker (standard): 2.5 x 3.5 in / 63 x 88 mm",
-      "Tarot: 2.75 x 4.75 in / 70 x 121 mm",
-      "Giant / jumbo: about 3.5 x 5 in / 89 x 127 mm",
+      "Tarot (custom order): 2.75 x 4.75 in / 70 x 121 mm",
+      "Giant / jumbo (custom order): about 3.5 x 5 in / 89 x 127 mm",
     ],
   },
   {
@@ -58,7 +58,7 @@ export const faqs: Faq[] = [
   },
   {
     q: "What is the difference between poker, bridge, and tarot card sizes?",
-    a: "Poker cards are the standard size (about 2.5 by 3.5 inches). Bridge cards are a bit narrower, which makes a large hand easier to hold. Tarot cards are larger overall, giving artwork more room. We print all three, plus giant and oracle decks.",
+    a: "Poker cards are the standard size (about 2.5 by 3.5 inches) and what we print by default. Bridge cards are a bit narrower, which makes a large hand easier to hold. Tarot cards are larger overall, giving artwork more room. We print standard poker size, with tarot, bridge, giant, and oracle sizes available as a custom order.",
   },
   {
     q: "Do you offer square or rounded corners?",

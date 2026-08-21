@@ -7,17 +7,8 @@ import { useState } from "react";
  * estimates, not quotes. Adjust the rate constants below if pricing changes.
  */
 
-// Per-card print rate by size (poker is the base; larger sizes scale up ~2-3x).
-const SIZE_RATES: Record<string, number> = {
-  poker: 0.13,
-  tarot: 0.33,
-  giant: 0.39,
-};
-const SIZE_OPTIONS = [
-  { id: "poker", label: "Poker (2.5 x 3.5 in)" },
-  { id: "tarot", label: "Tarot (2.75 x 4.75 in)" },
-  { id: "giant", label: "Giant (3.5 x 5 in)" },
-];
+// Standard poker size only; other sizes are custom and quote-only.
+const POKER_RATE = 0.13; // per card, print-ready poker size
 
 const SETUP_FEE = 25; // one-time per project
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
@@ -30,7 +21,6 @@ const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function CardCalculator() {
-  const [size, setSize] = useState("poker");
   const [cardsPerDeck, setCardsPerDeck] = useState(54);
   const [decks, setDecks] = useState(1);
   const [frontLayouts, setFrontLayouts] = useState(0);
@@ -42,7 +32,7 @@ export default function CardCalculator() {
   const deckCount = Math.max(0, Math.floor(decks) || 0);
   const totalCards = cpd * deckCount;
 
-  const printing = totalCards * SIZE_RATES[size];
+  const printing = totalCards * POKER_RATE;
 
   // Bulk discount on printing (setup fee always stays).
   const bulkRate =
@@ -71,7 +61,7 @@ export default function CardCalculator() {
   const quoteTypes = layoutCount > 0 ? "card-printing,card-design" : "card-printing";
   const summary = [
     "Card printing estimate from the website calculator:",
-    `- Size: ${SIZE_OPTIONS.find((o) => o.id === size)?.label}`,
+    "- Size: Poker (2.5 x 3.5 in)",
     `- Quantity: ${deckCount} deck(s) x ${cpd} cards = ${totalCards} cards`,
     layoutCount > 0
       ? `- Design: ${frontN} front + ${backN} back layout(s)`
@@ -110,19 +100,9 @@ export default function CardCalculator() {
     <div className="grid gap-6 rounded-2xl border border-border bg-surface p-6 sm:p-8 md:grid-cols-2">
       {/* Inputs */}
       <div className="space-y-5">
-        <div>
-          <label className={labelCls} htmlFor="calc-size">Card size</label>
-          <select
-            id="calc-size"
-            className={inputCls}
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-          >
-            {SIZE_OPTIONS.map((o) => (
-              <option key={o.id} value={o.id}>{o.label}</option>
-            ))}
-          </select>
-        </div>
+        <p className="text-sm text-muted">
+          Standard poker size (2.5 x 3.5 in). Need a custom size? Ask for a quote.
+        </p>
 
         <div className="grid grid-cols-2 gap-4">
           <div>

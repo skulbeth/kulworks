@@ -13,8 +13,9 @@ const nextConfig = {
   // Note: the site must now be hosted on a Node/Vercel runtime, not a pure static
   // host (GitHub Pages, plain S3).
 
-  // Keep <img> output unoptimized for now (unchanged behavior).
-  images: { unoptimized: true },
+  // Optimize next/image output (e.g. the logo). Most photos use plain <img> and are
+  // already hand-optimized WebP, so this mainly helps the logo + any next/image.
+  images: { unoptimized: false },
 
   // Emit /about/index.html style URLs — keeps existing trailing-slash URLs stable.
   trailingSlash: true,
@@ -44,6 +45,26 @@ const nextConfig = {
       {
         source: "/:path*",
         headers: [
+          // Content-Security-Policy. 'unsafe-inline' is kept for scripts/styles because the
+          // app uses inline scripts (theme init, JSON-LD) + Next hydration; every external
+          // host the site actually uses is allowlisted (Turnstile, Supabase, Google Fonts).
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "base-uri 'self'",
+              "object-src 'none'",
+              "frame-ancestors 'self'",
+              "form-action 'self'",
+              "img-src 'self' data: blob: https:",
+              "font-src 'self' https://fonts.gstatic.com data:",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
+              "connect-src 'self' https://gzavumiukhahbrgzcaxo.supabase.co wss://gzavumiukhahbrgzcaxo.supabase.co https://challenges.cloudflare.com",
+              "frame-src https://challenges.cloudflare.com",
+              "upgrade-insecure-requests",
+            ].join("; "),
+          },
           // Force HTTPS for 2 years, including subdomains.
           { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
           // Don't let browsers MIME-sniff responses.
