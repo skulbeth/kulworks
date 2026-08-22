@@ -77,6 +77,7 @@ export const site = {
   // it's left OUT of the footer icons and the sameAs schema until a real handle
   // is set. (Instagram is the Role to Reign account; YouTube is @kulworks.)
   social: [
+    { name: "Facebook", url: "https://www.facebook.com/people/Role-to-Reign/61576230063520/" },
     { name: "Instagram", url: "https://www.instagram.com/roletoreign/" },
     { name: "YouTube", url: "https://www.youtube.com/@kulworks" },
   ],
