@@ -33,49 +33,55 @@ export default function Header() {
         className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
         aria-label="Main"
       >
-        {/* Logo */}
-        <Link
-          href="/"
-          className="group flex items-center gap-2 text-gold"
-          aria-label="Kulworks home"
-          title="Home"
-          onClick={() => setOpen(false)}
-        >
-          {/* Home button (house icon) — hidden for now; re-enable to show it left of the logo.
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-            className="h-9 w-9 shrink-0 transition-transform group-hover:-translate-y-0.5 sm:h-10 sm:w-10"
+        {/* Left: logo (+ home icon) with the social buttons beside it */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="group flex items-center gap-2 text-gold"
+            aria-label="Kulworks home"
+            title="Home"
+            onClick={() => setOpen(false)}
           >
-            <path d="M3 10.5 12 3l9 7.5" />
-            <path d="M5 9.5V21h14V9.5" />
-            <path d="M9.5 21v-6h5v6" />
-          </svg>
-          */}
-          {/* Light theme logo (default) */}
-          <Image
-            src="/images/kulworks-logo-light-transparent.png"
-            alt="Kulworks"
-            width={714}
-            height={181}
-            priority
-            className="logo-light h-9 w-auto transition-transform group-hover:-translate-y-0.5 sm:h-10"
-          />
-          {/* Dark theme logo (shown when data-theme="dark") */}
-          <Image
-            src="/images/kulworks-logo-dark.png"
-            alt="Kulworks"
-            width={3320}
-            height={834}
-            priority
-            className="logo-dark h-9 w-auto transition-transform group-hover:-translate-y-0.5 sm:h-10"
-          />
-        </Link>
+            {/* Home button (house icon) — hidden for now; re-enable to show it left of the logo.
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+              className="h-9 w-9 shrink-0 transition-transform group-hover:-translate-y-0.5 sm:h-10 sm:w-10"
+            >
+              <path d="M3 10.5 12 3l9 7.5" />
+              <path d="M5 9.5V21h14V9.5" />
+              <path d="M9.5 21v-6h5v6" />
+            </svg>
+            */}
+            {/* Light theme logo (default) */}
+            <Image
+              src="/images/kulworks-logo-light-transparent.png"
+              alt="Kulworks"
+              width={714}
+              height={181}
+              priority
+              className="logo-light h-9 w-auto transition-transform group-hover:-translate-y-0.5 sm:h-10"
+            />
+            {/* Dark theme logo (shown when data-theme="dark") */}
+            <Image
+              src="/images/kulworks-logo-dark.png"
+              alt="Kulworks"
+              width={3320}
+              height={834}
+              priority
+              className="logo-dark h-9 w-auto transition-transform group-hover:-translate-y-0.5 sm:h-10"
+            />
+          </Link>
+
+          {/* Instagram + YouTube, always visible (handy on mobile) */}
+          <SocialLinks only={["Instagram", "YouTube"]} size="sm" />
+        </div>
 
         {/* Desktop nav */}
         <ul className="hidden items-center gap-7 md:flex">
@@ -123,9 +129,6 @@ export default function Header() {
             >
               Get a Quote
             </Link>
-          </li>
-          <li className="hidden lg:block">
-            <SocialLinks />
           </li>
           <li>
             <ThemeToggle />
@@ -189,9 +192,6 @@ export default function Header() {
               >
                 Get a Quote
               </Link>
-            </li>
-            <li className="pt-3">
-              <SocialLinks className="justify-center" />
             </li>
           </ul>
         </div>

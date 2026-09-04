@@ -25,13 +25,30 @@ const BRAND: Record<string, string> = {
 };
 
 /** Social row with brand-colored icons (Instagram gradient, YouTube red, etc.).
- *  Renders nothing until at least one real handle is set in site.social. */
-export default function SocialLinks({ className = "" }: { className?: string }) {
-  const reals = site.social.filter((s) => !s.url.includes("REPLACE_WITH_HANDLE"));
+ *  Renders nothing until at least one real handle is set in site.social.
+ *  `only` limits + orders which platforms show (the header uses Instagram + YouTube).
+ *  `size` "sm" is the tighter button used in the header bar. */
+export default function SocialLinks({
+  className = "",
+  only,
+  size = "md",
+}: {
+  className?: string;
+  only?: string[];
+  size?: "sm" | "md";
+}) {
+  let reals = site.social.filter((s) => !s.url.includes("REPLACE_WITH_HANDLE"));
+  if (only) {
+    reals = only
+      .map((name) => reals.find((s) => s.name === name))
+      .filter((s): s is (typeof site.social)[number] => !!s);
+  }
   if (reals.length === 0) return null;
 
+  const small = size === "sm";
+
   return (
-    <ul className={`flex items-center gap-2.5 ${className}`}>
+    <ul className={`flex items-center ${small ? "gap-1.5" : "gap-2.5"} ${className}`}>
       <svg width="0" height="0" aria-hidden className="absolute h-0 w-0">
         <defs>
           <linearGradient id="kw-ig-grad" x1="0" y1="1" x2="1" y2="0">
@@ -51,9 +68,17 @@ export default function SocialLinks({ className = "" }: { className?: string }) 
             rel="noopener noreferrer"
             aria-label={s.name}
             title={s.name}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface transition-transform hover:-translate-y-0.5 hover:border-blue"
+            className={`flex items-center justify-center rounded-full border border-border bg-surface transition-transform hover:-translate-y-0.5 hover:border-blue ${
+              small ? "h-8 w-8" : "h-9 w-9"
+            }`}
           >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill={BRAND[s.name] ?? "currentColor"} aria-hidden>
+            <svg
+              viewBox="0 0 24 24"
+              width={small ? 16 : 18}
+              height={small ? 16 : 18}
+              fill={BRAND[s.name] ?? "currentColor"}
+              aria-hidden
+            >
               {icons[s.name]}
             </svg>
           </a>
