@@ -100,8 +100,11 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/design/shapr3d-library.webp",
       "/images/portfolio/design/droideka-model.webp",
       "/images/portfolio/design/model-render.webp",
+      "/images/portfolio/filament/race-award-tower.webp",
+      "/images/portfolio/filament/race-award-number-one.webp",
+      "/images/portfolio/filament/race-award-medallion.webp",
     ],
-    alt: "Custom 3D models designed in Shapr3D: a full library of parts and props, a rotating droideka model, and finished renders",
+    alt: "Custom 3D models designed in Shapr3D: a full library of parts and props, a rotating droideka model, finished renders, and custom award designs — a tower, a number one, and a runner medallion — modeled from scratch for a client",
   },
   {
     title: "Resin 3D Printing (high-detail minis)",
@@ -115,21 +118,6 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/resin/miniatures-cure-glow.webp",
     ],
     alt: "Resin 3D printing by Kulworks: high-detail painted tabletop miniatures, character models, and a fresh print curing",
-  },
-  {
-    title: "Custom Race Awards",
-    category: "filament",
-    src: "/images/portfolio/filament/race-awards-trio.webp",
-    images: [
-      "/images/portfolio/filament/race-awards-trio.webp",
-      "/images/portfolio/filament/race-award-tower.webp",
-      "/images/portfolio/filament/race-award-number-one.webp",
-      "/images/portfolio/filament/race-award-medallion.webp",
-      "/images/portfolio/filament/race-awards-towers.webp",
-      "/images/portfolio/filament/race-awards-number-ones.webp",
-      "/images/portfolio/filament/race-awards-medallions.webp",
-    ],
-    alt: "Custom race awards designed and 3D printed by Kulworks: green tower, number one, and runner medallion toppers on black bases with UV-printed lettering, shown as finished sets",
   },
   {
     title: "Color-Coded Hospital Tags",
@@ -158,8 +146,12 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/3d-print-11.webp",
       "/images/portfolio/filament/3d-print-02.webp",
       "/images/portfolio/filament/uv-art-on-3d-print.webp",
+      "/images/portfolio/filament/race-awards-trio.webp",
+      "/images/portfolio/filament/race-awards-towers.webp",
+      "/images/portfolio/filament/race-awards-number-ones.webp",
+      "/images/portfolio/filament/race-awards-medallions.webp",
     ],
-    alt: "Filament (FDM) 3D printing by Kulworks: articulated figures and large builds, a spaceship, game flag markers, functional parts, props, and full-color art UV-printed straight onto a printed blank",
+    alt: "Filament (FDM) 3D printing by Kulworks: articulated figures and large builds, a spaceship, game flag markers, functional parts, props, full-color art UV-printed straight onto a printed blank, and a full run of custom awards on UV-printed bases",
   },
 ];
 

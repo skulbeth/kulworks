@@ -435,9 +435,11 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 - [x] **Submission status filters (2026-09-23).** Open / New / Contacted / Quoted / Won /
       Lost / All tabs with counts; defaults to Open so won + lost are hidden. Shared
       `FilterTabs` component (also used by Clients).
-- [x] **Portfolio: 3D-printed client work + UV board printing (2026-09-23).** Added Custom
-      Race Awards, Color-Coded Hospital Tags, UV-Printed Game Boards; helmet prop now leads
-      Custom Prop Print; finished/bagged client deck added to the cards gallery. Photos →
+- [x] **Portfolio: 3D-printed client work + UV board printing (2026-09-23).** Added
+      Color-Coded Hospital Tags and UV-Printed Game Boards tiles; the custom race awards go
+      in the existing galleries (designs → Custom 3D Models, printed sets → Filament/FDM)
+      rather than a tile of their own; helmet prop now leads Custom Prop Print;
+      finished/bagged client deck added to the cards gallery. Photos →
       WebP (1600px long edge), videos → looping animated WebP clips, per existing convention.
 - [x] Confirmed local copy is in sync with GitHub (nothing to pull).
 - [x] Confirmed hosting: Vercel + GitHub (push = auto-deploy).
