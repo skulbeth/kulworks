@@ -427,6 +427,18 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 
 ## ✅ Done
 
+- [x] **Contacts (lost clients) + notes (2026-09-23).** `Client.kind` (CLIENT/CONTACT) +
+      `lostReason` / `lostAt`; Clients page has Clients / Contacts / All tabs; client detail
+      has a "Move to contacts" (with reason) ⇄ "Move back to clients" toggle and a dated
+      Notes log. Nothing is ever deleted — same record, history intact. Migration:
+      `20260923120000_client_kind` (applied to prod).
+- [x] **Submission status filters (2026-09-23).** Open / New / Contacted / Quoted / Won /
+      Lost / All tabs with counts; defaults to Open so won + lost are hidden. Shared
+      `FilterTabs` component (also used by Clients).
+- [x] **Portfolio: 3D-printed client work + UV board printing (2026-09-23).** Added Custom
+      Race Awards, Color-Coded Hospital Tags, UV-Printed Game Boards; helmet prop now leads
+      Custom Prop Print; finished/bagged client deck added to the cards gallery. Photos →
+      WebP (1600px long edge), videos → looping animated WebP clips, per existing convention.
 - [x] Confirmed local copy is in sync with GitHub (nothing to pull).
 - [x] Confirmed hosting: Vercel + GitHub (push = auto-deploy).
 - [x] Decided direction: custom DB backend (not a form-only service or Google Form).
