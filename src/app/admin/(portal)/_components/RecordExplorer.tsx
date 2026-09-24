@@ -38,11 +38,15 @@ export default function RecordExplorer({
   items,
   filename,
   initialOpenId,
+  emptyMessage,
 }: {
   columns: ExplorerColumn[];
   items: ExplorerItem[];
   filename: string;
   initialOpenId?: string;
+  /** Shown when the list is empty — pass a filter-aware line so an active
+   *  filter doesn't read as "there's no data". */
+  emptyMessage?: string;
 }) {
   const [view, setView] = useState<"cards" | "grid">("cards");
   const [query, setQuery] = useState("");
@@ -105,7 +109,7 @@ export default function RecordExplorer({
 
       {filtered.length === 0 ? (
         <p className="rounded-xl border border-border bg-surface p-8 text-center text-muted">
-          Nothing here yet.
+          {emptyMessage ?? "Nothing here yet."}
         </p>
       ) : view === "cards" ? (
         <div className="space-y-3">

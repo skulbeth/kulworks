@@ -14,6 +14,7 @@ import RecordExplorer, {
   type ExplorerColumn,
   type ExplorerItem,
 } from "../_components/RecordExplorer";
+import FilterTabs, { type FilterTab } from "../_components/FilterTabs";
 import ConfirmButton from "../_components/ConfirmButton";
 import CopyButton from "../_components/CopyButton";
 import { signedUploadUrl } from "@/lib/uploads";
@@ -41,17 +42,58 @@ const statusTone: Record<string, ExplorerItem["badgeTone"]> = {
   LOST: "red",
 };
 
+// Filter views. "open" is the default — it hides the finished ones (won/lost)
+// so the list is just what still needs work.
+const OPEN_STATUSES = ["NEW", "CONTACTED", "QUOTED"];
+const VIEWS: Record<string, string[] | null> = {
+  open: OPEN_STATUSES,
+  new: ["NEW"],
+  contacted: ["CONTACTED"],
+  quoted: ["QUOTED"],
+  won: ["WON"],
+  lost: ["LOST"],
+  all: null, // no status filter
+};
+
 export default async function SubmissionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ open?: string }>;
+  searchParams: Promise<{ open?: string; show?: string }>;
 }) {
-  const { open } = await searchParams;
-  const submissions = await prisma.submission.findMany({
+  const { open, show } = await searchParams;
+  const view = show && show in VIEWS ? show : "open";
+
+  const all = await prisma.submission.findMany({
     where: { deletedAt: null },
     orderBy: { createdAt: "desc" },
     include: { client: true },
   });
+
+  const counts = all.reduce<Record<string, number>>((acc, s) => {
+    acc[s.status] = (acc[s.status] ?? 0) + 1;
+    return acc;
+  }, {});
+  const countFor = (statuses: string[] | null) =>
+    statuses === null ? all.length : statuses.reduce((n, st) => n + (counts[st] ?? 0), 0);
+
+  const allowed = VIEWS[view];
+  let submissions = allowed === null ? all : all.filter((s) => allowed.includes(s.status));
+
+  // A deep link (?open=<id>) wins over the filter — otherwise opening a won/lost
+  // submission from the dashboard would land on an empty list.
+  if (open && !submissions.some((s) => s.id === open) && all.some((s) => s.id === open)) {
+    submissions = all;
+  }
+
+  const tabs: FilterTab[] = [
+    { value: "", label: "Open", count: countFor(OPEN_STATUSES) },
+    { value: "new", label: "New", count: counts.NEW ?? 0 },
+    { value: "contacted", label: "Contacted", count: counts.CONTACTED ?? 0 },
+    { value: "quoted", label: "Quoted", count: counts.QUOTED ?? 0 },
+    { value: "won", label: "Won", count: counts.WON ?? 0 },
+    { value: "lost", label: "Lost", count: counts.LOST ?? 0 },
+    { value: "all", label: "All", count: all.length },
+  ];
 
   // Correlate each submitter's anonymous session with the pages they viewed.
   const sessionIds = [
@@ -300,7 +342,17 @@ export default async function SubmissionsPage({
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">Submissions</h1>
-      <p className="mb-6 text-muted">Raw quote requests from the website form.</p>
+      <p className="mb-4 text-muted">
+        Raw quote requests from the website form.
+        {view === "open" && " Showing open ones — won and lost are hidden."}
+      </p>
+
+      <FilterTabs
+        basePath="/admin/submissions/"
+        param="show"
+        tabs={tabs}
+        active={view === "open" ? "" : view}
+      />
 
       <details className="mb-6 rounded-xl border border-border bg-surface p-4">
         <summary className="cursor-pointer select-none font-semibold text-blue">+ Add a submission manually</summary>
@@ -321,6 +373,11 @@ export default async function SubmissionsPage({
         items={items}
         filename="kulworks-submissions"
         initialOpenId={open}
+        emptyMessage={
+          view === "all"
+            ? "No submissions yet."
+            : `No ${view === "open" ? "open" : view} submissions — try another filter above.`
+        }
       />
     </div>
   );
