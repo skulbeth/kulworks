@@ -16,7 +16,7 @@ export default async function DashboardPage() {
     await Promise.all([
       prisma.submission.count({ where: { status: "NEW", deletedAt: null } }),
       prisma.project.count({ where: { stage: { in: [...ACTIVE_STAGES] }, deletedAt: null } }),
-      prisma.client.count(),
+      prisma.client.count({ where: { kind: "CLIENT" } }),
       prisma.activity.findMany({
         where: { type: "REMINDER", done: false, remindAt: { not: null }, deletedAt: null },
         orderBy: { remindAt: "asc" },

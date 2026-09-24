@@ -44,6 +44,14 @@ model TwoFactorCode {
 }
 
 // ── A customer/prospect (CRM contact record) ──
+// Everyone in the book is a Client row. `kind` says whether they're an active
+// client or just a contact (a lead we didn't win) — we never delete them, so the
+// history, projects and emails stay attached if they ever come back.
+enum ClientKind {
+  CLIENT
+  CONTACT
+}
+
 model Client {
   id          String       @id @default(cuid())
   name        String
@@ -56,6 +64,9 @@ model Client {
   postalCode  String?
   country     String?
   notes       String?
+  kind        ClientKind   @default(CLIENT)
+  lostReason  String? // why they're a contact and not a client
+  lostAt      DateTime? // when they were moved to contacts
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   submissions Submission[]
@@ -64,6 +75,7 @@ model Client {
   invoices    Invoice[]
 
   @@index([createdAt])
+  @@index([kind])
 }
 
 // ── A quote request submitted through the site contact form (raw, immutable) ──

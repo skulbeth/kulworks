@@ -242,6 +242,7 @@ export async function createClientManual(formData: FormData) {
   if (!name || !email) redirect("/admin/clients/?error=missing");
   const existing = await prisma.client.findUnique({ where: { email } });
   if (existing) redirect(`/admin/clients/${existing.id}/`);
+  const asContact = s(formData, "kind") === "CONTACT";
   const client = await prisma.client.create({
     data: {
       name,
@@ -249,9 +250,12 @@ export async function createClientManual(formData: FormData) {
       phone: s(formData, "phone"),
       company: s(formData, "company"),
       notes: s(formData, "notes"),
+      kind: asContact ? "CONTACT" : "CLIENT",
+      lostAt: asContact ? new Date() : null,
+      lostReason: asContact ? s(formData, "lostReason") : null,
     },
   });
-  await logAudit(profile.email, "create.client", email);
+  await logAudit(profile.email, asContact ? "create.contact" : "create.client", email);
   revalidateAdmin();
   redirect(`/admin/clients/${client.id}/`);
 }
@@ -333,9 +337,58 @@ export async function updateClient(formData: FormData) {
       postalCode: s(formData, "postalCode"),
       country: s(formData, "country"),
       notes: s(formData, "notes"),
+      // Only contacts render this field — don't wipe it from the client form.
+      ...(formData.has("lostReason") ? { lostReason: s(formData, "lostReason") } : {}),
     },
   });
   await logAudit(profile.email, "update.client", id);
+  revalidateAdmin();
+  redirect(`/admin/clients/${id}/`);
+}
+
+// ── Client ⇄ contact ──
+// A lead we didn't win stays in the book as a CONTACT: same record, same history,
+// plus the reason we lost them. Never deleted — one click puts them back.
+export async function convertClientToContact(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  const reason = s(formData, "lostReason");
+  const client = await prisma.client.update({
+    where: { id },
+    data: { kind: "CONTACT", lostAt: new Date(), lostReason: reason },
+  });
+  await prisma.activity.create({
+    data: {
+      type: "STATUS_CHANGE",
+      body: reason ? `Moved to contacts — ${reason}` : "Moved to contacts (not an active client).",
+      clientId: id,
+      authorId: profile.id,
+    },
+  });
+  await logAudit(profile.email, "client.to_contact", client.email);
+  revalidateAdmin();
+  redirect(`/admin/clients/${id}/`);
+}
+
+export async function convertContactToClient(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+  // `lostReason` is kept on the record as history — it just stops being shown.
+  const client = await prisma.client.update({
+    where: { id },
+    data: { kind: "CLIENT", lostAt: null },
+  });
+  await prisma.activity.create({
+    data: {
+      type: "STATUS_CHANGE",
+      body: "Moved back to clients.",
+      clientId: id,
+      authorId: profile.id,
+    },
+  });
+  await logAudit(profile.email, "contact.to_client", client.email);
   revalidateAdmin();
   redirect(`/admin/clients/${id}/`);
 }
