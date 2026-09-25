@@ -427,6 +427,28 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 
 ## ✅ Done
 
+- [x] **Role to Reign analytics in the Kulworks admin (2026-09-25).** One `site` column
+      on `PageView` (default "kulworks") instead of a second set of tables, so every
+      query, index and chart is reused. Role to Reign stays a static front end with no
+      backend: its visitors beacon straight to `/api/track` here, which is what keeps geo
+      working. Endpoint takes cross-origin posts from an allowlist of both domains plus
+      previews and localhost; beacons go as text/plain to skip the CORS preflight.
+      Analytics page has Kulworks / Role to Reign / Both tabs; weekly email stays Kulworks
+      figures plus one Role to Reign line. Migration `20260925090000_pageview_site`.
+      Google Analytics left running on Role to Reign alongside it.
+      **Open follow-up:** Role to Reign has no privacy page, and it now sends visitor data
+      to kulworks.com. Worth a short note there. Sam to decide the wording.
+- [x] **Fixed: Vercel geo headers were stored percent-encoded (2026-09-25).** Top Cities
+      had been showing "New%20Braunfels" since tracking went in. Decoded on write, and the
+      683 existing rows were decoded in place.
+- [x] **Type + palette overhaul (2026-09-24).** Palette sampled from photographs of real
+      Kulworks work (lime from the award filament, ink and signal blue from the UV-printed
+      boards, brass from their gold linework) rather than framework defaults. Familjen
+      Grotesk headings, IBM Plex Sans body, IBM Plex Mono for anything measured. Hero cut
+      to one claim. Every text pairing clears WCAG AA in both themes. See DESIGN-NOTES.md.
+- [x] **No em dashes anywhere a person reads (2026-09-25).** Site copy, customer emails,
+      error messages, admin UI, email subjects. Standing preference. Code comments still
+      have them; nothing renders those.
 - [x] **Contacts (lost clients) + notes (2026-09-23).** `Client.kind` (CLIENT/CONTACT) +
       `lostReason` / `lostAt`; Clients page has Clients / Contacts / All tabs; client detail
       has a "Move to contacts" (with reason) ⇄ "Move back to clients" toggle and a dated
