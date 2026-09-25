@@ -98,13 +98,21 @@ export default async function AnalyticsPage({
     myHash
       ? prisma.pageView.count({ where: { ...inRange, visitorHash: myHash } })
       : Promise.resolve(0),
-    prisma.pageView.groupBy({
-      by: ["path"],
-      where: baseWhere,
-      _count: { path: true },
-      orderBy: { _count: { path: "desc" } },
-      take: 20,
-    }),
+    siteTab.key === "all"
+      ? prisma.pageView.groupBy({
+          by: ["site", "path"],
+          where: baseWhere,
+          _count: { path: true },
+          orderBy: { _count: { path: "desc" } },
+          take: 20,
+        })
+      : prisma.pageView.groupBy({
+          by: ["path"],
+          where: baseWhere,
+          _count: { path: true },
+          orderBy: { _count: { path: "desc" } },
+          take: 20,
+        }),
     prisma.pageView.groupBy({
       by: ["country"],
       where: { ...baseWhere, country: { not: null } },
@@ -129,14 +137,20 @@ export default async function AnalyticsPage({
     prisma.pageView.count({ where: { ...baseWhere, referrer: null } }),
     prisma.pageView.groupBy({ by: ["device"], where: baseWhere, _count: { device: true } }),
     prisma.pageView.findMany({
-      where: { ...(since ? { createdAt: { gte: since } } : { createdAt: { gte: new Date(now.getTime() - 30 * DAY) } }), ...notMe },
+      where: {
+        ...(since
+          ? { createdAt: { gte: since } }
+          : { createdAt: { gte: new Date(now.getTime() - 30 * DAY) } }),
+        ...siteFilter,
+        ...notMe,
+      },
       select: { createdAt: true },
     }),
     prisma.pageView.findMany({
       where: baseWhere,
       orderBy: { createdAt: "desc" },
       take: 40,
-      select: { id: true, createdAt: true, path: true, referrer: true, device: true, city: true, country: true, visitorHash: true },
+      select: { id: true, site: true, createdAt: true, path: true, referrer: true, device: true, city: true, country: true, visitorHash: true },
     }),
     prevWhere ? prisma.pageView.count({ where: prevWhere }) : Promise.resolve(0),
     prevWhere
@@ -167,7 +181,7 @@ export default async function AnalyticsPage({
   const channels = { Direct: directCount, Search: 0, Social: 0, Referral: 0 };
   let internalRefs = 0;
   for (const g of referrerGroups) {
-    const c = classifyReferrer(g.referrer ?? "");
+    const c = classifyReferrer(g.referrer ?? "", siteTab.key);
     if (c === "Internal") internalRefs += g._count.referrer;
     else channels[c] += g._count.referrer;
   }
@@ -411,7 +425,18 @@ export default async function AnalyticsPage({
       )}
 
       <div className="grid gap-6 md:grid-cols-2">
-        <TopList title="Top pages" rows={topPages.map((p) => ({ label: p.path, count: p._count.path }))} />
+        <TopList
+          title="Top pages"
+          rows={topPages.map((row) => {
+            // The groupBy shape differs between the two tabs; `site` is only
+            // present on "Both", where the same path exists on each site.
+            const r = row as { site?: string; path: string; _count: { path: number } };
+            return {
+              label: r.site ? `${siteShort(r.site)} ${r.path}` : r.path,
+              count: r._count.path,
+            };
+          })}
+        />
         <TopList
           title="Referrer details"
           rows={topReferrers.map((r) => ({ label: r.referrer ?? "-", count: r._count.referrer }))}
@@ -460,6 +485,7 @@ export default async function AnalyticsPage({
             <thead className="bg-surface2 text-left text-muted">
               <tr>
                 <th className="px-3 py-2 font-semibold">When</th>
+                {siteTab.key === "all" && <th className="px-3 py-2 font-semibold">Site</th>}
                 <th className="px-3 py-2 font-semibold">Visitor</th>
                 <th className="px-3 py-2 font-semibold">Page</th>
                 <th className="px-3 py-2 font-semibold">Location</th>
@@ -470,7 +496,7 @@ export default async function AnalyticsPage({
             <tbody>
               {recent.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 py-6 text-center text-muted">
+                  <td colSpan={siteTab.key === "all" ? 7 : 6} className="px-3 py-6 text-center text-muted">
                     No visits in this range.
                   </td>
                 </tr>
@@ -480,6 +506,9 @@ export default async function AnalyticsPage({
                   return (
                     <tr key={v.id} className={`border-t border-border ${isYou ? "bg-blue/5" : ""}`}>
                       <td className="whitespace-nowrap px-3 py-2">{fmtDateTime(v.createdAt)}</td>
+                      {siteTab.key === "all" && (
+                        <td className="whitespace-nowrap px-3 py-2 text-muted">{siteShort(v.site)}</td>
+                      )}
                       <td className="px-3 py-2">
                         {v.visitorHash ? (
                           <code className="font-mono text-xs text-muted">{v.visitorHash.slice(-6)}</code>
@@ -588,7 +617,19 @@ function MixCard({
   );
 }
 
-function classifyReferrer(ref: string): "Search" | "Social" | "Referral" | "Internal" | "Direct" {
+/** Short label for a PageView.site value, for mixed-site lists. */
+function siteShort(site: string): string {
+  if (site === "kulworks") return "KW";
+  if (site === "roletoreign") return "RtR";
+  return site;
+}
+
+// `self` is the site being viewed: only its own domain counts as internal. On the
+// Role to Reign tab a kulworks.com referrer is a real referral, not internal noise.
+function classifyReferrer(
+  ref: string,
+  self: "kulworks" | "roletoreign" | "all" = "kulworks"
+): "Search" | "Social" | "Referral" | "Internal" | "Direct" {
   const raw = ref.trim();
   if (!raw) return "Direct";
   let host = raw.toLowerCase();
@@ -597,7 +638,9 @@ function classifyReferrer(ref: string): "Search" | "Social" | "Referral" | "Inte
   } catch {
     /* keep raw lowercase */
   }
-  if (host.includes("kulworks")) return "Internal";
+  const ownHosts =
+    self === "all" ? ["kulworks", "roletoreign"] : [self === "kulworks" ? "kulworks" : "roletoreign"];
+  if (ownHosts.some((h) => host.includes(h))) return "Internal";
   const search = ["google.", ".google", "bing.", "duckduckgo", "yahoo.", "ecosia", "yandex", "baidu", "search.brave", "startpage"];
   const social = [
     "facebook.", "fb.", "instagram", "l.instagram", "t.co", "twitter", "x.com", "tiktok",
