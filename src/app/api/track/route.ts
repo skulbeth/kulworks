@@ -48,6 +48,19 @@ function corsHeaders(origin: string | null): Record<string, string> {
   };
 }
 
+// Vercel percent-encodes these headers, so "New Braunfels" arrives as
+// "New%20Braunfels" and accented names as UTF-8 escapes. Decode before storing,
+// or every city with a space reads wrong in the dashboard forever.
+function geoHeader(request: Request, name: string): string | null {
+  const raw = request.headers.get(name);
+  if (!raw) return null;
+  try {
+    return decodeURIComponent(raw);
+  } catch {
+    return raw; // malformed escape, keep what we got
+  }
+}
+
 function deviceFromUA(ua: string): string {
   if (/tablet|ipad/i.test(ua)) return "tablet";
   if (/mobile|android|iphone/i.test(ua)) return "mobile";
@@ -109,8 +122,8 @@ export async function POST(request: Request) {
         site: from,
         path: path.slice(0, 500),
         referrer: ref ? ref.slice(0, 500) : null,
-        country: request.headers.get("x-vercel-ip-country"),
-        city: request.headers.get("x-vercel-ip-city"),
+        country: geoHeader(request, "x-vercel-ip-country"),
+        city: geoHeader(request, "x-vercel-ip-city"),
         device: deviceFromUA(ua),
         sessionId: typeof sessionId === "string" ? sessionId.slice(0, 100) : null,
         visitorHash: visitorHash(clientIp(request)),
