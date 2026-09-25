@@ -25,6 +25,7 @@ export default function PageTracker() {
     if (!pathname || pathname.startsWith("/admin")) return;
 
     const body = JSON.stringify({
+      site: "kulworks",
       path: pathname,
       referrer: document.referrer || null,
       sessionId: getSessionId(),
@@ -32,11 +33,11 @@ export default function PageTracker() {
 
     try {
       if (navigator.sendBeacon) {
-        navigator.sendBeacon("/api/track/", new Blob([body], { type: "application/json" }));
+        navigator.sendBeacon("/api/track/", new Blob([body], { type: "text/plain;charset=UTF-8" }));
       } else {
         fetch("/api/track/", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=UTF-8" },
           body,
           keepalive: true,
         });

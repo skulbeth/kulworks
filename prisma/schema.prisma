@@ -291,18 +291,23 @@ model RateLimit {
 // ── Cookieless page-view analytics ──
 model PageView {
   id          String   @id @default(cuid())
+  // Which Kulworks-family site this view came from. Role to Reign has no backend
+  // of its own; its visitors beacon straight to /api/track on kulworks.com, so
+  // both sites share this table and one dashboard.
+  site        String   @default("kulworks")
   path        String
   referrer    String?
   country     String?
   city        String?
   device      String?
   sessionId   String? // anonymous per-session id (sessionStorage)
-  visitorHash String? // short salted hash of IP — stable per-visitor id; raw IP never stored
+  visitorHash String? // short salted hash of IP, stable per-visitor id; raw IP never stored
   createdAt   DateTime @default(now())
 
   @@index([path])
   @@index([createdAt])
   @@index([visitorHash])
+  @@index([site, createdAt])
 }
 
 // ── Quotes & Invoices (a document sent to a client; INVOICE also carries pay links) ──

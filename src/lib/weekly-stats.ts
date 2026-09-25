@@ -42,8 +42,12 @@ export async function sendWeeklyStatsEmail() {
   const notOwner = ownerHashes.length
     ? { OR: [{ visitorHash: { notIn: ownerHashes } }, { visitorHash: null }] }
     : {};
-  const thisWeek = { createdAt: { gte: weekStart }, ...notOwner };
-  const lastWeek = { createdAt: { gte: prevStart, lt: weekStart }, ...notOwner };
+  const KW = { site: "kulworks" };
+  const thisWeek = { createdAt: { gte: weekStart }, ...KW, ...notOwner };
+  const lastWeek = { createdAt: { gte: prevStart, lt: weekStart }, ...KW, ...notOwner };
+  // Role to Reign shares this table but gets its own line in the email rather
+  // than being folded into the Kulworks numbers.
+  const rtrWeek = { createdAt: { gte: weekStart }, site: "roletoreign", ...notOwner };
 
   const [
     views,
@@ -62,6 +66,8 @@ export async function sendWeeklyStatsEmail() {
     totalViewsAll,
     totalSubsAll,
     trendRows,
+    rtrViews,
+    rtrVisitorGroups,
   ] = await Promise.all([
     prisma.pageView.count({ where: thisWeek }),
     prisma.pageView.count({ where: lastWeek }),
@@ -69,16 +75,18 @@ export async function sendWeeklyStatsEmail() {
     prisma.pageView.groupBy({ by: ["visitorHash"], where: { ...lastWeek, visitorHash: { not: null } }, _count: { visitorHash: true } }),
     prisma.pageView.groupBy({ by: ["sessionId"], where: { ...thisWeek, sessionId: { not: null } }, _count: { sessionId: true } }),
     prisma.pageView.groupBy({ by: ["sessionId"], where: { ...lastWeek, sessionId: { not: null } }, _count: { sessionId: true } }),
-    prisma.pageView.groupBy({ by: ["visitorHash"], where: { createdAt: { lt: weekStart }, visitorHash: { not: null }, ...notOwner }, _count: { visitorHash: true } }),
+    prisma.pageView.groupBy({ by: ["visitorHash"], where: { createdAt: { lt: weekStart }, visitorHash: { not: null }, ...KW, ...notOwner }, _count: { visitorHash: true } }),
     prisma.pageView.groupBy({ by: ["path"], where: thisWeek, _count: { path: true }, orderBy: { _count: { path: "desc" } }, take: 5 }),
     prisma.pageView.groupBy({ by: ["referrer"], where: { ...thisWeek, referrer: { not: null } }, _count: { referrer: true }, orderBy: { _count: { referrer: "desc" } }, take: 100 }),
     prisma.pageView.count({ where: { ...thisWeek, referrer: null } }),
     prisma.pageView.groupBy({ by: ["city"], where: { ...thisWeek, city: { not: null } }, _count: { city: true }, orderBy: { _count: { city: "desc" } }, take: 3 }),
     prisma.subscriber.findMany({ where: { createdAt: { gte: weekStart }, unsubscribedAt: null }, orderBy: { createdAt: "desc" } }),
     prisma.submission.findMany({ where: { createdAt: { gte: weekStart }, deletedAt: null }, orderBy: { createdAt: "desc" } }),
-    prisma.pageView.count(),
+    prisma.pageView.count({ where: KW }),
     prisma.subscriber.count({ where: { unsubscribedAt: null } }),
     prisma.pageView.findMany({ where: thisWeek, select: { createdAt: true } }),
+    prisma.pageView.count({ where: rtrWeek }),
+    prisma.pageView.groupBy({ by: ["visitorHash"], where: { ...rtrWeek, visitorHash: { not: null } }, _count: { visitorHash: true } }),
   ]);
 
   const uniqueVisitors = visitorGroups.length;
@@ -138,6 +146,14 @@ export async function sendWeeklyStatsEmail() {
   lines.push("", `NEW LEADS (quote requests) this week: ${newSubmissions.length}`);
   if (newSubmissions.length)
     newSubmissions.forEach((s) => lines.push(`   - ${s.name}${s.projectType ? `: ${s.projectType}` : ""}`));
+
+  if (rtrViews > 0) {
+    lines.push(
+      "",
+      `ROLE TO REIGN this week: ${rtrVisitorGroups.length} visitor${rtrVisitorGroups.length === 1 ? "" : "s"}, ${rtrViews} page view${rtrViews === 1 ? "" : "s"}`,
+      `   (full breakdown: ${site.url}/admin/analytics/?site=roletoreign)`
+    );
+  }
 
   lines.push(
     "",

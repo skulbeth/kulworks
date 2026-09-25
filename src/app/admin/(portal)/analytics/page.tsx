@@ -19,17 +19,30 @@ const RANGES: { key: RangeKey; label: string; ms: number | null }[] = [
   { key: "all", label: "All time", ms: null },
 ];
 
+// Both Kulworks-family sites write into one PageView table, told apart by `site`.
+const SITES = [
+  { value: "", key: "kulworks", label: "Kulworks" },
+  { value: "roletoreign", key: "roletoreign", label: "Role to Reign" },
+  { value: "all", key: "all", label: "Both" },
+] as const;
+
 export default async function AnalyticsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ range?: string; showme?: string }>;
+  searchParams: Promise<{ range?: string; showme?: string; site?: string }>;
 }) {
   const sp = await searchParams;
   const range = (RANGES.find((r) => r.key === sp.range)?.key ?? "30d") as RangeKey;
   const rangeMs = RANGES.find((r) => r.key === range)!.ms;
   const now = new Date();
   const since = rangeMs ? new Date(now.getTime() - rangeMs) : null;
-  const inRange = since ? { createdAt: { gte: since } } : {};
+
+  // Which site's traffic we're looking at. Default is Kulworks alone, so this
+  // page means the same thing it always did unless you ask for more.
+  const siteTab = SITES.find((x) => x.value === (sp.site ?? "")) ?? SITES[0];
+  const siteFilter = siteTab.key === "all" ? {} : { site: siteTab.key };
+
+  const inRange = since ? { createdAt: { gte: since }, ...siteFilter } : { ...siteFilter };
 
   // Identify the admin's own traffic (current IP) so we can flag/exclude it.
   const myHash = visitorHash(ipFromHeaders(await headers()));
@@ -48,7 +61,7 @@ export default async function AnalyticsPage({
   const hasPrev = !!(since && rangeMs);
   const prevSince = hasPrev ? new Date(since!.getTime() - rangeMs!) : null;
   const prevWhere = hasPrev
-    ? { createdAt: { gte: prevSince!, lt: since! }, ...notMe }
+    ? { createdAt: { gte: prevSince!, lt: since! }, ...siteFilter, ...notMe }
     : null;
 
   const [
@@ -70,7 +83,7 @@ export default async function AnalyticsPage({
     prevSessionGroups,
     beforeHashes,
   ] = await Promise.all([
-    prisma.pageView.count(),
+    prisma.pageView.count({ where: siteFilter }),
     prisma.pageView.count({ where: baseWhere }),
     prisma.pageView.groupBy({
       by: ["visitorHash"],
@@ -133,7 +146,7 @@ export default async function AnalyticsPage({
       ? prisma.pageView.groupBy({ by: ["sessionId"], where: { ...prevWhere, sessionId: { not: null } }, _count: { sessionId: true } })
       : Promise.resolve([] as { sessionId: string | null }[]),
     since
-      ? prisma.pageView.groupBy({ by: ["visitorHash"], where: { createdAt: { lt: since }, visitorHash: { not: null }, ...notMe }, _count: { visitorHash: true } })
+      ? prisma.pageView.groupBy({ by: ["visitorHash"], where: { createdAt: { lt: since }, visitorHash: { not: null }, ...siteFilter, ...notMe }, _count: { visitorHash: true } })
       : Promise.resolve([] as { visitorHash: string | null }[]),
   ]);
 
@@ -208,15 +221,35 @@ export default async function AnalyticsPage({
   const topCity = topCities[0]?.city ?? null;
   const topPagePath = topPages[0]?.path ?? null;
 
-  const hrefWith = (r: RangeKey, show: boolean) =>
-    `/admin/analytics/?range=${r}${show ? "&showme=1" : ""}`;
+  const hrefWith = (r: RangeKey, show: boolean, siteValue: string = siteTab.value) =>
+    `/admin/analytics/?range=${r}${show ? "&showme=1" : ""}` +
+    (siteValue ? `&site=${siteValue}` : "");
 
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Analytics</h1>
-          <p className="text-muted">Cookieless page views from your website.</p>
+          <p className="text-muted">
+            Cookieless page views from{" "}
+            {siteTab.key === "all" ? "both sites" : `${siteTab.label.toLowerCase()}.com`}.
+          </p>
+          {/* Which site. Role to Reign has no backend; it beacons straight here. */}
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {SITES.map((x) => (
+              <Link
+                key={x.key}
+                href={hrefWith(range, showMe, x.value)}
+                className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
+                  x.key === siteTab.key
+                    ? "bg-primary text-black"
+                    : "border border-border bg-surface text-muted hover:border-blue hover:text-blue"
+                }`}
+              >
+                {x.label}
+              </Link>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {/* Hide-my-visits toggle */}
