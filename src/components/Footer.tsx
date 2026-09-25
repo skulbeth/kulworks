@@ -17,7 +17,7 @@ export default function Footer() {
     <footer className="border-t border-border bg-surface/40">
       <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3 lg:px-8">
         <div>
-          <span className="font-display text-2xl text-gold">Kulworks</span>
+          <span className="font-wordmark text-2xl text-gold">Kulworks</span>
           <p className="mt-3 max-w-xs text-sm text-muted">
             One shop, many materials. Cards, tiles, and 3D, designed and made in-house.
           </p>

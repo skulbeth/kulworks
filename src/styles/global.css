@@ -6,50 +6,63 @@
    Kulworks design tokens. Edit these to retheme the whole site.
    Two themes: LIGHT is the default (:root); DARK is opt-in via
    <html data-theme="dark"> (set by the theme toggle / init script).
-   Accent colors shift between themes so contrast stays readable in both.
+
+   Every accent is sampled from real Kulworks work, not from a framework's
+   defaults — so the site is colored by what actually comes off the machines:
+
+     lime   #a8d13f  the award filament (the CTA color: it is the brightest
+                     thing in the shop, so it is the brightest thing on screen)
+     ink    #0d1220  the dark squares of the UV-printed board panels
+     signal #0f5aa8  the blue of the printed card backs and boards
+     brass  #9a5b0b  the gold linework on the boards (the Role to Reign thread)
+
+   Accent values shift between themes so every text pairing clears WCAG AA.
    ========================================================================= */
 :root {
   /* ---- Light theme (default) ---- */
-  --color-background: #faf9f7; /* warm off-white page base */
+  --color-background: #f6f5f2; /* paper stock, not pure white */
   --color-surface: #ffffff; /* card / panel */
-  --color-surface-2: #f1efe9; /* raised card / input */
-  --color-border: #e5e2da;
+  --color-surface-2: #ebe9e3; /* raised card / input */
+  --color-border: #dedad1;
 
-  --color-foreground: #1b1b1b; /* primary text */
-  --color-muted: #4b5563; /* secondary text (gray-600) */
+  --color-foreground: #141a2b; /* primary text — ink, faintly navy */
+  --color-muted: #4c5468; /* secondary text (6.9:1) */
 
-  --color-gold: #b45309; /* deep amber so it reads on white (amber-700) */
-  --color-gold-glow: rgba(180, 83, 9, 0.15);
-  --color-blue: #2563eb; /* links / subheads (blue-600) */
+  --color-gold: #9a5b0b; /* brass; darkened yellow turns olive, so it warms
+                            toward bronze to stay clear of the lime (5.0:1) */
+  --color-gold-glow: rgba(154, 91, 11, 0.18);
+  --color-gold-sheen: #d98f26; /* lighter stop in the gold gradient text */
+  --color-blue: #0f5aa8; /* links / subheads — the card-back blue (6.3:1) */
 
-  --color-primary: #10b981; /* CTA fill (emerald-500) */
-  --color-primary-hover: #059669; /* CTA hover (emerald-600, darker on light) */
-  --color-secondary: #047857; /* emerald-700 */
+  --color-primary: #a8d13f; /* CTA fill — the filament (black text, 11.9:1) */
+  --color-primary-hover: #95bd31;
+  --color-secondary: #5a7315; /* deep lime for text-weight accents (4.9:1) */
 
-  --color-scroll-bg: #ece9e2;
-  --color-scroll-fg: #c4bdb0;
+  --color-scroll-bg: #e8e6df;
+  --color-scroll-fg: #bfbaad;
 }
 
 :root[data-theme="dark"] {
-  /* ---- Dark theme (the original Role to Reign look) ---- */
-  --color-background: #0b0b0b; /* near-black page base */
-  --color-surface: #161616; /* card / panel */
-  --color-surface-2: #1f1f1f; /* raised card */
-  --color-border: #2d2d2d;
+  /* ---- Dark theme — the ink of the board panels, not a neutral black ---- */
+  --color-background: #0d1220; /* ink page base */
+  --color-surface: #141a2b; /* card / panel */
+  --color-surface-2: #1c2338; /* raised card */
+  --color-border: #2b3348;
 
-  --color-foreground: #ffffff; /* primary text */
-  --color-muted: #cbd5e1; /* secondary text (slate-300) */
+  --color-foreground: #f2f4f9; /* primary text */
+  --color-muted: #a9b3c7; /* secondary text (8.9:1) */
 
-  --color-gold: #fcd34d; /* signature highlight (amber-300) */
-  --color-gold-glow: rgba(255, 182, 54, 0.85);
-  --color-blue: #93c5fd; /* links / subheads (blue-300) */
+  --color-gold: #d2b46a; /* brass, as it photographs on the boards (9.3:1) */
+  --color-gold-glow: rgba(210, 180, 106, 0.8);
+  --color-gold-sheen: #f0dca6; /* lighter stop in the gold gradient text */
+  --color-blue: #7fb2f0; /* links / subheads (8.5:1) */
 
-  --color-primary: #10b981; /* CTA fill (emerald-500) */
-  --color-primary-hover: #34d399; /* CTA hover (emerald-400) */
-  --color-secondary: #059669; /* emerald-600 */
+  --color-primary: #b6e04e; /* CTA fill — filament under shop light (13.8:1) */
+  --color-primary-hover: #c6ec66;
+  --color-secondary: #8fbb2f;
 
-  --color-scroll-bg: #313131;
-  --color-scroll-fg: #7e7e7e;
+  --color-scroll-bg: #1c2338;
+  --color-scroll-fg: #4a5570;
 }
 
 /* Smooth the swap between themes */
@@ -78,14 +91,33 @@ body {
   body {
     background: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-baloo), system-ui, sans-serif;
+    font-family: var(--font-body), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
+  }
+
+  /* Headings carry the display face everywhere, so no page markup changes.
+     Slightly tightened tracking: Space Grotesk sets loose at large sizes. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display), var(--font-body), sans-serif;
+    letter-spacing: -0.015em;
+    /* Pages ask for font-extrabold; Space Grotesk tops out at 700. Without this
+       the browser fakes 800 by smearing the outlines. Let it use real 700. */
+    font-synthesis-weight: none;
   }
 
   h1,
   h2,
   h3 {
     text-wrap: balance;
+  }
+
+  /* Numbers line up in tables, price lists and the estimator. */
+  table,
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   a {
@@ -109,7 +141,12 @@ body {
   /* Gold gradient text (used on hero accents), echoing Role to Reign */
   .text-gold-sheen {
     background-image: var(--tw-gradient, none);
-    background: linear-gradient(90deg, var(--color-gold), #fde68a, var(--color-gold));
+    background: linear-gradient(
+      90deg,
+      var(--color-gold),
+      var(--color-gold-sheen),
+      var(--color-gold)
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;

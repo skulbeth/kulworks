@@ -34,22 +34,17 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent" />
         <Container className="relative py-20 sm:py-28">
           <div className="animate-fade-up">
-            <p className="mb-4 text-sm font-bold uppercase tracking-[0.25em] text-gold">
+            <p className="mb-4 font-mono text-xs font-semibold uppercase tracking-[0.25em] text-gold">
               Multi-craft maker shop
             </p>
             <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">
-              One shop, many materials.{" "}
-              <span className="text-gold text-glow-gold">Cards, tiles, and 3D</span>, designed and made in-house.
+              <span className="text-gold text-glow-gold">Cards, tiles, and 3D</span>
+              {" "}&mdash; designed and made in San Antonio.
             </h1>
-            <p className="mt-6 max-w-3xl text-lg text-muted sm:text-xl">
-              Kulworks is a San Antonio maker shop. We turn your idea into a finished,
-              physical product: custom UV card printing, UV-printed cards for anyone, game
-              tiles, FDM and resin 3D printing, and the design behind it all.
-            </p>
-            <p className="mt-4 max-w-3xl text-lg text-muted sm:text-xl">
-              Game designers, sports teams, schools and clubs, photographers, event hosts,
-              and market sellers all bring us projects. We design your cards, build your
-              prototypes, so you can hold the real thing and know it&apos;s right.
+            <p className="mt-6 max-w-2xl text-lg text-muted sm:text-xl">
+              We design it and we make it: custom card printing, UV-printed tiles and
+              boards, and 3D printing in filament and resin. Plenty of our work starts as
+              a 3D model we build from scratch.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/contact/" variant="primary" size="lg">
