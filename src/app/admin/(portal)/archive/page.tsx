@@ -41,7 +41,7 @@ export default async function ArchivePage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Archive</h1>
-        <p className="text-muted">Deleted items are kept here — restore anything anytime.</p>
+        <p className="text-muted">Deleted items are kept here. Restore anything anytime.</p>
       </div>
 
       {empty && (
@@ -66,7 +66,7 @@ export default async function ArchivePage() {
         {projects.map((p) => (
           <Row
             key={p.id}
-            label={`${p.title} — ${p.client.name}`}
+            label={`${p.title} · ${p.client.name}`}
             meta={`archived ${fmtDateTime(p.deletedAt)}`}
             action={restoreProject}
             id={p.id}

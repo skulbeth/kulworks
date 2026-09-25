@@ -6,7 +6,7 @@ import { getOwnerHashes } from "@/lib/owner-visits";
 const DAY = 24 * 60 * 60 * 1000;
 
 function pct(cur: number, prev: number): string {
-  if (prev === 0) return cur > 0 ? "▲ new" : "—";
+  if (prev === 0) return cur > 0 ? "▲ new" : "-";
   const d = Math.round(((cur - prev) / prev) * 100);
   if (d === 0) return "no change vs last week";
   return `${d > 0 ? "▲" : "▼"} ${Math.abs(d)}% vs last week`;
@@ -106,7 +106,7 @@ export async function sendWeeklyStatsEmail() {
     const d = dayFmt.format(v.createdAt);
     byDay.set(d, (byDay.get(d) ?? 0) + 1);
   }
-  let busiest = "—";
+  let busiest = "-";
   let busiestN = 0;
   for (const [d, n] of byDay) if (n > busiestN) { busiest = d; busiestN = n; }
 
@@ -114,7 +114,7 @@ export async function sendWeeklyStatsEmail() {
   const range = `${dm.format(weekStart)} – ${dm.format(new Date(now))}`;
 
   const lines: string[] = [
-    `Kulworks weekly stats — ${range}`,
+    `Kulworks weekly stats: ${range}`,
     "",
     "VISITORS  (real people; your own visits excluded)",
     `• Unique visitors: ${uniqueVisitors}   (${pct(uniqueVisitors, prevVisitorGroups.length)})`,
@@ -137,19 +137,19 @@ export async function sendWeeklyStatsEmail() {
 
   lines.push("", `NEW LEADS (quote requests) this week: ${newSubmissions.length}`);
   if (newSubmissions.length)
-    newSubmissions.forEach((s) => lines.push(`   - ${s.name}${s.projectType ? ` — ${s.projectType}` : ""}`));
+    newSubmissions.forEach((s) => lines.push(`   - ${s.name}${s.projectType ? `: ${s.projectType}` : ""}`));
 
   lines.push(
     "",
     `All-time: ${totalSubsAll} subscribers · ${totalViewsAll} total page views.`,
     "",
     `Full dashboard: ${site.url}/admin/analytics/`,
-    "— Kulworks admin"
+    "Kulworks admin"
   );
 
   await sendMail({
     to: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
-    subject: `Kulworks weekly stats — ${uniqueVisitors} visitor${uniqueVisitors === 1 ? "" : "s"}, ${newSubs.length} new subscriber${newSubs.length === 1 ? "" : "s"}`,
+    subject: `Kulworks weekly stats: ${uniqueVisitors} visitor${uniqueVisitors === 1 ? "" : "s"}, ${newSubs.length} new subscriber${newSubs.length === 1 ? "" : "s"}`,
     text: lines.join("\n"),
   });
 

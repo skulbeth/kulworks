@@ -164,7 +164,7 @@ export default async function ProjectDetailPage({
                   {pay.method.replace(/_/g, " ")}
                 </span>
                 <span className="text-muted">{fmtDate(pay.paidAt)}</span>
-                {pay.note && <span className="text-muted">— {pay.note}</span>}
+                {pay.note && <span className="text-muted">· {pay.note}</span>}
                 <form action={deletePayment} className="ml-auto">
                   <input type="hidden" name="id" value={pay.id} />
                   <button className="text-xs text-red-600 hover:underline">Remove</button>
@@ -322,7 +322,7 @@ export default async function ProjectDetailPage({
           </ConfirmButton>
         </form>
         <p className="mt-2 text-xs text-muted">
-          Only sends when you click — nothing goes out automatically. Logged in Activity below.
+          Only sends when you click. Nothing goes out automatically. Logged in Activity below.
         </p>
       </section>
 
@@ -361,7 +361,7 @@ export default async function ProjectDetailPage({
       <form action={deleteProject} className="border-t border-border pt-4">
         <input type="hidden" name="id" value={project.id} />
         <ConfirmButton
-          message="Archive this project (with its payments & activity)? It's hidden from your lists but kept — you can restore it from the Archive tab."
+          message="Archive this project (with its payments & activity)? It's hidden from your lists but kept, so you can restore it from the Archive tab."
           className="text-sm font-semibold text-red-600 hover:underline"
         >
           Delete this project

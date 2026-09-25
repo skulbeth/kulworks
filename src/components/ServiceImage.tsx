@@ -41,7 +41,7 @@ export default function ServiceImage({
         <Lightbox
           src={images[0]}
           alt={`${title} examples`}
-          title={`${title} — examples`}
+          title={`${title}: examples`}
           images={images}
           onClose={() => setOpen(false)}
         />

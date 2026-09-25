@@ -7,7 +7,7 @@ export default function AdminError({ reset }: { error: Error; reset: () => void 
     <div className="mx-auto max-w-lg py-16 text-center">
       <h1 className="text-xl font-bold">Something went wrong</h1>
       <p className="mt-2 text-muted">
-        This page hit an error loading. It&apos;s often a temporary database hiccup — try again.
+        This page hit an error loading. It&apos;s often a temporary database hiccup. Try again.
       </p>
       <button
         onClick={reset}

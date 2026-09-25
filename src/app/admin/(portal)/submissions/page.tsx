@@ -235,7 +235,7 @@ export default async function SubmissionsPage({
                 <CopyButton text={s.client.email} label="Copy" />
               </div>
             ) : (
-              "—"
+              "-"
             )}
           </Field>
         </div>
@@ -328,7 +328,7 @@ export default async function SubmissionsPage({
           <form action={deleteSubmission} className="ml-auto">
             <input type="hidden" name="id" value={s.id} />
             <ConfirmButton
-              message="Archive this submission? It's hidden from your list but kept — you can restore it from the Archive tab."
+              message="Archive this submission? It's hidden from your list but kept, so you can restore it from the Archive tab."
               className="text-xs font-semibold text-red-600 hover:underline"
             >
               Delete
@@ -344,7 +344,7 @@ export default async function SubmissionsPage({
       <h1 className="mb-1 text-2xl font-bold">Submissions</h1>
       <p className="mb-4 text-muted">
         Raw quote requests from the website form.
-        {view === "open" && " Showing open ones — won and lost are hidden."}
+        {view === "open" && " Showing open ones. Won and lost are hidden."}
       </p>
 
       <FilterTabs
@@ -376,7 +376,7 @@ export default async function SubmissionsPage({
         emptyMessage={
           view === "all"
             ? "No submissions yet."
-            : `No ${view === "open" ? "open" : view} submissions — try another filter above.`
+            : `No ${view === "open" ? "open" : view} submissions. Try another filter above.`
         }
       />
     </div>

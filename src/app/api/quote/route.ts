@@ -25,7 +25,7 @@ function isEmail(v: string): boolean {
 export async function POST(request: Request) {
   if (!(await rateLimit(`quote:${clientIp(request)}`, 5, 60_000))) {
     return NextResponse.json(
-      { ok: false, error: "Too many requests — please wait a moment and try again." },
+      { ok: false, error: "Too many requests. Please wait a moment and try again." },
       { status: 429 }
     );
   }
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
   // Bot protection (Cloudflare Turnstile) — no-op until configured.
   if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
     return NextResponse.json(
-      { ok: false, error: "Verification failed — please try again." },
+      { ok: false, error: "Verification failed. Please try again." },
       { status: 400 }
     );
   }
@@ -109,14 +109,14 @@ export async function POST(request: Request) {
       await sendMail({
         to: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
         replyTo: email,
-        subject: `New quote request — ${name}`,
+        subject: `New quote request: ${name}`,
         text: [
           `Name: ${name}`,
           `Email: ${email}`,
-          `Phone: ${phone ?? "—"}`,
-          `Project type: ${projectType || "—"}`,
+          `Phone: ${phone ?? "(none)"}`,
+          `Project type: ${projectType || "(none)"}`,
           `Shared Drive folder requested: ${driveFolder ? "yes" : "no"}`,
-          `Reference: ${reference ?? "—"}`,
+          `Reference: ${reference ?? "(none)"}`,
           "",
           "Message:",
           message,
@@ -152,7 +152,7 @@ export async function POST(request: Request) {
       await sendMail({
         to: email,
         replyTo: site.email, // branded contact@kulworks.com (forwards to Sam's Gmail)
-        subject: "Thanks — we got your Kulworks request!",
+        subject: "Thanks! We got your Kulworks request",
         text: [
           `Hi ${name},`,
           "",
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
           "",
           message,
           "",
-          "— Kulworks",
+          "Kulworks",
         ].join("\n"),
       });
     } catch (e) {

@@ -25,7 +25,7 @@ export async function logError(err: unknown, context: string) {
       if (to) {
         await sendMail({
           to,
-          subject: `⚠️ Kulworks site error — ${context}`,
+          subject: `⚠️ Kulworks site error: ${context}`,
           text: [
             `A server error was logged on the Kulworks site.`,
             "",

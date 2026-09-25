@@ -13,7 +13,7 @@ export async function sendMail(opts: {
   replyTo?: string;
 }) {
   if (!resend) {
-    console.warn("[email] RESEND_API_KEY not set — skipping:", opts.subject);
+    console.warn("[email] RESEND_API_KEY not set, skipping:", opts.subject);
     return { skipped: true as const };
   }
   const { data, error } = await resend.emails.send({

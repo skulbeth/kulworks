@@ -137,7 +137,7 @@ export default function AdminLoginPage() {
           r.error === "too-many"
             ? "Too many tries. Request a new code."
             : r.error === "expired"
-            ? "That code expired — request a new one."
+            ? "That code expired. Request a new one."
             : "That code didn't match. Try again."
         );
       }

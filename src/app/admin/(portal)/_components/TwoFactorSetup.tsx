@@ -85,7 +85,7 @@ export default function TwoFactorSetup({ enabled }: { enabled: boolean }) {
       <div>
         <p className="text-sm text-muted">
           Add a second step when you sign in. We&apos;ll <strong>email you a 6-digit code</strong> by
-          default — or you can set up an <strong>authenticator app</strong> after enabling.
+          default, or you can set up an <strong>authenticator app</strong> after enabling.
         </p>
         <form action={setTwoFactorEnabled} className="mt-3">
           <input type="hidden" name="enable" value="true" />

@@ -1,6 +1,6 @@
 // Small display formatters used across the admin portal.
 
-const DASH = "—";
+const DASH = "-";
 
 export function fmtDate(d: Date | null | undefined): string {
   if (!d) return DASH;

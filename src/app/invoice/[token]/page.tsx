@@ -152,7 +152,7 @@ export default async function InvoiceViewPage({
 
         {inv.status === "PAID" && (
           <p className="mt-6 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-center text-sm font-semibold text-green-600">
-            Paid in full — thank you!
+            Paid in full. Thank you!
           </p>
         )}
         {!isInvoice && (

@@ -139,7 +139,7 @@ export async function POST(request: Request) {
       await sendMail({
         to: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
         replyTo: email,
-        subject: `New card order — ${template.name} (${name})`,
+        subject: `New card order: ${template.name} (${name})`,
         text: [
           `New card design order:`,
           "",
@@ -147,7 +147,7 @@ export async function POST(request: Request) {
           "",
           `Name: ${name}`,
           `Email: ${email}`,
-          `Phone: ${phone ?? "—"}`,
+          `Phone: ${phone ?? "(none)"}`,
           "",
           paths.length ? `Photos (${paths.length}, links valid ~7 days):` : "No photos attached.",
           ...links,
@@ -164,14 +164,14 @@ export async function POST(request: Request) {
       await sendMail({
         to: email,
         replyTo: site.email,
-        subject: "Thanks — we got your card order!",
+        subject: "Thanks! We got your card order",
         text: [
           `Hi ${name},`,
           "",
           `Thanks for your ${template.name} order! We've got your details and photos and will`,
           "reach out with next steps, a proof, and a quote.",
           "",
-          "— Kulworks",
+          "Kulworks",
         ].join("\n"),
       });
     } catch (e) {

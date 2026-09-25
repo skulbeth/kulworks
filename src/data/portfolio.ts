@@ -104,7 +104,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/race-award-number-one.webp",
       "/images/portfolio/filament/race-award-medallion.webp",
     ],
-    alt: "Custom 3D models designed in Shapr3D: a full library of parts and props, a rotating droideka model, finished renders, and custom award designs — a tower, a number one, and a runner medallion — modeled from scratch for a client",
+    alt: "Custom 3D models designed in Shapr3D: a full library of parts and props, a rotating droideka model, finished renders, and custom award designs (a tower, a number one, and a runner medallion) modeled from scratch for a client",
   },
   {
     title: "Resin 3D Printing (high-detail minis)",

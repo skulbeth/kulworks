@@ -55,7 +55,7 @@ export default function UploadForm({
   if (status === "done") {
     return (
       <div className="rounded-2xl border border-green-500/40 bg-green-500/10 p-6 text-center">
-        <h2 className="text-xl font-bold text-green-600">Got it — thanks!</h2>
+        <h2 className="text-xl font-bold text-green-600">Got it. Thanks!</h2>
         <p className="mt-2 text-muted">
           Your photo{files.length > 1 ? "s" : ""} landed with Kulworks. We&apos;ll take it from here.
         </p>

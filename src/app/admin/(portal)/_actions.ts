@@ -126,7 +126,7 @@ export async function convertSubmissionToProject(formData: FormData) {
 
   const project = await prisma.project.create({
     data: {
-      title: `${sub.name} — ${sub.projectType ?? "project"}`,
+      title: `${sub.name}: ${sub.projectType ?? "project"}`,
       stage: "LEAD",
       clientId,
       requested: sub.message,
@@ -361,7 +361,7 @@ export async function convertClientToContact(formData: FormData) {
   await prisma.activity.create({
     data: {
       type: "STATUS_CHANGE",
-      body: reason ? `Moved to contacts — ${reason}` : "Moved to contacts (not an active client).",
+      body: reason ? `Moved to contacts: ${reason}` : "Moved to contacts (not an active client).",
       clientId: id,
       authorId: profile.id,
     },
@@ -948,7 +948,7 @@ export async function sendProjectUpdate(formData: FormData) {
     to: project.client.email,
     replyTo: site.email,
     subject: `Update on your Kulworks project: ${project.title}`,
-    text: `Hi ${project.client.name},\n\n${message}\n\n— Kulworks`,
+    text: `Hi ${project.client.name},\n\n${message}\n\nKulworks`,
   });
   await prisma.activity.create({
     data: {
@@ -980,7 +980,7 @@ export async function notifyProjectStarted(formData: FormData) {
   const lines = [
     `Hi ${project.client.name},`,
     "",
-    "Great news — we've started a project for you at Kulworks:",
+    "Great news! We've started a project for you at Kulworks:",
     "",
     `Project: ${project.title}`,
   ];
@@ -989,9 +989,9 @@ export async function notifyProjectStarted(formData: FormData) {
   if (project.dueDate) lines.push(`Target date: ${project.dueDate.toLocaleDateString("en-US")}`);
   lines.push(
     "",
-    "We'll keep you posted as it moves along — just reply to this email with any questions.",
+    "We'll keep you posted as it moves along. Just reply to this email with any questions.",
     "",
-    "— Kulworks"
+    "Kulworks"
   );
   const text = lines.join("\n");
 
@@ -1066,7 +1066,7 @@ export async function createInvoiceDoc(formData: FormData) {
       items: { create: items },
     },
   });
-  await logAudit(profile.email, "invoice.create", `${number} — ${project!.title}`);
+  await logAudit(profile.email, "invoice.create", `${number}: ${project!.title}`);
   revalidateAdmin();
   redirect(`/admin/projects/${projectId}/?done=doc-created`);
 }
@@ -1099,7 +1099,7 @@ export async function sendInvoiceDoc(formData: FormData) {
     url,
     "",
     "Thank you!",
-    "— Kulworks",
+    "Kulworks",
   ].filter((l) => l !== "");
 
   await sendMail({

@@ -28,9 +28,9 @@ export async function GET(request: Request) {
   const lines = due.map((r) => {
     const overdue = r.remindAt && r.remindAt < now ? " (OVERDUE)" : "";
     const who = r.project?.title
-      ? ` — ${r.project.title}`
+      ? `: ${r.project.title}`
       : r.client?.name
-        ? ` — ${r.client.name}`
+        ? `: ${r.client.name}`
         : "";
     return `• ${r.body}${who}${overdue}`;
   });
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
   await sendMail({
     to: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
     subject: `Kulworks: ${due.length} reminder${due.length === 1 ? "" : "s"} due`,
-    text: ["Here's what's on your plate:", "", ...lines, "", "— Kulworks admin"].join("\n"),
+    text: ["Here's what's on your plate:", "", ...lines, "", "Kulworks admin"].join("\n"),
   });
 
   return NextResponse.json({ ok: true, sent: due.length });

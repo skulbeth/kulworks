@@ -361,12 +361,12 @@ export default async function AnalyticsPage({
       <div className="grid gap-6 md:grid-cols-2">
         <TopList
           title="Top countries"
-          rows={topCountries.map((c) => ({ label: c.country ?? "—", count: c._count.country }))}
+          rows={topCountries.map((c) => ({ label: c.country ?? "-", count: c._count.country }))}
           empty="No location data yet (it fills in from real production visits)."
         />
         <TopList
           title="Top cities"
-          rows={topCities.map((c) => ({ label: c.city ?? "—", count: c._count.city }))}
+          rows={topCities.map((c) => ({ label: c.city ?? "-", count: c._count.city }))}
           empty="No location data yet."
         />
       </div>
@@ -381,7 +381,7 @@ export default async function AnalyticsPage({
         <TopList title="Top pages" rows={topPages.map((p) => ({ label: p.path, count: p._count.path }))} />
         <TopList
           title="Referrer details"
-          rows={topReferrers.map((r) => ({ label: r.referrer ?? "—", count: r._count.referrer }))}
+          rows={topReferrers.map((r) => ({ label: r.referrer ?? "-", count: r._count.referrer }))}
           empty="No external referrers yet (people typing the URL or visiting directly show none)."
         />
       </div>
@@ -451,16 +451,16 @@ export default async function AnalyticsPage({
                         {v.visitorHash ? (
                           <code className="font-mono text-xs text-muted">{v.visitorHash.slice(-6)}</code>
                         ) : (
-                          <span className="text-muted">—</span>
+                          <span className="text-muted">-</span>
                         )}
                         {isYou && <span className="ml-1 text-xs font-bold text-blue">(you)</span>}
                       </td>
                       <td className="px-3 py-2">{v.path}</td>
                       <td className="px-3 py-2 text-muted">
-                        {[v.city, v.country].filter(Boolean).join(", ") || "—"}
+                        {[v.city, v.country].filter(Boolean).join(", ") || "-"}
                       </td>
-                      <td className="px-3 py-2">{v.device ?? "—"}</td>
-                      <td className="max-w-[16rem] truncate px-3 py-2 text-muted">{v.referrer ?? "—"}</td>
+                      <td className="px-3 py-2">{v.device ?? "-"}</td>
+                      <td className="max-w-[16rem] truncate px-3 py-2 text-muted">{v.referrer ?? "-"}</td>
                     </tr>
                   );
                 })

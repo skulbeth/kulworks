@@ -34,7 +34,7 @@ export default async function SubscribersPage() {
       search: [s.email, s.source].filter(Boolean).join(" ").toLowerCase(),
       cells: {
         email: s.email,
-        source: s.source ?? "—",
+        source: s.source ?? "-",
         status: active ? "Subscribed" : "Unsubscribed",
         since: fmtDate(s.createdAt),
       },
@@ -46,7 +46,7 @@ export default async function SubscribersPage() {
           </div>
           <div>
             <span className="text-xs font-semibold uppercase text-muted">Source</span>
-            <div>{s.source ?? "—"}</div>
+            <div>{s.source ?? "-"}</div>
           </div>
           <div>
             <span className="text-xs font-semibold uppercase text-muted">Subscribed</span>

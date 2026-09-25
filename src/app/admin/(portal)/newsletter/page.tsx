@@ -32,7 +32,7 @@ export default async function NewsletterPage({
       )}
       {error && (
         <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-600">
-          Couldn&apos;t send — check that a subject and message are filled in.
+          Couldn&apos;t send. Check that a subject and message are filled in.
         </p>
       )}
 

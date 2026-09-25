@@ -107,13 +107,13 @@ export async function POST(request: Request) {
       await sendMail({
         to: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
         replyTo: contact && contact.includes("@") ? contact : site.email,
-        subject: `New photo upload${name ? ` — ${name}` : ""} (${paths.length})`,
+        subject: `New photo upload${name ? `: ${name}` : ""} (${paths.length})`,
         text: [
           "New photo upload from the trade-show QR page:",
           "",
-          `Name: ${name || "—"}`,
-          `Contact: ${contact || "—"}`,
-          `What they want: ${note || "—"}`,
+          `Name: ${name || "(none)"}`,
+          `Contact: ${contact || "(none)"}`,
+          `What they want: ${note || "(none)"}`,
           "",
           "Photos (links valid ~7 days):",
           ...links,

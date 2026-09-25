@@ -67,7 +67,7 @@ export default async function ClientDetailPage({
           <>
             <h2 className="text-lg font-bold">Not an active client</h2>
             <p className="mt-1 whitespace-pre-wrap text-sm">
-              {client.lostReason ?? "No reason recorded — add one in “Why we lost them” below."}
+              {client.lostReason ?? "No reason recorded. Add one in “Why we lost them” below."}
             </p>
             {client.lostAt && (
               <p className="mt-1 text-xs text-muted">Moved to contacts {fmtDate(client.lostAt)}</p>
@@ -88,7 +88,7 @@ export default async function ClientDetailPage({
               Didn&apos;t win this one? Move to contacts →
             </summary>
             <p className="mt-2 text-sm text-muted">
-              Keeps the record, history, projects and emails exactly as they are — they just
+              Keeps the record, history, projects and emails exactly as they are. They just
               stop counting as an active client. You can move them back anytime.
             </p>
             <form action={convertClientToContact} className="mt-3 space-y-3">
@@ -100,7 +100,7 @@ export default async function ClientDetailPage({
                 className="w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm focus:border-blue focus:outline-none"
               />
               <ConfirmButton
-                message={`Move ${client.name} to contacts? Nothing is deleted — you can move them back anytime.`}
+                message={`Move ${client.name} to contacts? Nothing is deleted, and you can move them back anytime.`}
                 className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-red-500 hover:text-red-600"
               >
                 Move to contacts
@@ -134,7 +134,7 @@ export default async function ClientDetailPage({
         )}
         <TextArea
           name="notes"
-          label="Notes (standing — always shown up top)"
+          label="Notes (standing, always shown up top)"
           defaultValue={client.notes}
           rows={3}
         />

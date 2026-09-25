@@ -18,8 +18,8 @@ const DONE_MSG: Record<string, string> = {
   created: "Admin created. They can log in now with the password you set.",
   updated: "Admin updated.",
   reset: "Password reset.",
-  deactivated: "Admin deactivated — access revoked, record kept. Reactivate anytime.",
-  reactivated: "Admin reactivated — they can log in again.",
+  deactivated: "Admin deactivated. Access revoked, record kept. Reactivate anytime.",
+  reactivated: "Admin reactivated. They can log in again.",
   mypassword: "Your password has been changed.",
   "2faon": "Two-factor auth is on. You'll enter a code (emailed, or from your app) at your next sign-in.",
   "2faoff": "Two-factor auth is off.",
@@ -32,7 +32,7 @@ const ERROR_MSG: Record<string, string> = {
   create: "Couldn't create that admin. Try again, or check the audit log below.",
   emailtaken: "That email is already registered as an admin.",
   serverkey:
-    "Couldn't reach Supabase with the server key. SUPABASE_SECRET_KEY looks wrong or missing in production — update it in Vercel and redeploy. (Details in the audit log.)",
+    "Couldn't reach Supabase with the server key. SUPABASE_SECRET_KEY looks wrong or missing in production. Update it in Vercel and redeploy. (Details in the audit log.)",
   update: "Couldn't apply that change. Try again.",
   notfound: "That admin no longer exists.",
   self: "You can't remove your own account.",
@@ -161,7 +161,7 @@ export default async function TeamPage({
                             <form action={deactivateAdmin}>
                               <input type="hidden" name="id" value={m.id} />
                               <ConfirmButton
-                                message={`Deactivate ${m.email}? They lose access, but the record is kept — you can reactivate anytime.`}
+                                message={`Deactivate ${m.email}? They lose access, but the record is kept, so you can reactivate anytime.`}
                                 className="rounded-full border border-red-500/40 px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-500/10"
                               >
                                 Deactivate access
@@ -194,13 +194,13 @@ export default async function TeamPage({
               name="password"
               type="password"
               minLength={8}
-              placeholder="Password (optional — leave blank to invite)"
+              placeholder="Password (optional, leave blank to invite)"
               className={`w-full sm:col-span-2 ${field}`}
             />
             <button className={`${btn} sm:col-span-2`}>Add team member</button>
           </form>
           <p className="mt-2 text-xs text-muted">
-            Enter a password to create their login now (share it with them) — or leave it blank to
+            Enter a password to create their login now (share it with them), or leave it blank to
             email them an invite to set their own. Either way they can change it later under
             &quot;Change my password.&quot;
           </p>

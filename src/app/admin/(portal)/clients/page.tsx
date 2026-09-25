@@ -79,7 +79,7 @@ export default async function ClientsPage({
         phone: fmtText(c.phone),
         company: fmtText(c.company),
         status: isContact ? "Contact" : "Client",
-        reason: isContact ? fmtText(c.lostReason) : "—",
+        reason: isContact ? fmtText(c.lostReason) : "-",
         projects: String(c._count.projects),
         since: fmtDate(c.createdAt),
       },
@@ -95,7 +95,7 @@ export default async function ClientsPage({
           {isContact && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/5 p-3">
               <div className="text-xs font-semibold uppercase tracking-wide text-red-600">
-                Contact — not an active client
+                Contact, not an active client
               </div>
               <p className="mt-1 whitespace-pre-wrap text-sm">
                 {c.lostReason ?? "No reason recorded yet."}
@@ -113,7 +113,7 @@ export default async function ClientsPage({
             <Field label="Address">
               {[c.street, c.city, c.state, c.postalCode, c.country]
                 .filter(Boolean)
-                .join(", ") || "—"}
+                .join(", ") || "-"}
             </Field>
           </div>
 
@@ -133,7 +133,7 @@ export default async function ClientsPage({
               <ul className="space-y-1.5">
                 {c.projects.map((p) => (
                   <li key={p.id} className="rounded-lg bg-surface2 px-3 py-2">
-                    <span className="font-semibold">{p.title}</span> — {p.stage}
+                    <span className="font-semibold">{p.title}</span> · {p.stage}
                     {p.dueDate ? ` · due ${fmtDate(p.dueDate)}` : ""}
                   </li>
                 ))}
@@ -157,7 +157,7 @@ export default async function ClientsPage({
       </h1>
       <p className="mb-4 text-muted">
         {view === "contacts"
-          ? "Leads we didn't win — kept in the book with the reason why."
+          ? "Leads we didn't win, kept in the book with the reason why."
           : "Everyone who's reached out or become a customer."}
       </p>
 

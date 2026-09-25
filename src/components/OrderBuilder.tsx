@@ -45,7 +45,7 @@ export default function OrderBuilder() {
   if (status === "done") {
     return (
       <div className="rounded-2xl border border-green-500/40 bg-green-500/10 p-6 text-center">
-        <h2 className="text-xl font-bold text-green-600">Order received — thanks!</h2>
+        <h2 className="text-xl font-bold text-green-600">Order received. Thanks!</h2>
         <p className="mt-2 text-muted">
           We&apos;ve got your details and photos. We&apos;ll reach out with a proof and a quote.
         </p>

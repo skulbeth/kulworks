@@ -112,7 +112,7 @@ export default async function ProjectsPage() {
           <Field label="Address">
             {[p.shipStreet, p.shipCity, p.shipState, p.shipPostalCode]
               .filter(Boolean)
-              .join(", ") || "—"}
+              .join(", ") || "-"}
           </Field>
         </Section>
 
@@ -137,7 +137,7 @@ export default async function ProjectsPage() {
             <ul className="space-y-1.5">
               {p.activities.map((a) => (
                 <li key={a.id} className="rounded-lg bg-surface2 px-3 py-2">
-                  <span className="font-semibold">{a.type}</span> —{" "}
+                  <span className="font-semibold">{a.type}</span>{" · "}
                   <span className="whitespace-pre-wrap">{a.body}</span>
                 </li>
               ))}
@@ -151,7 +151,7 @@ export default async function ProjectsPage() {
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">Projects</h1>
-      <p className="mb-6 text-muted">Tracked jobs — pipeline, specs, costs, and dates.</p>
+      <p className="mb-6 text-muted">Tracked jobs: pipeline, specs, costs, and dates.</p>
       <details className="mb-6 rounded-xl border border-border bg-surface p-4">
         <summary className="cursor-pointer select-none font-semibold text-blue">+ Add a project</summary>
         <form action={createProject} className="mt-4 grid gap-3 sm:grid-cols-2">

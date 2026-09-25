@@ -38,8 +38,8 @@ export default function HomePage() {
               Multi-craft maker shop
             </p>
             <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">
-              <span className="text-gold text-glow-gold">Cards, tiles, and 3D</span>
-              {" "}&mdash; designed and made in San Antonio.
+              <span className="text-gold text-glow-gold">Cards, tiles, and 3D.</span>
+              {" "}Designed and made in San Antonio.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted sm:text-xl">
               We design it and we make it: custom card printing, UV-printed tiles and
