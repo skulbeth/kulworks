@@ -65,7 +65,7 @@ retune them:
 
 | Role | Font | Where |
 |---|---|---|
-| Headings | **Space Grotesk** (Google) | `h1`–`h4` everywhere, via a base rule in `global.css` — pages need no markup changes (`font-display`) |
+| Headings | **Familjen Grotesk** (Google) | `h1`–`h4` everywhere, via a base rule in `global.css` — pages need no markup changes (`font-display`) |
 | Body + UI | **IBM Plex Sans** (Google) | Everything else (`font-sans`, the default) |
 | Measured things | **IBM Plex Mono** (Google) | Section eyebrows, estimator figures, table numbers (`font-mono`) |
 | Wordmark | **Dumbledoor** (`fonts/dum1.ttf`) | "Kulworks" logo only (`font-wordmark`) |
@@ -73,18 +73,20 @@ retune them:
 
 Fonts load through `next/font` in `src/app/layout.tsx` (no network for the local ones).
 
-**Why this pairing.** Space Grotesk reads *drafted* rather than decorated, which
-suits a shop that sells 3D design. Plex Sans carries the long guide and service
-pages without fatigue. Plex Mono is the character move: a shop that works to a
+**Why this pairing.** Familjen Grotesk is a clean grotesque with no mannerism to
+tire of, and it runs narrow — headlines here wrap to two or three lines, so that
+buys back a line. (Space Grotesk was tried first and rejected: its single-storey
+`a` and curled `g` get noticed once and then never stop being noticed.) Plex Sans
+carries the long guide and service pages without fatigue. Plex Mono is the character move: a shop that works to a
 thousandth of an inch sets its numbers like it, so specs, quantities, prices and
 the small uppercase eyebrows are all mono.
 
 Two mechanical notes:
 
-- Pages ask for `font-extrabold` (800); Space Grotesk stops at 700, so
+- Pages ask for `font-extrabold` (800); Familjen Grotesk stops at 700, so
   `font-synthesis-weight: none` on headings keeps the browser from faking a
   heavier weight by smearing the outlines.
-- Headings get `letter-spacing: -0.015em` — Space Grotesk sets loose at display
+- Headings get `letter-spacing: -0.015em` — the display face sets loose at large
   sizes.
 
 ## Shape, shadow, motion

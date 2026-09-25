@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Familjen_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "@/styles/global.css";
 import Header from "@/components/Header";
@@ -9,9 +9,9 @@ import JsonLd from "@/components/JsonLd";
 import { siteGraph } from "@/lib/structured-data";
 import { site } from "@/data/site";
 
-// Headings. Space Grotesk reads drafted rather than decorated — the right
-// register for a shop whose money is in 3D design.
-const display = Space_Grotesk({
+// Headings. A grotesque with no mannerisms to tire of, and narrow enough that
+// the two- and three-line headlines on this site take fewer lines.
+const display = Familjen_Grotesk({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   variable: "--font-display",
