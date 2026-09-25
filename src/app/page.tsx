@@ -34,7 +34,7 @@ export default function HomePage() {
         <div className="pointer-events-none absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent" />
         <Container className="relative py-20 sm:py-28">
           <div className="animate-fade-up">
-            <p className="mb-4 text-sm font-bold uppercase tracking-[0.25em] text-gold">
+            <p className="mb-4 font-mono text-xs font-semibold uppercase tracking-[0.25em] text-gold">
               Multi-craft maker shop
             </p>
             <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">

@@ -195,7 +195,7 @@ export default function CardCalculator() {
         <p className="text-sm font-bold uppercase tracking-widest text-muted">
           Estimated total
         </p>
-        <p className="mt-1 text-4xl font-extrabold text-gold">{usd(total)}</p>
+        <p className="mt-1 font-mono text-4xl font-semibold text-gold">{usd(total)}</p>
 
         <ul className="mt-5 space-y-2 text-sm">
           {rows
@@ -203,7 +203,7 @@ export default function CardCalculator() {
             .map((r) => (
               <li key={r.label} className="flex justify-between gap-4 text-muted">
                 <span>{r.label}</span>
-                <span className="font-semibold text-foreground">{usd(r.value)}</span>
+                <span className="font-mono font-medium text-foreground">{usd(r.value)}</span>
               </li>
             ))}
         </ul>
@@ -211,11 +211,11 @@ export default function CardCalculator() {
         <div className="mt-3 space-y-2 border-t border-border pt-3 text-sm">
           <div className="flex justify-between gap-4 text-muted">
             <span>Subtotal (production)</span>
-            <span className="font-semibold text-foreground">{usd(subtotal)}</span>
+            <span className="font-mono font-medium text-foreground">{usd(subtotal)}</span>
           </div>
           <div className="flex justify-between gap-4 text-muted">
             <span>Service charge (9%)</span>
-            <span className="font-semibold text-foreground">{usd(serviceCharge)}</span>
+            <span className="font-mono font-medium text-foreground">{usd(serviceCharge)}</span>
           </div>
         </div>
 

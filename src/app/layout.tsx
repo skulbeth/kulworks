@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Baloo_2 } from "next/font/google";
+import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "@/styles/global.css";
 import Header from "@/components/Header";
@@ -9,14 +9,31 @@ import JsonLd from "@/components/JsonLd";
 import { siteGraph } from "@/lib/structured-data";
 import { site } from "@/data/site";
 
-// Body + UI font (rounded, friendly). Matches Role to Reign.
-const baloo = Baloo_2({
+// Headings. Space Grotesk reads drafted rather than decorated — the right
+// register for a shop whose money is in 3D design.
+const display = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-baloo",
+  weight: ["500", "600", "700"],
+  variable: "--font-display",
 });
 
-// Brand wordmark font (clean-studio choice: used for the logo only).
+// Body + UI. IBM Plex Sans: humanist warmth on an engineered skeleton, and it
+// holds up over the long guide/service pages that carry the SEO.
+const body = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+});
+
+// Specs, quantities, dimensions, prices — anything measured. A shop that works
+// to a thousandth of an inch should set its numbers like it.
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
+});
+
+// Brand wordmark font (the logo only — unchanged).
 const dumbledoor = localFont({
   src: "../../fonts/dum1.ttf",
   variable: "--font-dumbledoor",
@@ -36,8 +53,8 @@ const SITE_URL = "https://kulworks.com";
 // (Browsers also honor the two theme-color values below by color scheme.)
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf9f7" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0b0b" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f5f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1220" },
   ],
   colorScheme: "light dark",
 };
@@ -102,7 +119,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${baloo.variable} ${dumbledoor.variable} ${vinque.variable}`}
+      className={`${body.variable} ${display.variable} ${mono.variable} ${dumbledoor.variable} ${vinque.variable}`}
       // The pre-paint theme script below sets data-theme on <html>, so the
       // client differs from server-rendered HTML by design. Suppress the
       // expected attribute mismatch on this element only.

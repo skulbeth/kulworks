@@ -1,6 +1,7 @@
 // tailwind.config.ts
-// Design tokens ported from the Role to Reign site so the two read as a family:
-// dark premium base, gold + blue accents, emerald CTAs, generous rounding, glow shadows.
+// Kulworks design tokens. The palette is sampled from actual Kulworks work —
+// lime from the award filament, ink + signal blue from the UV-printed boards,
+// brass from their gold linework — rather than from stock framework colors.
 // All colors are CSS variables (see src/styles/global.css) so you can retheme in one place.
 import type { Config } from "tailwindcss";
 
@@ -22,10 +23,14 @@ const config: Config = {
         secondary: "var(--color-secondary)",
       },
       fontFamily: {
-        // Body + UI (rounded, friendly), the default everywhere.
-        sans: ["var(--font-baloo)", "system-ui", "sans-serif"],
-        // Brand wordmark only (clean-studio choice).
-        display: ["var(--font-dumbledoor)", "serif"],
+        // Body + UI, the default everywhere.
+        sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        // Headings (applied to h1-h4 in global.css, so pages need no changes).
+        display: ["var(--font-display)", "var(--font-body)", "sans-serif"],
+        // Specs, quantities, dimensions, prices — anything measured.
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        // Brand wordmark only.
+        wordmark: ["var(--font-dumbledoor)", "serif"],
         // Available for occasional fantasy accents if desired.
         vinque: ["var(--font-vinque)", "serif"],
       },
@@ -42,7 +47,7 @@ const config: Config = {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gold-sheen":
-          "linear-gradient(90deg, var(--color-gold), #fde68a, var(--color-gold))",
+          "linear-gradient(90deg, var(--color-gold), var(--color-gold-sheen), var(--color-gold))",
       },
       keyframes: {
         "fade-up": {
