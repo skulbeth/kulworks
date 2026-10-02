@@ -74,14 +74,19 @@ export const portfolio: PortfolioItem[] = [
   {
     title: "Modular Board Hexes",
     category: "tiles",
-    src: "/images/portfolio/tiles/board-tiles.webp",
+    // Cover is the sharp stack shot. board-tiles.webp used to lead here, but it
+    // only exists at 480x270 and read soft at grid size; it stays in the gallery.
+    src: "/images/portfolio/tiles/cut-tile-stacks.webp",
     images: [
+      "/images/portfolio/tiles/cut-tile-stacks.webp",
+      "/images/studio/board-cutting.webp",
       "/images/portfolio/tiles/board-tiles.webp",
       "/images/portfolio/tiles/board-printing.webp",
       "/images/portfolio/tiles/chopping-piece.webp",
+      "/images/portfolio/tiles/finished-tile-bundles.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
     ],
-    alt: "UV-printed modular board game hex tiles, printing and cutting pieces on the flatbed, and tile artwork prepped for print",
+    alt: "UV-printed modular board game hex tiles: a full run stacked and bundled on the bench, a cut tile lifted free of the clicker die, printing and cutting pieces on the flatbed, and tile artwork prepped for print",
   },
   {
     title: "UV-Printed Game Boards",

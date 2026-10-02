@@ -49,9 +49,27 @@ carry. Your TODO already flagged some of these. I have not touched any of them.
 | `design/model-render.webp` | 404x306 | 11K | Too small to show anything |
 | `cards/card-icon.webp` | 360x524 | 45K | Icon-sized, not a portfolio image |
 
-**My recommendation:** re-export the first five from the original footage at 720 to 960px
-rather than delete them. The content is good; only the export is weak. The last three are
-genuinely too small to rescue.
+**Update 2026-10-02: I went looking for the originals and they are not on `D:\Kulworks`.**
+I searched the whole drive for Shapr3D recordings, the droideka and race-model turntables,
+and higher-resolution sources for `board-tiles` and `card-fronts`. Nothing matches. These
+were almost certainly exported from screen recordings or a phone that did not get archived
+here, or they came over from the Role to Reign project.
+
+That also means the weakness is **the source, not the compression**. These sit at about
+15K per frame, which is high quality encoding for 480x270. Re-compressing them would only
+add generation loss without making them any sharper, so I have left them exactly as they are.
+
+**What that leaves:**
+
+- **Re-export is still the right fix**, but it has to happen from wherever the originals
+  live. If you can find the Shapr3D recordings or the turntable renders, point me at them
+  and these become a quick job.
+- **`board-tiles.webp` no longer leads anything.** It was the Modular Board Hexes cover,
+  which is the worst place for the softest image on the site. That tile now opens on the
+  sharp 1600px stack shot and `board-tiles` sits inside the gallery, where its size is
+  much less noticeable. Nothing was deleted.
+- The last three (`model-render`, `card-icon`, `chopping-piece`) are genuinely too small
+  to rescue and have no source here either.
 
 ---
 
@@ -101,6 +119,23 @@ Genuinely unmined and probably worth a look when there is time:
 - `WP3040 Raw Videos/Printer test video`. 6 minutes of the printer running. Not reviewed.
 
 ---
+
+## 4b. What a second sweep of the library turned up (2026-10-02)
+
+I went back through the folders that had not been checked: `From Downloads - Phone Videos
+Work`, `Bent Hexes and Jigs`, `Custom Jigs bent resources`, `WP3040 Walkthrough`, the
+`_covers` board-game-piece edits, and the long resin clips.
+
+**Honest result: nothing there is strong enough to add.** It is almost all vlog-style
+footage with you on camera talking, shot against the shop rather than of the work. The
+genuinely good material in this library is what already shipped. A few have usable seconds
+buried in them (a hex tile running through the blue machine at about 22s of
+`PXL_20260723_002928092`, resin plate work through `PXL_20260704_185120530-003`) but they
+are handheld, you are in frame, and they would lower the average rather than raise it.
+
+I stopped rather than pad the galleries out with weaker shots. The thing that would
+actually raise the bar now is new footage shot deliberately: the work, on a clean surface,
+with the camera on a tripod and you out of frame.
 
 ## 5. Open questions for you
 
