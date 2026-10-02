@@ -57,7 +57,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/cards/client-deck-bagged.webp",
       "/images/portfolio/cards/sports-cards-backs.webp",
     ],
-    alt: "Custom cards by Kulworks: a run curing under the UV lamps and the finished character sheet, a printed sheet and the deck riffled by hand, a full-colour deck printing, a finished deck riffled by hand, a finished character card up close, sports trading cards, game and prototype decks fanned out, keepsake cards, card layout and design, and a finished client deck bagged and ready to ship",
+    alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, finished character and sports cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
   },
   
   {
@@ -147,7 +147,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/race-awards-number-ones.webp",
       "/images/portfolio/filament/race-awards-medallions.webp",
     ],
-    alt: "Filament (FDM) 3D printing by Kulworks: a full-size spiked gladiator helmet finished in matte navy, a custom prop armour set, city and terrain upgrade pieces, articulated figures and large builds, a spaceship, game flag markers, functional parts, full-colour art UV-printed straight onto a printed blank, and full runs of custom awards printed and lined up ready for a client",
+    alt: "Filament (FDM) 3D printing by Kulworks: a full-size gladiator helmet and prop armour, articulated figures, terrain and city pieces, game markers, functional parts, and full runs of custom awards.",
   },
 
 ];
