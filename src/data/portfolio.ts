@@ -44,6 +44,8 @@ export const portfolio: PortfolioItem[] = [
     // range rather than repetition.
     images: [
       "/images/portfolio/cards/cards-variety.webp",
+      "/images/studio/cards-printing-and-sheet.webp",
+      "/images/studio/deck-printed-and-riffled.webp",
       "/images/portfolio/cards/cards-printing-uv.webp",
       "/images/portfolio/cards/panic-cards-printing.webp",
       "/images/portfolio/cards/deck-riffle.webp",
@@ -58,57 +60,41 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/cards/client-deck-bagged.webp",
       "/images/portfolio/cards/sports-cards-backs.webp",
     ],
-    alt: "Custom cards by Kulworks: cards curing under the UV lamps on the flatbed, a full-colour deck printing, a finished deck riffled by hand, a finished character card up close, sports trading cards, game and prototype decks fanned out, keepsake cards, card layout and design, and a finished client deck bagged and ready to ship",
+    alt: "Custom cards by Kulworks: a run curing under the UV lamps and the finished character sheet, a printed sheet and the deck riffled by hand, a full-colour deck printing, a finished deck riffled by hand, a finished character card up close, sports trading cards, game and prototype decks fanned out, keepsake cards, card layout and design, and a finished client deck bagged and ready to ship",
   },
+  
   {
-    title: "Custom Prop Print",
-    category: "filament",
-    src: "/images/portfolio/filament/helmet-prop.webp",
-    images: [
-      "/images/portfolio/filament/helmet-prop.webp",
-      "/images/portfolio/filament/custom-prop-armor.webp",
-      "/images/portfolio/filament/fdm-city-upgrades.webp",
-    ],
-    alt: "FDM-printed props: a full-size spiked gladiator helmet finished in matte navy, a custom prop armor set, and city and terrain upgrade pieces",
-  },
-  {
-    title: "Modular Board Hexes",
+    // Was two tiles sections ("Modular Board Hexes" and "UV-Printed Game Boards")
+    // that covered the same craft and between them carried nine clips. One section,
+    // the best of each, and the near-duplicate clips combined at source.
+    title: "UV-Printed Game Boards & Modular Hex Tiles",
     category: "tiles",
-    // Cover is the sharp stack shot. board-tiles.webp used to lead here, but it
-    // only exists at 480x270 and read soft at grid size; it stays in the gallery.
     src: "/images/portfolio/tiles/cut-tile-stacks.webp",
     images: [
       "/images/portfolio/tiles/cut-tile-stacks.webp",
-      "/images/studio/hex-stacks-pan.webp",
-      "/images/portfolio/tiles/hex-press-run.webp",
+      "/images/portfolio/tiles/hex-press-and-stacks.webp",
+      "/images/portfolio/tiles/board-print-and-finish.webp",
       "/images/studio/board-cutting.webp",
+      "/images/portfolio/tiles/board-panels.webp",
+      "/images/portfolio/tiles/finished-tile-bundles.webp",
       "/images/portfolio/tiles/board-tiles.webp",
       "/images/portfolio/tiles/board-printing.webp",
       "/images/portfolio/tiles/chopping-piece.webp",
-      "/images/portfolio/tiles/finished-tile-bundles.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
     ],
-    alt: "UV-printed modular board game hex tiles: a full run stacked and sorted across the bench, pieces coming off the clicker press, a cut tile lifted free of the die, printing and cutting pieces on the flatbed, and tile artwork prepped for print",
+    alt: "UV-printed game boards and modular hex tiles by Kulworks: navy and gold board panels printing on the flatbed and coming off finished, hex terrain tiles cut on the clicker press and freed from the die, a full run stacked and bundled on the bench, and tile artwork prepped for print",
   },
-  {
-    title: "UV-Printed Game Boards",
-    category: "tiles",
-    src: "/images/portfolio/tiles/board-panels.webp",
-    images: [
-      "/images/portfolio/tiles/board-panels.webp",
-      "/images/portfolio/tiles/board-printing-head.webp",
-      "/images/portfolio/tiles/board-panel-printing.webp",
-      "/images/portfolio/tiles/board-panels-finished.webp",
-      "/images/portfolio/tiles/cut-tile-stacks.webp",
-      "/images/portfolio/tiles/finished-tile-bundles.webp",
-    ],
-    alt: "Navy and gold game board panels being UV-printed on the flatbed, the print head passing over them under the curing lamps, the finished boards fresh off the press, and a full run of cut hex tiles stacked and bundled on the bench",
-  },
+
+  
   {
     title: "Custom 3D Models",
     category: "design",
-    src: "/images/portfolio/design/cad-3d-model.webp",
+    // Cover is a model Sam drew from scratch, photographed sharp at 88K. The
+    // rotating CAD clip used to lead here at just over a megabyte, which was more
+    // than every other grid cover put together; it is still first in the gallery.
+    src: "/images/portfolio/filament/race-award-tower.webp",
     images: [
+      "/images/portfolio/filament/race-award-tower.webp",
       "/images/portfolio/design/cad-3d-model.webp",
       "/images/portfolio/design/shapr3d-library.webp",
       "/images/portfolio/design/droideka-model.webp",
@@ -130,8 +116,9 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/resin/race-model-showcase.webp",
       "/images/portfolio/resin/miniatures-cure-glow.webp",
       "/images/portfolio/resin/resin-plate-lift.webp",
+      "/images/studio/resin-plate-and-batch.webp",
     ],
-    alt: "Resin 3D printing by Kulworks: high-detail painted tabletop miniatures, character models, a fresh print curing, and a finished plate of minis coming off the printer",
+    alt: "Resin 3D printing by Kulworks: high-detail painted tabletop miniatures, character models, a fresh print curing, and a plate of minis coming off the printer into a finished batch",
   },
   {
     title: "Color-Coded Hospital Tags",
@@ -145,10 +132,15 @@ export const portfolio: PortfolioItem[] = [
     alt: "Color-coded hospital service and precaution tags designed and 3D printed by Kulworks, with UV-printed lettering, in full sets ready for a client",
   },
   {
-    title: "Filament (FDM) 3D Printing",
+    // Custom Prop Print used to be its own three-image section of the same craft.
+    // Folded in here, leading with the helmet, which is the strongest filament shot.
+    title: "Filament (FDM) 3D Printing: Props, Parts & Figures",
     category: "filament",
-    src: "/images/portfolio/filament/3d-print-03.webp",
+    src: "/images/portfolio/filament/helmet-prop.webp",
     images: [
+      "/images/portfolio/filament/helmet-prop.webp",
+      "/images/portfolio/filament/custom-prop-armor.webp",
+      "/images/portfolio/filament/fdm-city-upgrades.webp",
       "/images/portfolio/filament/3d-print-03.webp",
       "/images/portfolio/filament/3d-print-10.webp",
       "/images/portfolio/filament/3d-print-09.webp",
@@ -160,13 +152,10 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/3d-print-11.webp",
       "/images/portfolio/filament/3d-print-02.webp",
       "/images/portfolio/filament/uv-art-on-3d-print.webp",
-      "/images/portfolio/filament/race-awards-trio.webp",
-      "/images/portfolio/filament/race-awards-towers.webp",
-      "/images/portfolio/filament/race-awards-number-ones.webp",
-      "/images/portfolio/filament/race-awards-medallions.webp",
     ],
-    alt: "Filament (FDM) 3D printing by Kulworks: articulated figures and large builds, a spaceship, game flag markers, functional parts, props, full-color art UV-printed straight onto a printed blank, and a full run of custom awards on UV-printed bases",
+    alt: "Filament (FDM) 3D printing by Kulworks: a full-size spiked gladiator helmet finished in matte navy, a custom prop armour set, city and terrain upgrade pieces, articulated figures and large builds, a spaceship, game flag markers, functional parts, and full-colour art UV-printed straight onto a printed blank",
   },
+
 ];
 
 // Which portfolio category represents each service (for "See examples" on /services).
