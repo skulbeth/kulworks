@@ -17,20 +17,17 @@ export default function HomePage() {
 
   const studioSlides = [
     { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
-    { label: "A finished run, stacked", src: "/images/studio/hex-stacks-pan.webp", alt: "Stacks of finished UV-printed hex terrain tiles sorted across the bench, a full Kickstarter run cut and piled by map piece" },
-    { label: "Boards on the UV flatbed", src: "/images/studio/board-printing-uv.webp", alt: "The print head passing over navy and gold game board panels on the UV flatbed, lamps curing the ink as it lays down" },
+    { label: "A finished run, stacked", src: "/images/studio/hex-stacks-pan.webp", alt: "Stacks of finished UV-printed hex terrain tiles sorted across the bench, a full run cut and piled by map piece" },
     { label: "Cut pieces out of the die", src: "/images/studio/board-cutting.webp", alt: "Lifting the clicker die jig to free a freshly cut hex terrain tile from the press" },
-    { label: "Double-sided board printing", src: "/images/studio/double-sided-board.webp", alt: "A UV-printed game board panel flipped to show both sides printed in register" },
     { label: "Custom 3D-printed awards", src: "/images/studio/custom-awards-trio.webp", alt: "Three custom race awards designed and 3D printed by Kulworks: a number one, a runner medallion, and a tower topper on UV-printed black bases" },
-    { label: "UV-printing custom cards", src: "/images/studio/uv-cards-printing.webp", alt: "Printing custom cards on the UV flatbed printer" },
+    { label: "Cards printed and cured", src: "/images/studio/cards-printing-and-sheet.webp", alt: "A card run curing under the UV lamps on the flatbed, then the finished sheet of full-colour character cards" },
     { label: "A shelf of painted figures", src: "/images/studio/painted-minis-lineup.webp", alt: "A lineup of painted 3D-printed character figures" },
-    { label: "Resin prints on the build plate", src: "/images/studio/resin-plate.webp", alt: "Freshly printed resin miniatures lifting off the build plate" },
+    { label: "Resin prints, plate to batch", src: "/images/studio/resin-plate-and-batch.webp", alt: "Resin miniatures lifting off the build plate, then the finished batch laid out" },
     { label: "The Kulworks print bench", src: "/images/studio/printer-bench.webp", alt: "The Kulworks resin printing bench" },
-    { label: "UV-printing board tiles", src: "/images/studio/uv-tiles-printing.webp", alt: "Printing board game terrain tiles on the UV flatbed printer" },
+    { label: "Boards printed both sides", src: "/images/studio/board-uv-and-double-sided.webp", alt: "Navy and gold game board panels printing on the UV flatbed under the curing lamps, then a finished panel flipped to show both sides in register" },
+    { label: "A deck printed and riffled", src: "/images/studio/deck-printed-and-riffled.webp", alt: "A sheet of cards on the flatbed, then the finished deck riffled by hand" },
     { label: "3D-printed custom prop armor", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "A full set of 3D-printed Roman-style prop armor" },
-    { label: "A batch of resin minis", src: "/images/studio/resin-minis-batch.webp", alt: "A batch of freshly printed resin character miniatures" },
   ];
-
   return (
     <>
       {/* ===== Hero ===== */}
