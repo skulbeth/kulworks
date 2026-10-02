@@ -5,6 +5,7 @@ import RecordExplorer, {
   type ExplorerColumn,
   type ExplorerItem,
 } from "../_components/RecordExplorer";
+import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,7 @@ export default async function SubscribersPage() {
 
   return (
     <div>
+      <SectionTabs tabs={SECTIONS.newsletter} active="/admin/subscribers/" />
       <h1 className="mb-1 text-2xl font-bold">Subscribers</h1>
       <p className="mb-6 text-muted">
         Newsletter sign-ups. You own this list; sending happens from Resend (coming soon).

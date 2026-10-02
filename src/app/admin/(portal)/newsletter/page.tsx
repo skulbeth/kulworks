@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { sendBroadcast } from "../_actions";
 import ConfirmButton from "../_components/ConfirmButton";
+import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export default async function NewsletterPage({
   return (
     <div className="max-w-2xl space-y-6">
       <div>
+        <SectionTabs tabs={SECTIONS.newsletter} active="/admin/newsletter/" />
         <h1 className="text-2xl font-bold">Newsletter</h1>
         <p className="text-muted">
           Compose and send to your{" "}

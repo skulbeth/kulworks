@@ -3,9 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { site } from "@/data/site";
 import { fmtDateTime } from "@/lib/format";
 import { uploadsEnabled, signedUploadUrl } from "@/lib/uploads";
-import { toggleUploads, markUploadHandled, deleteUpload } from "../_actions";
+import { toggleUploads, markUploadHandled, deleteUpload, uploadToSubmission } from "../_actions";
 import ConfirmButton from "../_components/ConfirmButton";
 import CopyButton from "../_components/CopyButton";
+import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default async function UploadsPage() {
   return (
     <div className="space-y-8">
       <div>
+        <SectionTabs tabs={SECTIONS.inbox} active="/admin/uploads/" />
         <h1 className="text-2xl font-bold">Photo uploads</h1>
         <p className="text-muted">
           The public QR page where people send you photos to print (trade shows, events).
@@ -144,6 +146,17 @@ export default async function UploadsPage() {
                 )}
 
                 <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+                  {u.status !== "HANDLED" && (
+                    <form action={uploadToSubmission}>
+                      <input type="hidden" name="id" value={u.id} />
+                      <button
+                        className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-black hover:bg-primary-hover"
+                        title="Creates a lead from this upload, with a client record when the contact is an email, and marks it handled"
+                      >
+                        Turn into a lead →
+                      </button>
+                    </form>
+                  )}
                   {u.status !== "HANDLED" && (
                     <form action={markUploadHandled}>
                       <input type="hidden" name="id" value={u.id} />

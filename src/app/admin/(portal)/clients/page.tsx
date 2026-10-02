@@ -7,6 +7,7 @@ import RecordExplorer, {
   type ExplorerItem,
 } from "../_components/RecordExplorer";
 import FilterTabs, { type FilterTab } from "../_components/FilterTabs";
+import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -152,6 +153,7 @@ export default async function ClientsPage({
 
   return (
     <div>
+      <SectionTabs tabs={SECTIONS.work} active="/admin/clients/" />
       <h1 className="mb-1 text-2xl font-bold">
         {view === "contacts" ? "Contacts" : view === "all" ? "Clients & contacts" : "Clients"}
       </h1>

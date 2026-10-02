@@ -6,6 +6,7 @@ import RecordExplorer, {
   type ExplorerColumn,
   type ExplorerItem,
 } from "../_components/RecordExplorer";
+import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -150,6 +151,7 @@ export default async function ProjectsPage() {
 
   return (
     <div>
+      <SectionTabs tabs={SECTIONS.work} active="/admin/projects/" />
       <h1 className="mb-1 text-2xl font-bold">Projects</h1>
       <p className="mb-6 text-muted">Tracked jobs: pipeline, specs, costs, and dates.</p>
       <details className="mb-6 rounded-xl border border-border bg-surface p-4">

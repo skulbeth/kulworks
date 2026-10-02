@@ -4,14 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
-const tabs = [
+// Ten top-level items for a handful of records was a lot of nav. Related pages are
+// grouped now: the nav links to the first page of each group and stays highlighted
+// across its siblings, and a SectionTabs switcher on those pages moves between them.
+// Routes are unchanged, so old links and bookmarks still work.
+const tabs: { href: string; label: string; siblings?: string[] }[] = [
   { href: "/admin/", label: "Dashboard" },
-  { href: "/admin/submissions/", label: "Submissions" },
-  { href: "/admin/uploads/", label: "Uploads" },
-  { href: "/admin/projects/", label: "Projects" },
-  { href: "/admin/clients/", label: "Clients" },
-  { href: "/admin/subscribers/", label: "Subscribers" },
-  { href: "/admin/newsletter/", label: "Newsletter" },
+  { href: "/admin/submissions/", label: "Inbox", siblings: ["/admin/uploads"] },
+  { href: "/admin/projects/", label: "Work", siblings: ["/admin/clients"] },
+  { href: "/admin/subscribers/", label: "Newsletter", siblings: ["/admin/newsletter"] },
   { href: "/admin/analytics/", label: "Analytics" },
   { href: "/admin/team/", label: "Team" },
   { href: "/admin/archive/", label: "Archive" },
@@ -23,10 +24,11 @@ export default function AdminNav({ email, role }: { email: string; role: string 
   const pathname = usePathname() ?? "/admin";
   const p = norm(pathname);
 
-  const isActive = (href: string) => {
+  const isActive = (href: string, siblings: string[] = []) => {
     const h = norm(href);
     if (h === "/admin") return p === "/admin";
-    return p === h || p.startsWith(h + "/");
+    const hit = (x: string) => p === norm(x) || p.startsWith(norm(x) + "/");
+    return hit(h) || siblings.some(hit);
   };
 
   return (
@@ -39,7 +41,7 @@ export default function AdminNav({ email, role }: { email: string; role: string 
               key={t.href}
               href={t.href}
               className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
-                isActive(t.href)
+                isActive(t.href, t.siblings)
                   ? "bg-primary text-black"
                   : "text-muted hover:text-foreground"
               }`}

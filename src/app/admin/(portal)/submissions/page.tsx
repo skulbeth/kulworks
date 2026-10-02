@@ -19,6 +19,7 @@ import FilterTabs, { type FilterTab } from "../_components/FilterTabs";
 import ConfirmButton from "../_components/ConfirmButton";
 import CopyButton from "../_components/CopyButton";
 import { signedUploadUrl } from "@/lib/uploads";
+import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -355,6 +356,7 @@ export default async function SubmissionsPage({
 
   return (
     <div>
+      <SectionTabs tabs={SECTIONS.inbox} active="/admin/submissions/" />
       <h1 className="mb-1 text-2xl font-bold">Submissions</h1>
       <p className="mb-4 text-muted">
         Raw quote requests from the website form.

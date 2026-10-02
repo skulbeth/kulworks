@@ -959,6 +959,69 @@ export async function toggleUploads() {
   redirect("/admin/uploads/");
 }
 
+// A convention upload is a dead end on its own: photos, a name, maybe a phone
+// number, linked to nothing. This turns one into a real lead, so it joins the same
+// pipeline as a website enquiry instead of sitting in a separate list.
+//
+// The contact field is free text, because whoever typed it at a stall might have
+// written an email, a phone number, or neither. An email gets a client record; a
+// phone number is kept on the submission so the lead is not lost either way.
+export async function uploadToSubmission(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+
+  const up = await prisma.upload.findUnique({ where: { id } });
+  if (!up || up.deletedAt) return;
+
+  const contact = (up.contact ?? "").trim();
+  const email = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact) ? contact.toLowerCase() : null;
+  const phone = email ? null : contact || null;
+  const name = (up.name ?? "").trim() || "Upload (no name given)";
+
+  let clientId: string | null = null;
+  if (email) {
+    const client = await prisma.client.upsert({
+      where: { email },
+      create: { name, email, phone: phone ?? undefined },
+      update: phone ? { phone } : {},
+    });
+    clientId = client.id;
+  }
+
+  const submission = await prisma.submission.create({
+    data: {
+      name,
+      // Submissions need an address to be reachable; without one, record where it
+      // came from rather than inventing something that looks real.
+      email: email ?? "no-email@upload.kulworks.com",
+      phone,
+      projectType: "upload",
+      message: up.note?.trim() || "Photos uploaded at an event. No note given.",
+      storagePaths: up.storagePaths,
+      status: "NEW",
+      clientId,
+    },
+  });
+
+  await prisma.upload.update({ where: { id }, data: { status: "HANDLED" } });
+
+  if (clientId) {
+    await prisma.activity.create({
+      data: {
+        type: "NOTE",
+        body: `Created from an event upload (${up.storagePaths.length} photo${up.storagePaths.length === 1 ? "" : "s"}).`,
+        clientId,
+        authorId: profile.id,
+      },
+    });
+  }
+
+  await logAudit(profile.email, "upload.to_submission", `${up.id} -> ${submission.id}`);
+  revalidateAdmin();
+  redirect(`/admin/submissions/?open=${submission.id}`);
+}
+
 export async function markUploadHandled(formData: FormData) {
   await requireProfile();
   const id = s(formData, "id");
