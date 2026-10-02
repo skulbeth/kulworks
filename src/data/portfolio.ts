@@ -72,8 +72,6 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/tiles/hex-press-and-stacks.mp4",
       "/images/portfolio/tiles/board-panels.webp",
       "/images/portfolio/tiles/board-tiles-still.webp",
-      "/images/portfolio/tiles/board-printing-still.webp",
-      "/images/portfolio/tiles/chopping-piece-still.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
       "/images/portfolio/tiles/board-print-and-finish.mp4",
       "/images/studio/board-cutting.mp4",
