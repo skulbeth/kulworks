@@ -427,6 +427,22 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 
 ## ✅ Done
 
+- [x] **Quote from a lead, in one flow (2026-10-02).** "Quote this" on a submission creates
+      the project and a draft quote together, instead of converting and remembering to come
+      back. Quotes can now carry a **deposit %** (`Invoice.depositPct`), which makes a quote
+      payable up front: the client sees "X now, Y on completion" with the Venmo/PayPal/Zelle
+      links set to the deposit, not the total. The client page also collects the shipping
+      address straight onto the client record, and the send email can carry the shared Drive
+      folder. Migration `20261002093000_invoice_deposit`.
+      **Deliberate limit:** a real Venmo *business request* is not buildable. Venmo has no
+      public API for third parties to raise requests. What ships is the pay-intent deep link
+      with the amount prefilled. A genuinely tracked request would mean PayPal invoicing
+      (approved business account), and `site.payments.paypalMe` is still a placeholder.
+- [ ] **Gmail sync into the client timeline (next up).** Sam chose the Gmail API route.
+      The Google OAuth app already exists with a refresh token (Drive + Calendar), so this is
+      a re-auth with `gmail.readonly` plus a poller that files threads matching a client's
+      email into Activity. AI summaries would be a separate Anthropic API dependency with a
+      per-use cost; decide that separately from the sync itself.
 - [x] **Media quality pass (2026-10-01).** Went through the raw library on `D:\Kulworks`.
       13 new assets into the home carousel and the portfolio: the print head passing over
       the navy and gold boards under the curing lamps (the best shot in the library, now

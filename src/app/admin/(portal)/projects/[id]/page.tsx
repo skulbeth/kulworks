@@ -54,6 +54,7 @@ export default async function ProjectDetailPage({
       client: true,
       activities: { where: { deletedAt: null }, orderBy: { occurredAt: "desc" } },
       payments: { where: { deletedAt: null }, orderBy: { paidAt: "desc" } },
+      submissions: { where: { driveFolderUrl: { not: null } }, orderBy: { createdAt: "desc" }, take: 1 },
       invoices: {
         where: { deletedAt: null },
         include: { items: true },
@@ -62,6 +63,9 @@ export default async function ProjectDetailPage({
     },
   });
   if (!project) notFound();
+
+  // Shared artwork folder, if the submission that started this project made one.
+  const driveFolderUrl = project.submissions[0]?.driveFolderUrl ?? null;
 
   const totalPaid = project.payments.reduce((sum, p) => sum + p.amount, 0);
   const basis = project.finalAmount ?? project.quotedAmount ?? null;
@@ -216,8 +220,14 @@ export default async function ProjectDetailPage({
 
                   {!voided && (
                     <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
-                      <form action={sendInvoiceDoc}>
+                      <form action={sendInvoiceDoc} className="flex items-center gap-2">
                         <input type="hidden" name="id" value={inv.id} />
+                        {driveFolderUrl && (
+                          <label className="flex items-center gap-1 text-xs text-muted" title={driveFolderUrl}>
+                            <input type="checkbox" name="includeDrive" defaultChecked className="h-3.5 w-3.5 accent-primary" />
+                            with Drive folder
+                          </label>
+                        )}
                         <ConfirmButton
                           message={`Email ${docLabel(inv.type).toLowerCase()} ${inv.number} to ${project.client.email}?`}
                           className="rounded-full border border-border px-3 py-1 text-xs font-semibold hover:border-blue hover:text-blue"

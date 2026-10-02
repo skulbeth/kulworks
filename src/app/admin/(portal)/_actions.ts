@@ -11,7 +11,7 @@ import { createClientFolder, driveConfigured } from "@/lib/google-drive";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TWOFA_COOKIE, COOKIE_TTL_MS, signSession } from "@/lib/two-factor";
-import { computeTotals, docLabel } from "@/lib/invoice";
+import { computeTotals, docLabel, splitDeposit } from "@/lib/invoice";
 import { site } from "@/data/site";
 
 const SITE_URL = "https://kulworks.com";
@@ -1061,6 +1061,7 @@ export async function createInvoiceDoc(formData: FormData) {
       projectId,
       clientId: project!.clientId,
       taxRate: num(formData, "taxRate") ?? 0,
+      depositPct: num(formData, "depositPct"),
       dueDate: date(formData, "dueDate") ?? undefined,
       notes: s(formData, "notes"),
       items: { create: items },
@@ -1069,6 +1070,75 @@ export async function createInvoiceDoc(formData: FormData) {
   await logAudit(profile.email, "invoice.create", `${number}: ${project!.title}`);
   revalidateAdmin();
   redirect(`/admin/projects/${projectId}/?done=doc-created`);
+}
+
+// Submission -> project -> draft quote, in one click. The quote system lives on
+// projects, so quoting a fresh lead used to mean converting first and remembering
+// to come back. This does both and drops you on the project with a quote started.
+export async function quoteFromSubmission(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+
+  const sub = await prisma.submission.findUnique({ where: { id }, include: { client: true } });
+  if (!sub) return;
+
+  // Reuse the project if this submission was already converted.
+  let projectId = sub.projectId;
+  let clientId = sub.clientId;
+
+  if (!projectId) {
+    if (!clientId) {
+      const client = await prisma.client.upsert({
+        where: { email: sub.email.toLowerCase() },
+        create: { name: sub.name, email: sub.email.toLowerCase() },
+        update: {},
+      });
+      clientId = client.id;
+    }
+    const project = await prisma.project.create({
+      data: {
+        title: `${sub.name}: ${sub.projectType ?? "project"}`,
+        stage: "QUOTED",
+        clientId,
+        requested: sub.message,
+      },
+    });
+    projectId = project.id;
+    await prisma.submission.update({
+      where: { id },
+      data: { projectId, status: "QUOTED", clientId },
+    });
+    await prisma.activity.create({
+      data: {
+        type: "STATUS_CHANGE",
+        body: "Created from website submission, ready to quote.",
+        projectId,
+        clientId,
+        authorId: profile.id,
+      },
+    });
+  }
+
+  // Seed a draft quote with one line taken from what they asked for, so there is
+  // something to edit rather than an empty form.
+  const number = await nextDocNumber("QUOTE");
+  const requested = (sub.projectType ?? sub.message ?? "Custom work").slice(0, 120);
+  const invoice = await prisma.invoice.create({
+    data: {
+      number,
+      type: "QUOTE",
+      status: "DRAFT",
+      projectId: projectId!,
+      clientId: clientId!,
+      taxRate: site.payments.defaultServiceCharge,
+      items: { create: [{ description: requested, quantity: 1, unitPrice: 0, position: 0 }] },
+    },
+  });
+
+  await logAudit(profile.email, "quote.from_submission", `${number}: ${sub.email}`);
+  revalidateAdmin();
+  redirect(`/admin/projects/${projectId}/?done=quote-started#doc-${invoice.id}`);
 }
 
 // Email the quote/invoice to the client (link to the public view+pay page). Manual only.
@@ -1083,8 +1153,19 @@ export async function sendInvoiceDoc(formData: FormData) {
   if (!inv) return;
 
   const { total } = computeTotals(inv.items, inv.taxRate);
+  const { dueNow, balance, hasSplit } = splitDeposit(total, inv.depositPct);
   const url = `${SITE_URL}/invoice/${inv.token}/`;
   const isQuote = inv.type === "QUOTE";
+
+  // The shared Drive folder lives on the submission that started the project, so
+  // the one email can carry artwork, money and the address ask together.
+  const linkedSub = await prisma.submission.findFirst({
+    where: { projectId: inv.projectId, driveFolderUrl: { not: null } },
+    orderBy: { createdAt: "desc" },
+    select: { driveFolderUrl: true },
+  });
+  const includeDrive = formData.get("includeDrive") === "on" && !!linkedSub?.driveFolderUrl;
+
   const lines = [
     `Hi ${inv.client.name},`,
     "",
@@ -1093,14 +1174,20 @@ export async function sendInvoiceDoc(formData: FormData) {
       : `Here's your invoice from Kulworks (${inv.number}) for "${inv.project.title}":`,
     "",
     `Total: $${total.toFixed(2)}`,
+    hasSplit ? `To book it: $${dueNow.toFixed(2)} now, $${balance.toFixed(2)} on completion.` : "",
     inv.dueDate ? `Due: ${inv.dueDate.toLocaleDateString("en-US")}` : "",
     "",
-    `View${isQuote ? "" : " and pay"} it here:`,
+    hasSplit || !isQuote ? "View and pay it here:" : "View it here:",
     url,
+    "",
+    "That same page has a short form for your shipping address, so we have everything we need to start.",
+    includeDrive ? "" : null,
+    includeDrive ? "Your artwork folder (upload files or review proofs here):" : null,
+    includeDrive ? linkedSub!.driveFolderUrl! : null,
     "",
     "Thank you!",
     "Kulworks",
-  ].filter((l) => l !== "");
+  ].filter((l) => l !== null && l !== "") as string[];
 
   await sendMail({
     to: inv.client.email,

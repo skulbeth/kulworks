@@ -9,6 +9,7 @@ import {
   createSubmissionDriveFolder,
   setSubmissionFolderLink,
   createSubmissionManual,
+  quoteFromSubmission,
 } from "../_actions";
 import RecordExplorer, {
   type ExplorerColumn,
@@ -318,12 +319,25 @@ export default async function SubmissionsPage({
               Open linked project →
             </Link>
           ) : (
-            <form action={convertSubmissionToProject}>
-              <input type="hidden" name="id" value={s.id} />
-              <button className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-black hover:bg-primary-hover">
-                Convert to Project
-              </button>
-            </form>
+            <>
+              {/* Quoting is the usual next step, so it leads; converting without a
+                  quote stays available for jobs that are not priced yet. */}
+              <form action={quoteFromSubmission}>
+                <input type="hidden" name="id" value={s.id} />
+                <button
+                  className="rounded-lg bg-primary px-3 py-1.5 text-sm font-bold text-black hover:bg-primary-hover"
+                  title="Creates the project and starts a draft quote in one step"
+                >
+                  Quote this →
+                </button>
+              </form>
+              <form action={convertSubmissionToProject}>
+                <input type="hidden" name="id" value={s.id} />
+                <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold hover:border-blue hover:text-blue">
+                  Convert to Project
+                </button>
+              </form>
+            </>
           )}
           <form action={deleteSubmission} className="ml-auto">
             <input type="hidden" name="id" value={s.id} />

@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { fmtMoney, fmtDate } from "@/lib/format";
-import { computeTotals, lineAmount, docLabel } from "@/lib/invoice";
+import { computeTotals, lineAmount, docLabel, splitDeposit } from "@/lib/invoice";
 import { site, paymentConfig, paypalLink, venmoLink } from "@/data/site";
+import { saveClientAddress } from "./actions";
 
 export const dynamic = "force-dynamic";
 // Private document — never index it.
@@ -25,9 +26,19 @@ export default async function InvoiceViewPage({
   const isInvoice = inv.type === "INVOICE";
   const label = docLabel(inv.type);
   const pay = paymentConfig();
-  const showPay = isInvoice && inv.status !== "PAID" && inv.status !== "VOID";
+  // A quote with a deposit on it is payable now: that deposit is what books the job.
+  // Without one, a quote stays an estimate and only invoices can be paid.
+  const { dueNow, balance, hasSplit } = splitDeposit(total, inv.depositPct);
+  const live = inv.status !== "PAID" && inv.status !== "VOID";
+  const showPay = live && (isInvoice || hasSplit);
+  const payAmount = isInvoice ? total : dueNow;
   const anyPay = pay.paypalMe || pay.venmoUser || pay.zelle;
   const note = `${site.name} ${inv.number}`;
+  const addr = [inv.client.street, inv.client.city, inv.client.state, inv.client.postalCode, inv.client.country]
+    .filter(Boolean)
+    .join(", ");
+  const fieldCls =
+    "w-full rounded-lg border border-border bg-surface2 px-3 py-2 text-sm focus:border-blue focus:outline-none";
   const issued = inv.issuedAt ?? inv.createdAt;
 
   const badge =
@@ -117,29 +128,36 @@ export default async function InvoiceViewPage({
         {/* Pay options (invoices only, when unpaid) */}
         {showPay && (
           <div className="mt-6 border-t border-border pt-5">
-            <p className="mb-3 font-bold">Pay this invoice</p>
+            <p className="mb-1 font-bold">
+              {hasSplit ? `Pay the ${inv.depositPct}% deposit to book this` : "Pay this invoice"}
+            </p>
+            {hasSplit && (
+              <p className="mb-3 text-sm text-muted">
+                {fmtMoney(dueNow)} now, {fmtMoney(balance)} on completion.
+              </p>
+            )}
             {anyPay ? (
               <div className="space-y-2.5">
                 {pay.paypalMe && (
-                  <a href={paypalLink(pay.paypalMe, total)} target="_blank" rel="noopener noreferrer"
+                  <a href={paypalLink(pay.paypalMe, payAmount)} target="_blank" rel="noopener noreferrer"
                     className={`${payBtn} bg-[#0070ba] text-white hover:opacity-90`}>
-                    Pay {fmtMoney(total)} with PayPal
+                    Pay {fmtMoney(payAmount)} with PayPal
                   </a>
                 )}
                 {pay.venmoUser && (
-                  <a href={venmoLink(pay.venmoUser, total, note)} target="_blank" rel="noopener noreferrer"
+                  <a href={venmoLink(pay.venmoUser, payAmount, note)} target="_blank" rel="noopener noreferrer"
                     className={`${payBtn} bg-[#008cff] text-white hover:opacity-90`}>
-                    Pay with Venmo (@{pay.venmoUser})
+                    Pay {fmtMoney(payAmount)} with Venmo (@{pay.venmoUser})
                   </a>
                 )}
                 {pay.zelle && (
                   <div className="rounded-xl border border-border bg-surface2 px-4 py-3 text-sm">
-                    <span className="font-semibold">Zelle (no fee):</span> send {fmtMoney(total)} to{" "}
+                    <span className="font-semibold">Zelle (no fee):</span> send {fmtMoney(payAmount)} to{" "}
                     <span className="font-semibold">{pay.zelle}</span>
                   </div>
                 )}
                 <p className="pt-1 text-xs text-muted">
-                  After paying, we&apos;ll mark this invoice paid. Questions? Reply to {site.email}.
+                  Once it lands we&apos;ll mark it received. Questions? Reply to {site.email}.
                 </p>
               </div>
             ) : (
@@ -155,7 +173,38 @@ export default async function InvoiceViewPage({
             Paid in full. Thank you!
           </p>
         )}
-        {!isInvoice && (
+        {/* Where it ships. Saves straight onto the client record, so the shop has
+            the address without a round of emails asking for it. */}
+        {live && (
+          <form action={saveClientAddress} className="mt-6 border-t border-border pt-5">
+            <input type="hidden" name="token" value={inv.token} />
+            <p className="font-bold">Where should this ship?</p>
+            <p className="mb-3 text-sm text-muted">
+              {addr
+                ? "We have this on file. Update it here if anything has changed."
+                : "Fill this in and we'll have everything we need to get started."}
+            </p>
+            <div className="grid gap-2.5 sm:grid-cols-2">
+              <input name="street" defaultValue={inv.client.street ?? ""} placeholder="Street address"
+                className={`${fieldCls} sm:col-span-2`} autoComplete="street-address" />
+              <input name="city" defaultValue={inv.client.city ?? ""} placeholder="City"
+                className={fieldCls} autoComplete="address-level2" />
+              <input name="state" defaultValue={inv.client.state ?? ""} placeholder="State"
+                className={fieldCls} autoComplete="address-level1" />
+              <input name="postalCode" defaultValue={inv.client.postalCode ?? ""} placeholder="ZIP"
+                className={fieldCls} autoComplete="postal-code" />
+              <input name="country" defaultValue={inv.client.country ?? ""} placeholder="Country"
+                className={fieldCls} autoComplete="country-name" />
+              <input name="phone" defaultValue={inv.client.phone ?? ""} placeholder="Phone (for delivery)"
+                className={`${fieldCls} sm:col-span-2`} autoComplete="tel" />
+            </div>
+            <button className="mt-3 rounded-full bg-primary px-6 py-2.5 font-bold text-black hover:bg-primary-hover">
+              Save my details
+            </button>
+          </form>
+        )}
+
+        {!isInvoice && !hasSplit && (
           <p className="mt-6 text-xs text-muted">This is an estimate, not a bill. Reply to {site.email} to proceed.</p>
         )}
       </div>

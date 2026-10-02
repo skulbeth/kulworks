@@ -20,3 +20,12 @@ export function computeTotals(items: LineLike[], rate: number) {
 export function docLabel(type: "QUOTE" | "INVOICE"): string {
   return type === "QUOTE" ? "Quote" : "Invoice";
 }
+
+/** Splits a total into what is due now and what is left, given a deposit percent.
+ *  A null/0/100+ deposit means the whole thing is due now and there is no balance. */
+export function splitDeposit(total: number, depositPct: number | null | undefined) {
+  const pct = depositPct ?? 0;
+  if (pct <= 0 || pct >= 100) return { dueNow: total, balance: 0, hasSplit: false };
+  const dueNow = Math.round(total * (pct / 100) * 100) / 100;
+  return { dueNow, balance: Math.round((total - dueNow) * 100) / 100, hasSplit: true };
+}

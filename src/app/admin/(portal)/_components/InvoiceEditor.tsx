@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createInvoiceDoc } from "../_actions";
-import { computeTotals, lineAmount } from "@/lib/invoice";
+import { computeTotals, lineAmount, splitDeposit } from "@/lib/invoice";
 import { fmtMoney } from "@/lib/format";
 
 type Row = { description: string; quantity: string; unitPrice: string };
@@ -20,12 +20,15 @@ export default function InvoiceEditor({
   // Stored per-invoice in the `taxRate` column (name kept for history); it's the service-charge %.
   const [rate, setRate] = useState(String(defaultServiceCharge));
   const [rows, setRows] = useState<Row[]>([{ description: "", quantity: "1", unitPrice: "" }]);
+  // Deposit asked up front. Set it on a quote and the quote becomes payable now.
+  const [deposit, setDeposit] = useState("");
 
   const numeric = rows.map((r) => ({
     quantity: Number(r.quantity) || 0,
     unitPrice: Number(r.unitPrice) || 0,
   }));
   const { subtotal, serviceCharge, total } = computeTotals(numeric, Number(rate) || 0);
+  const { dueNow, balance, hasSplit } = splitDeposit(total, Number(deposit) || 0);
 
   const setRow = (i: number, key: keyof Row, val: string) =>
     setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [key]: val } : r)));
@@ -50,6 +53,18 @@ export default function InvoiceEditor({
           <option value="INVOICE">Invoice</option>
           <option value="QUOTE">Quote (estimate)</option>
         </select>
+        <label className="text-xs text-muted">
+          Deposit %
+          <input
+            name="depositPct"
+            value={deposit}
+            onChange={(e) => setDeposit(e.target.value)}
+            inputMode="decimal"
+            placeholder="none"
+            title="Set this on a quote to make it payable now: they pay the deposit to book the job, the balance comes later."
+            className={`ml-1 w-20 ${field}`}
+          />
+        </label>
         <label className="text-xs text-muted">
           Service charge %
           <input
