@@ -438,11 +438,27 @@ for tracking clients, querying data, and viewing analytics — all in one place.
       public API for third parties to raise requests. What ships is the pay-intent deep link
       with the amount prefilled. A genuinely tracked request would mean PayPal invoicing
       (approved business account), and `site.payments.paypalMe` is still a placeholder.
-- [ ] **Gmail sync into the client timeline (next up).** Sam chose the Gmail API route.
-      The Google OAuth app already exists with a refresh token (Drive + Calendar), so this is
-      a re-auth with `gmail.readonly` plus a poller that files threads matching a client's
-      email into Activity. AI summaries would be a separate Anthropic API dependency with a
-      per-use cost; decide that separately from the sync itself.
+- [x] **Gmail sync into the client timeline (2026-10-02).** "Pull email from Gmail" on a
+      client reads the thread with that address and files it as activity. Read-only
+      (`gmail.readonly`), one address per sync, headers and snippet only, never the body.
+      Deduped on `Activity.externalId` (unique), so re-running adds nothing.
+      **⚠️ ONE STEP LEFT, it is off until this is done:** the refresh token still carries
+      Drive + Calendar only, so Gmail answers 403 and the admin says so. To switch it on:
+      ```
+      npm run google:auth          # scopes now include gmail.readonly
+      ```
+      then paste the NEW refresh token into `GOOGLE_REFRESH_TOKEN` in `.env.local` **and**
+      in Vercel (Project → Settings → Environment Variables), and redeploy. The old token
+      keeps working for Drive and Calendar until replaced, so nothing breaks in between.
+      **Not built:** AI summaries of a thread. That needs an Anthropic API key and has a
+      per-use cost, unlike everything else in this stack. Decide separately.
+- [x] **Split invoicing (2026-10-02).** "Invoice the balance" raises an invoice for what is
+      left once the deposit is in. Billed at a zero service-charge rate because the charge
+      was already applied to the original total; raising a second balance on the same
+      document is refused. Verified: deposit + balance lands exactly on the quote total.
+      Converting a deposit quote now keeps the deposit instead of billing in full.
+      Also added `ResultBanner`: actions have always redirected with `?done=`/`?error=`
+      codes that no page read, so a refused action looked like a click that did nothing.
 - [x] **Media quality pass (2026-10-01).** Went through the raw library on `D:\Kulworks`.
       13 new assets into the home carousel and the portfolio: the print head passing over
       the navy and gold boards under the curing lamps (the best shot in the library, now
