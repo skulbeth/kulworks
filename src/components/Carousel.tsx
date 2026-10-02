@@ -9,6 +9,8 @@
  */
 
 import { useEffect, useState } from "react";
+import Clip from "./Clip";
+import { isClip } from "@/lib/clip";
 
 export interface Slide {
   /** e.g. "/images/studio/bench-01.jpg". Leave undefined to show a placeholder. */
@@ -104,7 +106,14 @@ export default function Carousel({
         {slides.map((slide, idx) => (
           <div key={idx} className="w-full flex-shrink-0">
             <div className={`relative w-full ${ratio}`}>
-              {slide.src && loaded.has(idx) ? (
+              {slide.src && loaded.has(idx) && isClip(slide.src) ? (
+                <Clip
+                  src={slide.src}
+                  alt={slide.alt ?? slide.label}
+                  active={idx === current}
+                  className="absolute inset-0 h-full w-full bg-background object-cover"
+                />
+              ) : slide.src && loaded.has(idx) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={slide.src}

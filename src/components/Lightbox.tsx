@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Clip from "./Clip";
+import { isClip } from "@/lib/clip";
 
 /**
  * Image lightbox, rendered via a portal to <body> so it always covers the full
@@ -117,7 +119,14 @@ export default function Lightbox({
       {/* Fixed-size frame so images don't change scale between slides. The frame area
           around the image is transparent; clicks on it bubble up and close. */}
       <div className="flex h-[78vh] w-full max-w-5xl items-center justify-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
+        {isClip(list[i]) ? (
+          <Clip
+            src={list[i]}
+            alt={alt}
+            className="h-full w-full rounded-lg object-contain"
+          />
+        ) : (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={list[i]}
           alt={alt}
@@ -131,6 +140,7 @@ export default function Lightbox({
             shown ? "scale-100" : "scale-95"
           } ${gallery ? "cursor-pointer" : "cursor-zoom-out"}`}
         />
+        )}
       </div>
 
       {(title || gallery) && (

@@ -1,3 +1,6 @@
+import Clip from "./Clip";
+import { isClip } from "@/lib/clip";
+
 /**
  * Obvious, swappable image placeholder.
  * Renders a labeled box when no real image is supplied. To use a real image,
@@ -16,6 +19,16 @@ export default function Placeholder({
   className?: string;
   ratio?: string;
 }) {
+  if (isClip(src)) {
+    return (
+      <Clip
+        src={src!}
+        alt={alt ?? label}
+        className={`${ratio} w-full rounded-xl object-cover ${className}`}
+      />
+    );
+  }
+
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
     return (
