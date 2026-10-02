@@ -85,17 +85,18 @@ export const portfolio: PortfolioItem[] = [
   {
     title: "Custom 3D Models",
     category: "design",
-    // Cover is a model Sam drew from scratch, photographed sharp at 88K. The
-    // rotating CAD clip used to lead here at just over a megabyte, which was more
-    // than every other grid cover put together; it is still first in the gallery.
-    src: "/images/portfolio/filament/race-award-tower.webp",
+    // Cover is the three awards together, all modeled from scratch. Three separate
+    // shots of them in identical framing read as one image repeated; one shot of
+    // the set reads as range. The rotating CAD clip used to lead here at just over
+    // a megabyte, more than every other grid cover put together.
+    src: "/images/portfolio/filament/race-awards-trio.webp",
     images: [
-      "/images/portfolio/filament/race-award-tower.webp",
+      "/images/portfolio/filament/race-awards-trio.webp",
       "/images/portfolio/design/cad-3d-model.webp",
       "/images/portfolio/design/shapr3d-library.webp",
       "/images/portfolio/design/droideka-model.webp",
     ],
-    alt: "Custom 3D models designed in Shapr3D: a tower award modeled from scratch for a client, a full library of parts and props, and a rotating droideka model",
+    alt: "Custom 3D models designed in Shapr3D: a set of three award designs modeled from scratch for a client, a full library of parts and props, and a rotating droideka model",
   },
   {
     title: "Resin 3D Printing (high-detail minis)",
@@ -142,8 +143,11 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/3d-print-11.webp",
       "/images/portfolio/filament/3d-print-02.webp",
       "/images/portfolio/filament/uv-art-on-3d-print.webp",
+      "/images/portfolio/filament/race-awards-towers.webp",
+      "/images/portfolio/filament/race-awards-number-ones.webp",
+      "/images/portfolio/filament/race-awards-medallions.webp",
     ],
-    alt: "Filament (FDM) 3D printing by Kulworks: a full-size spiked gladiator helmet finished in matte navy, a custom prop armour set, city and terrain upgrade pieces, articulated figures and large builds, a spaceship, game flag markers, functional parts, and full-colour art UV-printed straight onto a printed blank",
+    alt: "Filament (FDM) 3D printing by Kulworks: a full-size spiked gladiator helmet finished in matte navy, a custom prop armour set, city and terrain upgrade pieces, articulated figures and large builds, a spaceship, game flag markers, functional parts, full-colour art UV-printed straight onto a printed blank, and full runs of custom awards printed and lined up ready for a client",
   },
 
 ];
