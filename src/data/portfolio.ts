@@ -55,7 +55,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/cards/client-deck-bagged.webp",
       "/images/portfolio/cards/sports-cards-backs.webp",
       "/images/studio/deck-printed-and-riffled.webp",
-      "/images/portfolio/cards/panic-cards-spread.webp",
+      "/images/portfolio/cards/panic-cards-spread-still.webp",
     ],
     alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, finished character and sports cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
   },

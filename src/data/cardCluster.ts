@@ -174,7 +174,7 @@ export const cardPages: CardPage[] = [
   {
     slug: "trading-cards",
     navLabel: "Trading-Style Cards",
-    image: "/images/portfolio/cards/card-fronts.webp",
+    image: "/images/portfolio/cards/sports-cards.webp",
     cardBlurb: "Team, school, and collectible-style card sets.",
     title: `Custom Trading-Style Card Printing in ${CITY}`,
     metaDescription:

@@ -40,7 +40,7 @@ export const cardTemplates: CardTemplate[] = [
     id: "baseball-trading-card",
     name: "Baseball Trading Card",
     blurb: "Player card with a headshot front and an action-shot back.",
-    image: "/images/portfolio/cards/card-fronts.webp",
+    image: "/images/portfolio/cards/sports-cards.webp",
     imageSlots: [
       { key: "front_photo", label: "Front photo (headshot)", required: true },
       { key: "back_photo", label: "Back photo (action shot)" },
