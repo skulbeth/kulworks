@@ -11,6 +11,7 @@ const REDIRECT = "http://localhost:5055/oauth2callback";
 const SCOPE = [
   "https://www.googleapis.com/auth/drive.file", // create/manage client artwork folders
   "https://www.googleapis.com/auth/calendar", // create the Kulworks calendar + manage events
+  "https://www.googleapis.com/auth/gmail.readonly", // read the client email thread onto their timeline
 ].join(" ");
 
 if (!CLIENT_ID || !CLIENT_SECRET) {

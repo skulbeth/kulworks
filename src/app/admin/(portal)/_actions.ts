@@ -8,6 +8,7 @@ import { requireProfile } from "@/lib/auth";
 import { resend, FROM, sendMail, addSubscriberToAudience } from "@/lib/email";
 import { uploadsEnabled, setUploadsEnabled, removeUploadFiles } from "@/lib/uploads";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
+import { fetchClientMessages } from "@/lib/gmail";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TWOFA_COOKIE, COOKIE_TTL_MS, signSession } from "@/lib/two-factor";
@@ -344,6 +345,59 @@ export async function updateClient(formData: FormData) {
   await logAudit(profile.email, "update.client", id);
   revalidateAdmin();
   redirect(`/admin/clients/${id}/`);
+}
+
+// Pull the Gmail back-and-forth with this client onto their timeline.
+//
+// Deduped on the Gmail message id, so running it twice is harmless: a message
+// that is already filed is skipped rather than added again. Only ever reads, and
+// only ever asks for messages involving this one address.
+export async function syncClientEmails(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+
+  const client = await prisma.client.findUnique({
+    where: { id },
+    select: { id: true, email: true, name: true },
+  });
+  if (!client) return;
+
+  const { messages, error } = await fetchClientMessages(client.email, 25);
+  if (error) {
+    await logAudit(profile.email, "gmail.sync.error", `${client.email}: ${error}`);
+    revalidateAdmin();
+    redirect(`/admin/clients/${id}/?error=gmail&detail=${encodeURIComponent(error.slice(0, 180))}`);
+  }
+
+  const existing = new Set(
+    (
+      await prisma.activity.findMany({
+        where: { externalId: { in: messages.map((m) => m.id) } },
+        select: { externalId: true },
+      })
+    ).map((a) => a.externalId)
+  );
+
+  const fresh = messages.filter((m) => !existing.has(m.id));
+  if (fresh.length) {
+    await prisma.activity.createMany({
+      data: fresh.map((m) => ({
+        type: (m.outbound ? "EMAIL_SENT" : "EMAIL_RECEIVED") as never,
+        body: `${m.subject}
+${m.snippet}`,
+        occurredAt: m.date,
+        clientId: client.id,
+        authorId: profile.id,
+        externalId: m.id,
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  await logAudit(profile.email, "gmail.sync", `${client.email}: ${fresh.length} new of ${messages.length}`);
+  revalidateAdmin();
+  redirect(`/admin/clients/${id}/?done=gmail&n=${fresh.length}&seen=${messages.length}`);
 }
 
 // ── Client ⇄ contact ──

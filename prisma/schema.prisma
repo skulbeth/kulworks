@@ -232,6 +232,11 @@ model Activity {
   author    Profile? @relation(fields: [authorId], references: [id])
   authorId  String?
 
+  // Where this entry came from, when it was pulled in rather than typed: the Gmail
+  // message id. Unique, so syncing the same thread twice updates nothing instead of
+  // filling the timeline with copies.
+  externalId      String?   @unique
+
   // Auto-reminders / Google Calendar sync
   remindAt        DateTime?
   done            Boolean   @default(false)

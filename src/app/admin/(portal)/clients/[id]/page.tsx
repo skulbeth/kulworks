@@ -9,6 +9,7 @@ import {
   convertClientToContact,
   convertContactToClient,
   addActivity,
+  syncClientEmails,
 } from "../../_actions";
 import { TextField, TextArea, FieldGroup } from "../../_components/FormFields";
 import AddActivity from "../../_components/AddActivity";
@@ -19,10 +20,13 @@ export const dynamic = "force-dynamic";
 
 export default async function ClientDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ done?: string; error?: string; detail?: string; n?: string; seen?: string }>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
   const client = await prisma.client.findUnique({
     where: { id },
     include: {
@@ -256,7 +260,31 @@ export default async function ClientDetailPage({
 
       {/* Activity */}
       <section className="rounded-xl border border-border bg-surface p-4">
-        <h2 className="mb-3 text-lg font-bold">Activity &amp; reminders</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-lg font-bold">Activity &amp; reminders</h2>
+          {/* Pulls the Gmail thread with this client onto the timeline. Read-only,
+              deduped on the message id, so running it twice adds nothing. */}
+          <form action={syncClientEmails}>
+            <input type="hidden" name="id" value={client.id} />
+            <button className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-blue hover:text-blue">
+              Pull email from Gmail
+            </button>
+          </form>
+        </div>
+
+        {sp.done === "gmail" && (
+          <p className="mb-3 rounded-lg border border-green-500/40 bg-green-500/10 px-3 py-2 text-sm text-green-700">
+            {sp.n === "0"
+              ? `Nothing new. Checked ${sp.seen ?? "0"} message${sp.seen === "1" ? "" : "s"} with ${client.email}.`
+              : `Added ${sp.n} email${sp.n === "1" ? "" : "s"} to the timeline, from ${sp.seen} checked.`}
+          </p>
+        )}
+        {sp.error === "gmail" && (
+          <p className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-700">
+            Could not read Gmail. {sp.detail ?? ""}
+          </p>
+        )}
+
         <AddActivity clientId={client.id} />
         <div className="mt-2">
           <SetReminder clientId={client.id} />
