@@ -427,6 +427,16 @@ for tracking clients, querying data, and viewing analytics — all in one place.
 
 ## ✅ Done
 
+- [x] **Media quality pass (2026-10-01).** Went through the raw library on `D:\Kulworks`.
+      13 new assets into the home carousel and the portfolio: the print head passing over
+      the navy and gold boards under the curing lamps (the best shot in the library, now
+      carousel slide 2), the hex actually coming free of the clicker die, double-sided
+      board printing, a card run curing under UV, four PANIC deck clips, an Orc hero card,
+      stacks of cut tiles (first shot anywhere showing a real production run), and a resin
+      plate lift. Nothing deleted. **Full list, plus which live assets are soft enough to
+      be worth re-exporting and what is still unmined, is in [MEDIA-REVIEW.md](MEDIA-REVIEW.md).**
+      Biggest open item: the 8 GB ASMR cutting file has the best footage but is a vertical
+      shot that no 3:2 crop serves; cut cycle is at 608-628s.
 - [x] **Role to Reign analytics in the Kulworks admin (2026-09-25).** One `site` column
       on `PageView` (default "kulworks") instead of a second set of tables, so every
       query, index and chart is reused. Role to Reign stays a static front end with no
