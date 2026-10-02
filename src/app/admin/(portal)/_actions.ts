@@ -1072,6 +1072,41 @@ export async function createInvoiceDoc(formData: FormData) {
   redirect(`/admin/projects/${projectId}/?done=doc-created`);
 }
 
+// Edit a quote/invoice that has not gone out yet. Drafts only: once a document
+// has been sent or paid, its numbers are a record of what the client agreed to,
+// so changing them would quietly rewrite history. Void and reissue instead.
+export async function updateInvoiceDoc(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+
+  const inv = await prisma.invoice.findUnique({ where: { id }, select: { status: true, projectId: true, number: true } });
+  if (!inv) return;
+  if (inv.status !== "DRAFT") {
+    redirect(`/admin/projects/${inv.projectId}/?error=not-draft`);
+  }
+
+  const items = lineItems(formData);
+  if (items.length === 0) redirect(`/admin/projects/${inv.projectId}/?error=noitems`);
+
+  await prisma.invoice.update({
+    where: { id },
+    data: {
+      type: (s(formData, "type") === "QUOTE" ? "QUOTE" : "INVOICE") as never,
+      taxRate: num(formData, "taxRate") ?? 0,
+      depositPct: num(formData, "depositPct"),
+      dueDate: date(formData, "dueDate") ?? null,
+      notes: s(formData, "notes"),
+      // Replace the lines wholesale; they are only meaningful as a set.
+      items: { deleteMany: {}, create: items },
+    },
+  });
+
+  await logAudit(profile.email, "invoice.update", inv.number);
+  revalidateAdmin();
+  redirect(`/admin/projects/${inv.projectId}/?done=doc-updated`);
+}
+
 // Submission -> project -> draft quote, in one click. The quote system lives on
 // projects, so quoting a fresh lead used to mean converting first and remembering
 // to come back. This does both and drops you on the project with a quote started.

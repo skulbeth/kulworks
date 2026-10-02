@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createInvoiceDoc } from "../_actions";
+import { createInvoiceDoc, updateInvoiceDoc } from "../_actions";
 import { computeTotals, lineAmount, splitDeposit } from "@/lib/invoice";
 import { fmtMoney } from "@/lib/format";
 
@@ -9,19 +9,39 @@ type Row = { description: string; quantity: string; unitPrice: string };
 
 // Build a quote/invoice with add/removable line items + a live total. Submits to
 // the createInvoiceDoc server action (line items go up as parallel itemDesc/Qty/Price arrays).
+export type EditingDoc = {
+  id: string;
+  type: "INVOICE" | "QUOTE";
+  taxRate: number;
+  depositPct: number | null;
+  notes: string | null;
+  items: { description: string; quantity: number; unitPrice: number }[];
+};
+
 export default function InvoiceEditor({
   projectId,
   defaultServiceCharge,
+  editing,
 }: {
   projectId: string;
   defaultServiceCharge: number;
+  /** Pass a DRAFT document to edit it in place; omit to create a new one. */
+  editing?: EditingDoc;
 }) {
-  const [type, setType] = useState<"INVOICE" | "QUOTE">("INVOICE");
+  const [type, setType] = useState<"INVOICE" | "QUOTE">(editing?.type ?? "INVOICE");
   // Stored per-invoice in the `taxRate` column (name kept for history); it's the service-charge %.
-  const [rate, setRate] = useState(String(defaultServiceCharge));
-  const [rows, setRows] = useState<Row[]>([{ description: "", quantity: "1", unitPrice: "" }]);
+  const [rate, setRate] = useState(String(editing ? editing.taxRate : defaultServiceCharge));
+  const [rows, setRows] = useState<Row[]>(
+    editing && editing.items.length
+      ? editing.items.map((i) => ({
+          description: i.description,
+          quantity: String(i.quantity),
+          unitPrice: String(i.unitPrice),
+        }))
+      : [{ description: "", quantity: "1", unitPrice: "" }]
+  );
   // Deposit asked up front. Set it on a quote and the quote becomes payable now.
-  const [deposit, setDeposit] = useState("");
+  const [deposit, setDeposit] = useState(editing?.depositPct ? String(editing.depositPct) : "");
 
   const numeric = rows.map((r) => ({
     quantity: Number(r.quantity) || 0,
@@ -29,6 +49,7 @@ export default function InvoiceEditor({
   }));
   const { subtotal, serviceCharge, total } = computeTotals(numeric, Number(rate) || 0);
   const { dueNow, balance, hasSplit } = splitDeposit(total, Number(deposit) || 0);
+  const money = (n: number) => fmtMoney(n);
 
   const setRow = (i: number, key: keyof Row, val: string) =>
     setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [key]: val } : r)));
@@ -40,8 +61,9 @@ export default function InvoiceEditor({
     "rounded-lg border border-border bg-surface2 px-3 py-2 text-sm focus:border-blue focus:outline-none";
 
   return (
-    <form action={createInvoiceDoc} className="space-y-3">
+    <form action={editing ? updateInvoiceDoc : createInvoiceDoc} className="space-y-3">
       <input type="hidden" name="projectId" value={projectId} />
+      {editing && <input type="hidden" name="id" value={editing.id} />}
 
       <div className="flex flex-wrap items-center gap-3">
         <select
@@ -136,9 +158,14 @@ export default function InvoiceEditor({
         <div className="text-sm text-muted">
           Subtotal {fmtMoney(subtotal)} · Service charge {fmtMoney(serviceCharge)} ·{" "}
           <span className="font-bold text-foreground">Total {fmtMoney(total)}</span>
+          {hasSplit && (
+            <span className="text-blue">
+              {money(dueNow)} to book, {money(balance)} on completion
+            </span>
+          )}
         </div>
         <button className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover">
-          Create {type === "QUOTE" ? "quote" : "invoice"}
+          {editing ? "Save changes" : `Create ${type === "QUOTE" ? "quote" : "invoice"}`}
         </button>
       </div>
     </form>

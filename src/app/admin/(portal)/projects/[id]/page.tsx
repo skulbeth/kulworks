@@ -220,6 +220,32 @@ export default async function ProjectDetailPage({
 
                   {!voided && (
                     <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
+                      {inv.status === "DRAFT" && (
+                        <details className="w-full">
+                          <summary className="cursor-pointer select-none text-xs font-semibold text-blue">
+                            Edit lines, deposit and total
+                          </summary>
+                          <div className="mt-3">
+                            <InvoiceEditor
+                              projectId={project.id}
+                              defaultServiceCharge={site.payments.defaultServiceCharge}
+                              editing={{
+                                id: inv.id,
+                                type: inv.type as "INVOICE" | "QUOTE",
+                                taxRate: inv.taxRate,
+                                depositPct: inv.depositPct,
+                                notes: inv.notes,
+                                items: inv.items.map((it) => ({
+                                  description: it.description,
+                                  quantity: it.quantity,
+                                  unitPrice: it.unitPrice,
+                                })),
+                              }}
+                            />
+                          </div>
+                        </details>
+                      )}
+
                       <form action={sendInvoiceDoc} className="flex items-center gap-2">
                         <input type="hidden" name="id" value={inv.id} />
                         {driveFolderUrl && (
