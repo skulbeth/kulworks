@@ -17,8 +17,7 @@ export default function HomePage() {
 
   const studioSlides = [
     { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
-    { label: "A finished run, stacked", src: "/images/studio/hex-stacks-pan.webp", alt: "Stacks of finished UV-printed hex terrain tiles sorted across the bench, a full run cut and piled by map piece" },
-    { label: "Cut pieces out of the die", src: "/images/studio/board-cutting.webp", alt: "Lifting the clicker die jig to free a freshly cut hex terrain tile from the press" },
+    { label: "Cut, then stacked", src: "/images/studio/hex-cut-and-stacked.webp", alt: "Lifting the clicker die jig to free a freshly cut hex terrain tile, then stacks of the finished run sorted across the bench" },
     { label: "Custom 3D-printed awards", src: "/images/studio/custom-awards-trio.webp", alt: "Three custom race awards designed and 3D printed by Kulworks: a number one, a runner medallion, and a tower topper on UV-printed black bases" },
     { label: "Cards printed and cured", src: "/images/studio/cards-printing-and-sheet.webp", alt: "A card run curing under the UV lamps on the flatbed, then the finished sheet of full-colour character cards" },
     { label: "A shelf of painted figures", src: "/images/studio/painted-minis-lineup.webp", alt: "A lineup of painted 3D-printed character figures" },
