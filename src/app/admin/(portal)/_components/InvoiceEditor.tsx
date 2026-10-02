@@ -42,6 +42,9 @@ export default function InvoiceEditor({
   );
   // Deposit asked up front. Set it on a quote and the quote becomes payable now.
   const [deposit, setDeposit] = useState(editing?.depositPct ? String(editing.depositPct) : "");
+  // "I quoted them $130, make it say $130." Typing a target here back-solves the
+  // line prices so the total lands exactly there, service charge and all.
+  const [target, setTarget] = useState("");
 
   const numeric = rows.map((r) => ({
     quantity: Number(r.quantity) || 0,
@@ -50,6 +53,60 @@ export default function InvoiceEditor({
   const { subtotal, serviceCharge, total } = computeTotals(numeric, Number(rate) || 0);
   const { dueNow, balance, hasSplit } = splitDeposit(total, Number(deposit) || 0);
   const money = (n: number) => fmtMoney(n);
+
+  const chargeOn = (Number(rate) || 0) > 0;
+  const toggleCharge = () => setRate(chargeOn ? "0" : String(defaultServiceCharge || 9));
+
+  // Make the finished total exactly the number typed. Done in integer cents,
+  // because computeTotals rounds each line and then the charge, and chaining
+  // floats through that leaves you a cent or two short.
+  const applyTarget = () => {
+    const wantDollars = Number(target);
+    if (!Number.isFinite(wantDollars) || wantDollars <= 0) return;
+    const want = Math.round(wantDollars * 100);
+    const r = Number(rate) || 0;
+
+    // Which subtotal yields exactly `want` once the charge is added and rounded?
+    const ideal = Math.round(want / (1 + r / 100));
+    let S: number | null = null;
+    for (let d = 0; d <= 5 && S === null; d++) {
+      for (const cand of d === 0 ? [ideal] : [ideal - d, ideal + d]) {
+        if (cand > 0 && cand + Math.round((cand * r) / 100) === want) {
+          S = cand;
+          break;
+        }
+      }
+    }
+    if (S === null) S = ideal; // target unreachable at this rate; land nearest
+
+    const live = rows.map((row, i) => ({ row, i, q: Number(row.quantity) || 0 })).filter((x) => x.q > 0);
+    if (live.length === 0) return;
+
+    const currentCents = live.map((x) => Math.round(x.q * (Number(rows[x.i].unitPrice) || 0) * 100));
+    const curTotal = currentCents.reduce((a, b) => a + b, 0);
+    const amounts =
+      curTotal > 0
+        ? currentCents.map((c) => Math.round((c / curTotal) * S!))
+        : live.map((_, i) => (i === 0 ? S! : 0));
+    amounts[amounts.length - 1] += S - amounts.reduce((a, b) => a + b, 0);
+
+    // Back out a unit price that re-rounds to exactly that line amount. Whole
+    // cents where possible; more places only when the quantity demands it.
+    const next = [...rows];
+    live.forEach((x, k) => {
+      const targetCents = amounts[k];
+      let up = Math.round(targetCents / x.q) / 100;
+      if (Math.round(x.q * up * 100) !== targetCents) {
+        up = Math.round((targetCents / 100 / x.q) * 1000000) / 1000000;
+        for (let n = 0; n < 6 && Math.round(x.q * up * 100) !== targetCents; n++) {
+          up = Math.round((up + (targetCents - Math.round(x.q * up * 100)) / 100 / x.q) * 1000000) / 1000000;
+        }
+      }
+      next[x.i] = { ...next[x.i], unitPrice: String(up) };
+    });
+    setRows(next);
+    setTarget("");
+  };
 
   const setRow = (i: number, key: keyof Row, val: string) =>
     setRows((rs) => rs.map((r, j) => (j === i ? { ...r, [key]: val } : r)));
@@ -87,14 +144,21 @@ export default function InvoiceEditor({
             className={`ml-1 w-20 ${field}`}
           />
         </label>
-        <label className="text-xs text-muted">
-          Service charge %
+        <label className="flex items-center gap-1.5 text-xs text-muted" title="Adds your flat service charge on top of the lines. Turn it off to bill the line prices exactly as typed.">
+          <input
+            type="checkbox"
+            checked={chargeOn}
+            onChange={toggleCharge}
+            className="h-3.5 w-3.5 accent-primary"
+          />
+          Service charge
           <input
             name="taxRate"
             value={rate}
             onChange={(e) => setRate(e.target.value)}
             inputMode="decimal"
-            className={`ml-1 w-20 ${field}`}
+            disabled={!chargeOn}
+            className={`ml-1 w-14 disabled:opacity-40 ${field}`}
           />
         </label>
         <label className="text-xs text-muted">
@@ -163,6 +227,30 @@ export default function InvoiceEditor({
               {money(dueNow)} to book, {money(balance)} on completion
             </span>
           )}
+          {/* Quote someone a round number, then make the document say it. */}
+          <span className="ml-auto flex items-center gap-1.5 text-xs text-muted">
+            Make total exactly
+            <input
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  applyTarget();
+                }
+              }}
+              inputMode="decimal"
+              placeholder="130"
+              className={`w-20 ${field}`}
+            />
+            <button
+              type="button"
+              onClick={applyTarget}
+              className="rounded-full border border-border px-2.5 py-1 font-semibold hover:border-blue hover:text-blue"
+            >
+              Set
+            </button>
+          </span>
         </div>
         <button className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover">
           {editing ? "Save changes" : `Create ${type === "QUOTE" ? "quote" : "invoice"}`}

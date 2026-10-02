@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { fmtMoney, fmtDate } from "@/lib/format";
-import { computeTotals, lineAmount, docLabel, splitDeposit } from "@/lib/invoice";
+import { computeTotals, lineAmount, docLabel, splitDeposit, fmtUnitPrice } from "@/lib/invoice";
 import { site, paymentConfig, paypalLink, venmoLink } from "@/data/site";
 import { saveClientAddress } from "./actions";
 
@@ -102,7 +102,7 @@ export default async function InvoiceViewPage({
                 <tr key={it.id} className="border-b border-border/60">
                   <td className="py-2 pr-2">{it.description}</td>
                   <td className="py-2 text-right tabular-nums">{it.quantity}</td>
-                  <td className="py-2 text-right tabular-nums">{fmtMoney(it.unitPrice)}</td>
+                  <td className="py-2 text-right tabular-nums">{fmtUnitPrice(it.unitPrice)}</td>
                   <td className="py-2 text-right tabular-nums">{fmtMoney(lineAmount(it))}</td>
                 </tr>
               ))}

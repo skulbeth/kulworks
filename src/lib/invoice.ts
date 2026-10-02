@@ -29,3 +29,15 @@ export function splitDeposit(total: number, depositPct: number | null | undefine
   const dueNow = Math.round(total * (pct / 100) * 100) / 100;
   return { dueNow, balance: Math.round((total - dueNow) * 100) / 100, hasSplit: true };
 }
+
+/** Unit prices can run to fractions of a cent on per-piece work (80 tiles that
+ *  have to total $130 exactly). Show the cents everyone expects, and only show
+ *  the extra places when the price actually has them, so quantity x unit price
+ *  still visibly equals the line amount. */
+export function fmtUnitPrice(n: number): string {
+  const cents = Math.round(n * 100);
+  if (Math.abs(n * 100 - cents) < 1e-9) {
+    return `$${(cents / 100).toFixed(2)}`;
+  }
+  return `$${n.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`;
+}
