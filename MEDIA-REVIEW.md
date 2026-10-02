@@ -86,8 +86,15 @@ Checked and **not** worth using as-is:
 Genuinely unmined and probably worth a look when there is time:
 
 - `Raw Footage/ASMR Board Cutting/PXL_20260925_195143319.mp4`. **8 GB, 15 minutes** of
-  cutting. Almost certainly has the best cutting footage you own. Too long to scrub in the
-  time I had.
+  cutting. I did scrub this one, and the footage itself is the best in the library: wide,
+  well lit, vivid green and tan terrain hexes, gloved hands at the Weaver press. A full
+  cut cycle runs about **608s to 628s**.
+  **Why nothing shipped from it:** the shot is vertical and the subject is split, press and
+  hands in the top half, the beautiful tiles in the bottom half. Every 3:2 crop I tried
+  kept one and lost the other, and the middle crop is dominated by the black press tray and
+  its "WEAVER MASTER TOOL" plate. To use it properly it needs either a re-frame on a
+  vertical slot, a slow pan built from the 4K source, or a carousel slide that allows a
+  taller aspect. Worth doing, but it is a layout decision, not just an export.
 - `Posted Videos/Double Sided Board - Captions + Music`. Good footage, but the captions are
   burned in ("AND WE PRINT"), so it needs a clean source or a caption-free stretch.
 - `Posted Videos/_covers/Quick Board game Piece Video`. Not reviewed.
