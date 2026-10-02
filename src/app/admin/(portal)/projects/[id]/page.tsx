@@ -13,9 +13,10 @@ import {
   markInvoicePaid,
   voidInvoiceDoc,
   convertQuoteToInvoice,
+  createBalanceInvoice,
 } from "../../_actions";
 import InvoiceEditor from "../../_components/InvoiceEditor";
-import { computeTotals, docLabel } from "@/lib/invoice";
+import { computeTotals, docLabel, splitDeposit } from "@/lib/invoice";
 import { site } from "@/data/site";
 import {
   TextField,
@@ -29,6 +30,7 @@ import AddActivity from "../../_components/AddActivity";
 import AddPayment from "../../_components/AddPayment";
 import SetReminder from "../../_components/SetReminder";
 import ConfirmButton from "../../_components/ConfirmButton";
+import ResultBanner from "../../_components/ResultBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -44,10 +46,13 @@ const STAGE_OPTIONS = [
 
 export default async function ProjectDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ done?: string; error?: string }>;
 }) {
   const { id } = await params;
+  const { done, error } = await searchParams;
   const project = await prisma.project.findFirst({
     where: { id, deletedAt: null },
     include: {
@@ -83,6 +88,8 @@ export default async function ProjectDetailPage({
           Client: {project.client.name} →
         </Link>
       </div>
+
+      <ResultBanner done={done} error={error} basePath={`/admin/projects/${project.id}/`} />
 
       <h1 className="text-2xl font-bold">{project.title}</h1>
 
@@ -208,6 +215,14 @@ export default async function ProjectDetailPage({
                       {inv.status}
                     </span>
                     <span className="tabular-nums">{fmtMoney(total)}</span>
+                    {(() => {
+                      const sp = splitDeposit(total, inv.depositPct);
+                      return sp.hasSplit ? (
+                        <span className="text-xs text-blue">
+                          {inv.depositPct}% deposit: {fmtMoney(sp.dueNow)} now, {fmtMoney(sp.balance)} after
+                        </span>
+                      ) : null;
+                    })()}
                     <a
                       href={`/invoice/${inv.token}/`}
                       target="_blank"
@@ -261,6 +276,18 @@ export default async function ProjectDetailPage({
                           {inv.status === "DRAFT" ? "Send" : "Resend"}
                         </ConfirmButton>
                       </form>
+
+                      {splitDeposit(total, inv.depositPct).hasSplit && !voided && (
+                        <form action={createBalanceInvoice}>
+                          <input type="hidden" name="id" value={inv.id} />
+                          <ConfirmButton
+                            message={`Raise an invoice for the remaining ${fmtMoney(splitDeposit(total, inv.depositPct).balance)} on ${inv.number}?`}
+                            className="rounded-full border border-border px-3 py-1 text-xs font-semibold hover:border-blue hover:text-blue"
+                          >
+                            Invoice the balance
+                          </ConfirmButton>
+                        </form>
+                      )}
 
                       {inv.type === "QUOTE" && (
                         <form action={convertQuoteToInvoice}>

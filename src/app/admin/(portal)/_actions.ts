@@ -1072,6 +1072,68 @@ export async function createInvoiceDoc(formData: FormData) {
   redirect(`/admin/projects/${projectId}/?done=doc-created`);
 }
 
+// The second half of a split: once the deposit is in and the job is finished,
+// this raises an invoice for what is left.
+//
+// The balance is billed as a single line at a zero service-charge rate on purpose.
+// The charge was already applied to the original total, so re-applying it here
+// would quietly charge it twice.
+export async function createBalanceInvoice(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  if (!id) return;
+
+  const src = await prisma.invoice.findUnique({
+    where: { id },
+    include: { items: true, project: true },
+  });
+  if (!src) return;
+
+  const { total } = computeTotals(src.items, src.taxRate);
+  const { balance, hasSplit } = splitDeposit(total, src.depositPct);
+  if (!hasSplit || balance <= 0) {
+    redirect(`/admin/projects/${src.projectId}/?error=no-balance`);
+  }
+
+  // Raising it twice would double-bill, so refuse if one already exists.
+  const marker = `Balance for ${src.number}`;
+  const existing = await prisma.invoice.findFirst({
+    where: { projectId: src.projectId, notes: { contains: marker }, deletedAt: null },
+    select: { number: true },
+  });
+  if (existing) {
+    redirect(`/admin/projects/${src.projectId}/?error=balance-exists`);
+  }
+
+  const number = await nextDocNumber("INVOICE");
+  await prisma.invoice.create({
+    data: {
+      number,
+      type: "INVOICE",
+      status: "DRAFT",
+      projectId: src.projectId,
+      clientId: src.clientId,
+      taxRate: 0,
+      depositPct: null,
+      notes: `${marker}. Deposit of ${src.depositPct}% was billed on ${src.number}; this is the remainder.`,
+      items: {
+        create: [
+          {
+            description: `Balance due on ${src.project.title}`,
+            quantity: 1,
+            unitPrice: balance,
+            position: 0,
+          },
+        ],
+      },
+    },
+  });
+
+  await logAudit(profile.email, "invoice.balance", `${src.number} -> ${number} ($${balance.toFixed(2)})`);
+  revalidateAdmin();
+  redirect(`/admin/projects/${src.projectId}/?done=balance-created`);
+}
+
 // Edit a quote/invoice that has not gone out yet. Drafts only: once a document
 // has been sent or paid, its numbers are a record of what the client agreed to,
 // so changing them would quietly rewrite history. Void and reissue instead.
@@ -1311,6 +1373,7 @@ export async function convertQuoteToInvoice(formData: FormData) {
       projectId: q.projectId,
       clientId: q.clientId,
       taxRate: q.taxRate,
+      depositPct: q.depositPct, // keep the split; converting shouldn't quietly bill in full
       dueDate: q.dueDate ?? undefined,
       notes: q.notes,
       items: {
