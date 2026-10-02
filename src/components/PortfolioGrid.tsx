@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   portfolio,
   portfolioFilters,
@@ -10,8 +11,20 @@ import {
 import Placeholder from "./Placeholder";
 import Lightbox from "./Lightbox";
 
-export default function PortfolioGrid() {
-  const [active, setActive] = useState<PortfolioCategory | "all">("all");
+export default function PortfolioGrid({ initial }: { initial?: string }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const valid = portfolioFilters.some((f) => f.id === initial);
+  const [active, setActive] = useState<PortfolioCategory | "all">(
+    valid ? (initial as PortfolioCategory) : "all"
+  );
+
+  // Keep the address bar honest without a navigation, so Back works and the
+  // current view can be copied out of the URL bar.
+  const choose = (id: PortfolioCategory | "all") => {
+    setActive(id);
+    router.replace(id === "all" ? pathname : `${pathname}?type=${id}`, { scroll: false });
+  };
   const [zoom, setZoom] = useState<PortfolioItem | null>(null);
 
   const items =
@@ -28,7 +41,7 @@ export default function PortfolioGrid() {
               key={f.id}
               role="tab"
               aria-selected={selected}
-              onClick={() => setActive(f.id)}
+              onClick={() => choose(f.id)}
               className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
                 selected
                   ? "bg-primary text-black"

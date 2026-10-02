@@ -6,7 +6,7 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import JsonLd from "@/components/JsonLd";
 import { servicesGraph, breadcrumbSchema } from "@/lib/structured-data";
 import { services } from "@/data/services";
-import { examplesForService } from "@/data/portfolio";
+import { examplesForService, portfolioHrefForService } from "@/data/portfolio";
 import ServiceExamples from "@/components/ServiceExamples";
 import ServiceImage from "@/components/ServiceImage";
 
@@ -92,7 +92,7 @@ export default function ServicesPage() {
                     <Button href={`/contact/?type=${s.id}`} variant="primary">
                       Request {s.name}
                     </Button>
-                    <ServiceExamples images={examplesForService(s.id)} title={s.name} />
+                    <ServiceExamples href={portfolioHrefForService(s.id)} title={s.name} count={examplesForService(s.id).length} />
                     {s.id === "card-printing" && (
                       <Button href="/services/card-printing/" variant="ghost">
                         Explore card printing

@@ -155,7 +155,7 @@ export const portfolio: PortfolioItem[] = [
 ];
 
 // Which portfolio category represents each service (for "See examples" on /services).
-const SERVICE_CATEGORY: Record<string, PortfolioCategory> = {
+export const SERVICE_CATEGORY: Record<string, PortfolioCategory> = {
   "card-printing": "cards",
   "uv-tiles": "tiles",
   fdm: "filament",
@@ -170,4 +170,10 @@ export function examplesForService(serviceId: string): string[] {
   return portfolio
     .filter((p) => p.category === cat)
     .flatMap((p) => p.images ?? (p.src ? [p.src] : []));
+}
+
+/** Portfolio URL filtered to the work for one service. */
+export function portfolioHrefForService(serviceId: string): string | null {
+  const cat = SERVICE_CATEGORY[serviceId];
+  return cat ? `/portfolio/?type=${cat}` : null;
 }

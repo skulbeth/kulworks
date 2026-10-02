@@ -13,7 +13,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/portfolio/" },
 };
 
-export default function PortfolioPage() {
+export default async function PortfolioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string }>;
+}) {
+  // Filter lives in the URL so a category can be linked to and shared, and so the
+  // services pages can point at "the card work" instead of repeating the gallery.
+  const { type } = await searchParams;
   return (
     <>
       <JsonLd
@@ -35,7 +42,7 @@ export default function PortfolioPage() {
 
       <section className="border-b border-border">
         <Container className="py-12">
-          <PortfolioGrid />
+          <PortfolioGrid initial={type} />
           <p className="mx-auto mt-10 max-w-3xl text-center text-lg text-muted">
             This is a sample, not the whole shop. We also make{" "}
             <span className="text-foreground">UV-printed terrain tiles and custom tokens</span>,{" "}
