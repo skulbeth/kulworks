@@ -63,7 +63,8 @@ should be filled with real info before launch:
 - [ ] **Postal code** — `site.ts:43`
 - [ ] **Mailing address / PO box** — Sam doesn't have one yet. Required in marketing-email
       footers (CAN-SPAM) before sending real newsletters; get a PO box, then add to site data.
-- [ ] **Social handles** — `site.ts:59`, still `REPLACE_WITH_HANDLE` placeholders
+- [x] **Social handles** — DONE. Facebook + Instagram point at Role to Reign and YouTube at
+      @kulworks; confirmed deliberate (2026-10-02), the brands share an audience.
 - [ ] **PayPal.me handle** — `site.ts`, still `REPLACE_WITH_PAYPAL_ME_HANDLE` (Venmo + Zelle set)
 - [ ] **Proofread every page** in Sam's voice.
 - [ ] **Real testimonials / social proof** — the home-page testimonials strip is BUILT and wired

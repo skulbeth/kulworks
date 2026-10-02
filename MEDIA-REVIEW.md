@@ -165,3 +165,7 @@ with the camera on a tripod and you out of frame.
 2. **The Role to Reign print run** you mentioned. I did not find it. If it exists it would
    be a genuinely distinct piece in the card gallery rather than another deck shot.
 3. The 8 GB ASMR cutting file is the biggest untapped asset here. Worth a dedicated pass.
+
+> **Closed 2026-10-02.** Sam has dropped the 8 GB ASMR cutting file; it is not being
+> pursued. Everything shipped from that folder is already in the carousel and the
+> tiles gallery. The remaining press sessions stay on disk if it is ever revisited.
