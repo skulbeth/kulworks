@@ -17,12 +17,11 @@ export default function HomePage() {
 
   const studioSlides = [
     { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
-    { label: "Cut, then stacked", src: "/images/studio/hex-cut-and-stacked.mp4", alt: "The clicker press closing on a UV-printed hex tile and lifting away to reveal the cut piece, then stacks of the finished run sorted across the bench" },
+    { label: "Cut, then stacked", src: "/images/studio/hex-cut-and-stacked.mp4", alt: "Pulling the clicker press handle to cut a UV-printed hex tile, lifting the board clear and popping the finished piece out of the die, then stacks of the completed run sorted across the bench" },
     { label: "Custom 3D-printed awards", src: "/images/studio/custom-awards-trio.webp", alt: "Three custom race awards designed and 3D printed by Kulworks: a number one, a runner medallion, and a tower topper on UV-printed black bases" },
     { label: "Cards printed and cured", src: "/images/studio/cards-printing-and-sheet.mp4", alt: "A card run curing under the UV lamps on the flatbed, then the finished sheet of full-colour character cards" },
     { label: "A shelf of painted figures", src: "/images/studio/painted-minis-lineup.webp", alt: "A lineup of painted 3D-printed character figures" },
     { label: "Resin prints, plate to batch", src: "/images/studio/resin-plate-and-batch.mp4", alt: "Resin miniatures lifting off the build plate, then the finished batch laid out" },
-    { label: "The Kulworks print bench", src: "/images/studio/printer-bench.webp", alt: "The Kulworks resin printing bench" },
     { label: "Boards printed both sides", src: "/images/studio/board-uv-and-double-sided.mp4", alt: "Navy and gold game board panels printing on the UV flatbed under the curing lamps, then a finished panel flipped to show both sides in register" },
     { label: "Finished decks in hand", src: "/images/studio/deck-printed-and-riffled.mp4", alt: "A finished Role to Reign card held up to show its printed face, then a PANIC deck cascading from its backs into a fan of colour-coded number cards" },
     { label: "3D-printed custom prop armor", src: "/images/portfolio/filament/custom-prop-armor.webp", alt: "A full set of 3D-printed Roman-style prop armor" },
