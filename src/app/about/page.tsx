@@ -11,7 +11,7 @@ import { breadcrumbSchema } from "@/lib/structured-data";
 export const metadata: Metadata = {
   title: "About: A San Antonio Maker Shop",
   description:
-    "Kulworks is a San Antonio maker shop that takes projects from design to finished physical product, in-house, across custom cards, board game tiles, and 3D printing.",
+    "Kulworks is a small San Antonio maker shop with its own machines: custom cards, UV-printed board game tiles, and 3D printing in filament and resin, designed and finished in-house.",
   alternates: { canonical: "/about/" },
 };
 
@@ -29,8 +29,8 @@ export default function AboutPage() {
           <SectionHeading
             as="h1"
             eyebrow="About"
-            title="A San Antonio maker shop, end to end"
-            intro="Kulworks takes an idea all the way to a finished, physical thing you can hold, without bouncing between vendors or sending it overseas."
+            title="We make what we take on, here in San Antonio"
+            intro="Kulworks is a small shop with real machines behind it: a UV flatbed, filament and resin printers, and a clicker press. If we quote it, we can finish it here."
           />
         </Container>
       </section>
