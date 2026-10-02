@@ -44,6 +44,7 @@ export const portfolio: PortfolioItem[] = [
     // range rather than repetition.
     images: [
       "/images/portfolio/cards/cards-variety.webp",
+      "/images/portfolio/cards/cards-printing-uv.webp",
       "/images/portfolio/cards/panic-cards-printing.webp",
       "/images/portfolio/cards/deck-riffle.webp",
       "/images/portfolio/cards/sports-cards.webp",
@@ -56,7 +57,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/cards/client-deck-bagged.webp",
       "/images/portfolio/cards/sports-cards-backs.webp",
     ],
-    alt: "Custom cards by Kulworks: a full-colour deck printing on the UV flatbed, a finished deck riffled by hand, sports trading cards, game and prototype decks fanned out, keepsake cards, card layout and design, and a finished client deck bagged and ready to ship",
+    alt: "Custom cards by Kulworks: cards curing under the UV lamps on the flatbed, a full-colour deck printing, a finished deck riffled by hand, sports trading cards, game and prototype decks fanned out, keepsake cards, card layout and design, and a finished client deck bagged and ready to ship",
   },
   {
     title: "Custom Prop Print",
@@ -87,10 +88,11 @@ export const portfolio: PortfolioItem[] = [
     src: "/images/portfolio/tiles/board-panels.webp",
     images: [
       "/images/portfolio/tiles/board-panels.webp",
+      "/images/portfolio/tiles/board-printing-head.webp",
       "/images/portfolio/tiles/board-panel-printing.webp",
       "/images/portfolio/tiles/board-panels-finished.webp",
     ],
-    alt: "Navy and gold game board panels being UV-printed on the flatbed and the finished boards fresh off the press",
+    alt: "Navy and gold game board panels being UV-printed on the flatbed, the print head passing over them under the curing lamps, and the finished boards fresh off the press",
   },
   {
     title: "Custom 3D Models",
