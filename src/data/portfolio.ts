@@ -79,6 +79,8 @@ export const portfolio: PortfolioItem[] = [
     src: "/images/portfolio/tiles/cut-tile-stacks.webp",
     images: [
       "/images/portfolio/tiles/cut-tile-stacks.webp",
+      "/images/studio/hex-stacks-pan.webp",
+      "/images/portfolio/tiles/hex-press-run.webp",
       "/images/studio/board-cutting.webp",
       "/images/portfolio/tiles/board-tiles.webp",
       "/images/portfolio/tiles/board-printing.webp",
@@ -86,7 +88,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/tiles/finished-tile-bundles.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
     ],
-    alt: "UV-printed modular board game hex tiles: a full run stacked and bundled on the bench, a cut tile lifted free of the clicker die, printing and cutting pieces on the flatbed, and tile artwork prepped for print",
+    alt: "UV-printed modular board game hex tiles: a full run stacked and sorted across the bench, pieces coming off the clicker press, a cut tile lifted free of the die, printing and cutting pieces on the flatbed, and tile artwork prepped for print",
   },
   {
     title: "UV-Printed Game Boards",

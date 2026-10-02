@@ -120,6 +120,28 @@ Genuinely unmined and probably worth a look when there is time:
 
 ---
 
+## 4a. CORRECTION: I missed the best folder entirely (2026-10-02)
+
+`Raw Footage/RtR Hex Tile Cutting - Kickstarter Run (Sep 26 - Oct 1)` is roughly
+**50 GB** of hex tile cutting and I did not look at it on the first pass. Sam was right
+that there was a lot of good hex footage. Some of it was shot at 2am the same day, so it
+may not have been on the drive when the first inventory ran, but the sweep after that
+should have caught it and did not.
+
+What is in it:
+
+- `01 Press Sessions/` — eight sessions, 1m29s to 28m33s, with descriptive filenames
+  (over-the-press angle, wide bench angle ends on stack, night session, green-tile boards).
+  **Several are true landscape 4K with no rotation**, which is what makes them usable:
+  the earlier vertical footage was the whole reason the 3:2 crops kept failing.
+- `02 Finished Stacks B-roll/` — two short pans over the sorted stacks. The wide one is
+  landscape and is the single best shot in the entire library.
+- `03 Talking - Finished Cutting/` — pieces to camera, context rather than b-roll.
+
+**Shipped from it:** `hex-stacks-pan.webp` (now leads the home carousel) and
+`hex-press-run.webp` (tiles gallery). Still unmined: roughly 90 minutes of landscape press
+footage across sessions 1d, 2, 3a and 3c, any of which could yield more.
+
 ## 4b. What a second sweep of the library turned up (2026-10-02)
 
 I went back through the folders that had not been checked: `From Downloads - Phone Videos

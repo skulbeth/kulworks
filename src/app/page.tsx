@@ -17,6 +17,7 @@ export default function HomePage() {
 
   const studioSlides = [
     { label: "Painted minis on a UV-printed board", src: "/images/studio/gameplay-minis-board.webp", alt: "Hand-painted 3D-printed miniatures on a UV-printed hex game board" },
+    { label: "A finished run, stacked", src: "/images/studio/hex-stacks-pan.webp", alt: "Stacks of finished UV-printed hex terrain tiles sorted across the bench, a full Kickstarter run cut and piled by map piece" },
     { label: "Boards on the UV flatbed", src: "/images/studio/board-printing-uv.webp", alt: "The print head passing over navy and gold game board panels on the UV flatbed, lamps curing the ink as it lays down" },
     { label: "Cut pieces out of the die", src: "/images/studio/board-cutting.webp", alt: "Lifting the clicker die jig to free a freshly cut hex terrain tile from the press" },
     { label: "Double-sided board printing", src: "/images/studio/double-sided-board.webp", alt: "A UV-printed game board panel flipped to show both sides printed in register" },
