@@ -29,7 +29,7 @@ export default function WhoItsForPage() {
             as="h1"
             eyebrow="Who it's for"
             title="People we love making for"
-            intro="Card printing is especially popular with teams, designers, and sellers, but whatever you bring, we'll make it real."
+            intro="Card printing is especially popular with teams, designers, and sellers, but the list is not closed. If you have something in mind, ask and we'll tell you straight whether it's a fit."
           />
         </Container>
       </section>
