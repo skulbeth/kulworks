@@ -11,8 +11,8 @@ import SocialLinks from "@/components/SocialLinks";
 const navLinks = [
   { href: "/services/", label: "Services" },
   { href: "/portfolio/", label: "Portfolio" },
-  { href: "/guides/", label: "Guides & FAQ" },
   { href: "/pricing/", label: "Pricing" },
+  { href: "/guides/", label: "Guides & FAQ" },
   { href: "/who-its-for/", label: "Who It's For" },
   { href: "/about/", label: "About" },
 ];

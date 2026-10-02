@@ -43,9 +43,9 @@ export default function HomePage() {
               {" "}Designed and made in San Antonio.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted sm:text-xl">
-              We design it and we make it: custom card printing, UV-printed tiles and
-              boards, and 3D printing in filament and resin. Plenty of our work starts as
-              a 3D model we build from scratch.
+              UV-printed cards, tiles and boards, and 3D printing in filament and resin.
+              Game prototypes and small-run batches: poker-size card decks and more. We do
+              the card design and the 3D modeling too, so a rough idea is enough to start.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/contact/" variant="primary" size="lg">

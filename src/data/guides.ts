@@ -68,45 +68,42 @@ export const guides: Guide[] = [
     ],
   },
   {
-    slug: "poker-vs-tarot-card-sizes",
-    title: "Poker vs. Tarot Card Sizes: Which Should You Print?",
+    slug: "print-and-play-vs-real-prototype",
+    title: "Print-and-Play vs. a Real Prototype: When to Make the Jump",
     description:
-      "A plain-language guide to the common custom card sizes (poker, bridge, tarot, giant) and how to pick the right one for your deck.",
-    datePublished: "2026-06-27",
+      "Printing your game at home is a great start, but at some point a clean prototype pays off. Here is how to know when to make the jump.",
+    datePublished: "2026-07-12",
     readMinutes: 4,
     intro:
-      "Card size shapes how a deck feels, how it plays, and how much room your art gets. Here is how the common sizes compare and how to choose.",
+      "Every designer starts by printing pages at home and cutting them out. That is a smart, cheap way to begin. But there is a point where a cleaner prototype is worth it, and knowing when saves you time and makes your game look the way it plays in your head.",
     sections: [
       {
-        h: "The common sizes at a glance",
+        h: "What print-and-play is good for",
         body: [
-          "Poker is the standard size, about 2.5 by 3.5 inches (63 by 88 mm). It is what most people picture when they think of a deck, and it suits the widest range of games and projects.",
-          "Bridge is a touch narrower, about 2.25 by 3.5 inches (57 by 89 mm). The slimmer width makes a large hand easier to hold and fan.",
-          "Tarot is larger overall, about 2.75 by 4.75 inches (70 by 121 mm). The extra space gives illustration more room to breathe.",
-          "Giant or jumbo cards are oversized, often around 3.5 by 5 inches or larger, built to be seen from a distance.",
+          "Home print-and-play is free and instant, which makes it perfect for the earliest, roughest testing. You are checking whether the idea works at all, so ugly is fine.",
+          "If the rules are still moving around a lot, stay here. There is no reason to print anything nice while big things are still changing.",
         ],
       },
       {
-        h: "Match the size to how the deck is used",
+        h: "Where a real prototype starts to help",
         body: [
-          "If players hold a lot of cards at once, bridge size keeps a big hand manageable.",
-          "If your game leans on artwork or you are making an oracle or tarot deck, the larger tarot size lets the art lead.",
-          "If the cards are for demos, teaching a crowd, or events, giant cards read across a room.",
-          "If you are unsure, poker size is the safe default and works for most decks.",
+          "Once the core game holds up, paper scraps start to get in the way. Cards that curl, smudge, or are hard to read make it harder to tell whether a problem is the game or the paper.",
+          "A clean prototype also changes how other people treat your game. Playtesters, a game store, or a publisher take a real deck more seriously than a stack of cut-up printer paper, and you get better feedback because of it.",
+          "Real cards shuffle and handle the way the finished game will, so you catch things like text that is too small or a layout that is awkward in hand.",
         ],
       },
       {
-        h: "Other things that affect the feel",
+        h: "The middle ground is what we specialize in",
         body: [
-          "Finish and sleeves change how a deck handles as much as size does. A good box and the right sleeve tier make a deck feel finished.",
-          "Whatever size you choose, keep your art at full resolution with a small bleed so nothing important gets trimmed.",
+          "There is a big gap between a home printer and paying a factory for a thousand copies. That gap is where we live. We get you clean, table ready cards and pieces in small numbers, without a huge minimum, so your game looks and plays like the real thing while you are still refining it.",
+          "You do not have to pick one forever either. Plenty of designers keep doing quick home versions for wild new ideas, then come to us for a clean prototype once a version is worth showing off.",
         ],
       },
     ],
     keywords: [
-      "poker vs tarot card size",
-      "custom card sizes",
-      "bridge size cards",
+      "print and play vs prototype",
+      "board game prototype printing",
+      "when to print a game prototype",
     ],
   },
   {
@@ -150,6 +147,48 @@ export const guides: Guide[] = [
       "prep card art for printing",
       "card printing bleed and resolution",
       "print ready card files",
+    ],
+  },
+  {
+    slug: "poker-vs-tarot-card-sizes",
+    title: "Poker vs. Tarot Card Sizes: Which Should You Print?",
+    description:
+      "A plain-language guide to the common custom card sizes (poker, bridge, tarot, giant) and how to pick the right one for your deck.",
+    datePublished: "2026-06-27",
+    readMinutes: 4,
+    intro:
+      "Card size shapes how a deck feels, how it plays, and how much room your art gets. Here is how the common sizes compare and how to choose.",
+    sections: [
+      {
+        h: "The common sizes at a glance",
+        body: [
+          "Poker is the standard size, about 2.5 by 3.5 inches (63 by 88 mm). It is what most people picture when they think of a deck, and it suits the widest range of games and projects.",
+          "Bridge is a touch narrower, about 2.25 by 3.5 inches (57 by 89 mm). The slimmer width makes a large hand easier to hold and fan.",
+          "Tarot is larger overall, about 2.75 by 4.75 inches (70 by 121 mm). The extra space gives illustration more room to breathe.",
+          "Giant or jumbo cards are oversized, often around 3.5 by 5 inches or larger, built to be seen from a distance.",
+        ],
+      },
+      {
+        h: "Match the size to how the deck is used",
+        body: [
+          "If players hold a lot of cards at once, bridge size keeps a big hand manageable.",
+          "If your game leans on artwork or you are making an oracle or tarot deck, the larger tarot size lets the art lead.",
+          "If the cards are for demos, teaching a crowd, or events, giant cards read across a room.",
+          "If you are unsure, poker size is the safe default and works for most decks.",
+        ],
+      },
+      {
+        h: "Other things that affect the feel",
+        body: [
+          "Finish and sleeves change how a deck handles as much as size does. A good box and the right sleeve tier make a deck feel finished.",
+          "Whatever size you choose, keep your art at full resolution with a small bleed so nothing important gets trimmed.",
+        ],
+      },
+    ],
+    keywords: [
+      "poker vs tarot card size",
+      "custom card sizes",
+      "bridge size cards",
     ],
   },
   {
@@ -197,45 +236,6 @@ export const guides: Guide[] = [
       "playtest copies board game",
       "test a card game before printing",
       "card game prototype quantity",
-    ],
-  },
-  {
-    slug: "print-and-play-vs-real-prototype",
-    title: "Print-and-Play vs. a Real Prototype: When to Make the Jump",
-    description:
-      "Printing your game at home is a great start, but at some point a clean prototype pays off. Here is how to know when to make the jump.",
-    datePublished: "2026-07-12",
-    readMinutes: 4,
-    intro:
-      "Every designer starts by printing pages at home and cutting them out. That is a smart, cheap way to begin. But there is a point where a cleaner prototype is worth it, and knowing when saves you time and makes your game look the way it plays in your head.",
-    sections: [
-      {
-        h: "What print-and-play is good for",
-        body: [
-          "Home print-and-play is free and instant, which makes it perfect for the earliest, roughest testing. You are checking whether the idea works at all, so ugly is fine.",
-          "If the rules are still moving around a lot, stay here. There is no reason to print anything nice while big things are still changing.",
-        ],
-      },
-      {
-        h: "Where a real prototype starts to help",
-        body: [
-          "Once the core game holds up, paper scraps start to get in the way. Cards that curl, smudge, or are hard to read make it harder to tell whether a problem is the game or the paper.",
-          "A clean prototype also changes how other people treat your game. Playtesters, a game store, or a publisher take a real deck more seriously than a stack of cut-up printer paper, and you get better feedback because of it.",
-          "Real cards shuffle and handle the way the finished game will, so you catch things like text that is too small or a layout that is awkward in hand.",
-        ],
-      },
-      {
-        h: "The middle ground is what we specialize in",
-        body: [
-          "There is a big gap between a home printer and paying a factory for a thousand copies. That gap is where we live. We get you clean, table ready cards and pieces in small numbers, without a huge minimum, so your game looks and plays like the real thing while you are still refining it.",
-          "You do not have to pick one forever either. Plenty of designers keep doing quick home versions for wild new ideas, then come to us for a clean prototype once a version is worth showing off.",
-        ],
-      },
-    ],
-    keywords: [
-      "print and play vs prototype",
-      "board game prototype printing",
-      "when to print a game prototype",
     ],
   },
 ];
