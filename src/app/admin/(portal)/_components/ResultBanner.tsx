@@ -16,6 +16,13 @@ const DONE: Record<string, string> = {
   "quote-started": "Project created and a draft quote started.",
   created: "Created.",
   updated: "Saved.",
+  testimonial_requested: "Request sent. It will land here once they write it.",
+  testimonial_added: "Saved as pending. Publish it when you are ready.",
+  testimonial_saved: "Changes saved.",
+  testimonial_published: "Published. It is live on the site now.",
+  testimonial_unpublished: "Taken off the site. It is back to pending.",
+  testimonial_archived: "Archived. Nothing is deleted, so you can restore it.",
+  testimonial_restored: "Restored as pending.",
 };
 
 const ERROR: Record<string, string> = {
@@ -25,6 +32,11 @@ const ERROR: Record<string, string> = {
   "balance-exists": "A balance invoice for that document already exists. Raising another would bill the client twice.",
   missing: "Something required was left blank.",
   notfound: "That record no longer exists.",
+  name_required: "A testimonial needs a name to show.",
+  empty: "Add the words, a screenshot, or both. One of them has to be there.",
+  no_consent: "You have not recorded permission for this one, so it cannot be published. Tick the permission box and say how it was given.",
+  image_too_big: "That screenshot is over 8 MB. Shrink it and try again.",
+  image_type: "That file type is not an image we can show. Use JPG, PNG, WebP or HEIC.",
 };
 
 export default function ResultBanner({

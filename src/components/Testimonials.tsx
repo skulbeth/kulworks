@@ -1,12 +1,20 @@
 import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
 import RevealOnScroll from "@/components/RevealOnScroll";
-import { testimonials } from "@/data/testimonials";
+import TestimonialCard from "@/components/TestimonialCard";
+import { publishedTestimonials } from "@/lib/testimonials";
 
-/** Home-page social-proof strip. Renders nothing until real testimonials exist
- *  in src/data/testimonials.ts, so the live site never shows placeholder quotes. */
-export default function Testimonials() {
-  if (testimonials.length === 0) return null;
+/** Home-page social-proof strip.
+ *
+ *  Renders nothing until something is published, so the live site never shows
+ *  placeholder quotes. Shows the three most recent, pinned ones first, and links
+ *  to the full page only when there are more than three to see. */
+export default async function Testimonials() {
+  const items = await publishedTestimonials({ take: 4 });
+  if (items.length === 0) return null;
+
+  const shown = items.slice(0, 3);
+  const hasMore = items.length > 3;
 
   return (
     <section className="border-b border-border bg-surface/30">
@@ -19,22 +27,20 @@ export default function Testimonials() {
           />
         </RevealOnScroll>
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {testimonials.map((t, i) => (
-            <figure
-              key={i}
-              className="flex h-full flex-col rounded-2xl border border-border bg-surface p-6"
-            >
-              <span aria-hidden className="text-4xl leading-none text-gold">&ldquo;</span>
-              <blockquote className="mt-2 flex-1 text-muted">{t.quote}</blockquote>
-              <figcaption className="mt-4 text-sm font-semibold">
-                {t.name}
-                {t.detail && (
-                  <span className="mt-0.5 block font-normal text-muted">{t.detail}</span>
-                )}
-              </figcaption>
-            </figure>
+          {shown.map((t) => (
+            <TestimonialCard key={t.id} t={t} />
           ))}
         </div>
+        {hasMore && (
+          <div className="mt-8">
+            <a
+              href="/testimonials/"
+              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-6 py-3 text-base font-semibold transition-colors hover:border-blue hover:text-blue"
+            >
+              Read more &rarr;
+            </a>
+          </div>
+        )}
       </Container>
     </section>
   );

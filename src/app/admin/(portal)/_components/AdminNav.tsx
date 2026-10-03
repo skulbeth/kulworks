@@ -11,7 +11,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 const tabs: { href: string; label: string; siblings?: string[] }[] = [
   { href: "/admin/", label: "Dashboard" },
   { href: "/admin/submissions/", label: "Inbox", siblings: ["/admin/uploads"] },
-  { href: "/admin/projects/", label: "Work", siblings: ["/admin/clients"] },
+  { href: "/admin/projects/", label: "Work", siblings: ["/admin/clients", "/admin/testimonials"] },
   { href: "/admin/subscribers/", label: "Newsletter", siblings: ["/admin/newsletter"] },
   { href: "/admin/analytics/", label: "Analytics" },
   { href: "/admin/team/", label: "Team" },

@@ -19,16 +19,16 @@ enum Role {
 }
 
 model Profile {
-  id            String     @id // = Supabase auth.users.id (uuid)
-  email         String     @unique
-  name          String?
-  phone         String? // admin's phone (records + future SMS option)
-  role          Role       @default(STAFF)
-  deactivatedAt DateTime? // soft "removed" — access revoked, record kept, reactivatable
-  twoFactorEnabled Boolean @default(false) // require a login code (authenticator app or emailed)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  activities    Activity[]
+  id               String     @id // = Supabase auth.users.id (uuid)
+  email            String     @unique
+  name             String?
+  phone            String? // admin's phone (records + future SMS option)
+  role             Role       @default(STAFF)
+  deactivatedAt    DateTime? // soft "removed" — access revoked, record kept, reactivatable
+  twoFactorEnabled Boolean    @default(false) // require a login code (authenticator app or emailed)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  activities       Activity[]
 }
 
 // ── One-time email 2FA codes (hashed). One row per outstanding code per admin. ──
@@ -53,26 +53,27 @@ enum ClientKind {
 }
 
 model Client {
-  id          String       @id @default(cuid())
-  name        String
-  email       String       @unique
-  phone       String?
-  company     String?
-  street      String?
-  city        String?
-  state       String?
-  postalCode  String?
-  country     String?
-  notes       String?
-  kind        ClientKind   @default(CLIENT)
-  lostReason  String? // why they're a contact and not a client
-  lostAt      DateTime? // when they were moved to contacts
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  submissions Submission[]
-  projects    Project[]
-  activities  Activity[]
-  invoices    Invoice[]
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  phone        String?
+  company      String?
+  street       String?
+  city         String?
+  state        String?
+  postalCode   String?
+  country      String?
+  notes        String?
+  kind         ClientKind    @default(CLIENT)
+  lostReason   String? // why they're a contact and not a client
+  lostAt       DateTime? // when they were moved to contacts
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  submissions  Submission[]
+  projects     Project[]
+  activities   Activity[]
+  invoices     Invoice[]
+  testimonials Testimonial[]
 
   @@index([createdAt])
   @@index([kind])
@@ -88,26 +89,26 @@ enum SubmissionStatus {
 }
 
 model Submission {
-  id          String           @id @default(cuid())
-  name        String
-  email       String
-  phone       String? // optional, customer-provided
-  projectType String? // comma-joined selected service types
-  message     String
-  reference   String? // link to artwork / references
-  storagePaths String[]     @default([]) // attached images (card builder orders), in the uploads bucket
-  driveFolder    Boolean       @default(false)
+  id             String           @id @default(cuid())
+  name           String
+  email          String
+  phone          String? // optional, customer-provided
+  projectType    String? // comma-joined selected service types
+  message        String
+  reference      String? // link to artwork / references
+  storagePaths   String[]         @default([]) // attached images (card builder orders), in the uploads bucket
+  driveFolder    Boolean          @default(false)
   driveFolderUrl String? // auto-created Google Drive folder link, if requested
   estimate       String? // calculator estimate summary, if any
-  status      SubmissionStatus @default(NEW)
-  sessionId   String? // anonymous session id, to correlate with page views
-  deletedAt   DateTime? // soft delete — archived, never hard-deleted
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  client      Client?          @relation(fields: [clientId], references: [id])
-  clientId    String?
-  project     Project?         @relation(fields: [projectId], references: [id])
-  projectId   String?
+  status         SubmissionStatus @default(NEW)
+  sessionId      String? // anonymous session id, to correlate with page views
+  deletedAt      DateTime? // soft delete — archived, never hard-deleted
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  client         Client?          @relation(fields: [clientId], references: [id])
+  clientId       String?
+  project        Project?         @relation(fields: [projectId], references: [id])
+  projectId      String?
 
   @@index([email])
   @@index([createdAt])
@@ -235,7 +236,7 @@ model Activity {
   // Where this entry came from, when it was pulled in rather than typed: the Gmail
   // message id. Unique, so syncing the same thread twice updates nothing instead of
   // filling the timeline with copies.
-  externalId      String?   @unique
+  externalId String? @unique
 
   // Auto-reminders / Google Calendar sync
   remindAt        DateTime?
@@ -329,28 +330,28 @@ enum DocStatus {
 }
 
 model Invoice {
-  id        String        @id @default(cuid())
-  token     String        @unique @default(cuid()) // unguessable public view URL
-  number    String // human-facing, e.g. INV-0001 / Q-0001
-  type      DocType       @default(INVOICE)
-  status    DocStatus     @default(DRAFT)
-  project   Project       @relation(fields: [projectId], references: [id])
-  projectId String
-  client    Client        @relation(fields: [clientId], references: [id])
-  clientId  String
-  taxRate   Float         @default(0) // service-charge percent (e.g. 9). Column name kept for history; it is NOT sales tax.
+  id         String        @id @default(cuid())
+  token      String        @unique @default(cuid()) // unguessable public view URL
+  number     String // human-facing, e.g. INV-0001 / Q-0001
+  type       DocType       @default(INVOICE)
+  status     DocStatus     @default(DRAFT)
+  project    Project       @relation(fields: [projectId], references: [id])
+  projectId  String
+  client     Client        @relation(fields: [clientId], references: [id])
+  clientId   String
+  taxRate    Float         @default(0) // service-charge percent (e.g. 9). Column name kept for history; it is NOT sales tax.
   // Deposit asked for up front, as a percent of the total. Set on a quote, it turns
   // the quote into something payable now (deposit link) while the balance waits for
   // the invoice. Null or 0 means pay in full.
   depositPct Float?
-  notes     String? // shown on the document (terms, thank-you, etc.)
-  dueDate   DateTime?
-  issuedAt  DateTime? // when it was sent
-  paidAt    DateTime?
-  deletedAt DateTime? // soft delete — archived, never hard-deleted
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  items     InvoiceItem[]
+  notes      String? // shown on the document (terms, thank-you, etc.)
+  dueDate    DateTime?
+  issuedAt   DateTime? // when it was sent
+  paidAt     DateTime?
+  deletedAt  DateTime? // soft delete — archived, never hard-deleted
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  items      InvoiceItem[]
 
   @@index([projectId])
   @@index([clientId])
@@ -390,5 +391,63 @@ model Upload {
   deletedAt    DateTime? // soft delete
   createdAt    DateTime  @default(now())
 
+  @@index([createdAt])
+}
+
+// ── Testimonials ──────────────────────────────────────────────────────────────
+// Two ways in, one place out:
+//   REQUESTED — Sam sends a client a private link from their record; they write it
+//               themselves and it arrives PENDING.
+//   ADDED     — Sam types in a quote he already has, or uploads a screenshot of one
+//               (a text, an email, a Kickstarter comment).
+//
+// Nothing is public until he publishes it, and nothing can be published without
+// `consent`, because a testimonial is someone else's words and the FTC treats
+// publishing them as an endorsement. Screenshots live in the private uploads
+// bucket under testimonials/ and are served through a route, so the bucket stays
+// private and the URL never expires.
+enum TestimonialStatus {
+  PENDING
+  PUBLISHED
+  ARCHIVED
+}
+
+enum TestimonialSource {
+  REQUESTED
+  ADDED
+}
+
+model Testimonial {
+  id     String  @id @default(cuid())
+  // A testimonial needs words or a screenshot; it may have both.
+  quote  String?
+  name   String
+  detail String? // role, project, or town - whatever they're happy to show
+
+  imagePath String? // path in the uploads bucket, e.g. testimonials/<id>.png
+
+  status   TestimonialStatus @default(PENDING)
+  source   TestimonialSource @default(ADDED)
+  featured Boolean           @default(false) // pin to the home-page strip
+
+  // Permission to publish. Required before status can become PUBLISHED.
+  consent     Boolean @default(false)
+  consentNote String? // how permission was given, for his own records
+
+  // Single-use link for a REQUESTED testimonial.
+  token       String?   @unique
+  requestedAt DateTime?
+  submittedAt DateTime?
+  publishedAt DateTime?
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // soft delete, restorable from the archive
+
+  @@index([status, publishedAt])
+  @@index([clientId])
   @@index([createdAt])
 }

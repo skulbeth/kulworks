@@ -11,6 +11,7 @@ import {
   addActivity,
   syncClientEmails,
 } from "../../_actions";
+import { requestTestimonial } from "../../_testimonial-actions";
 import { TextField, TextArea, FieldGroup } from "../../_components/FormFields";
 import AddActivity from "../../_components/AddActivity";
 import SetReminder from "../../_components/SetReminder";
@@ -264,12 +265,22 @@ export default async function ClientDetailPage({
           <h2 className="text-lg font-bold">Activity &amp; reminders</h2>
           {/* Pulls the Gmail thread with this client onto the timeline. Read-only,
               deduped on the message id, so running it twice adds nothing. */}
-          <form action={syncClientEmails}>
-            <input type="hidden" name="id" value={client.id} />
-            <button className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-blue hover:text-blue">
-              Pull email from Gmail
-            </button>
-          </form>
+          <div className="flex flex-wrap gap-2">
+            <form action={syncClientEmails}>
+              <input type="hidden" name="id" value={client.id} />
+              <button className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-blue hover:text-blue">
+                Pull email from Gmail
+              </button>
+            </form>
+            {/* Emails this client their own single-use link. Asking twice re-sends
+                the same link rather than leaving dead tokens behind. */}
+            <form action={requestTestimonial}>
+              <input type="hidden" name="clientId" value={client.id} />
+              <button className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold hover:border-gold hover:text-gold">
+                Ask for a testimonial
+              </button>
+            </form>
+          </div>
         </div>
 
         {sp.done === "gmail" && (
@@ -277,6 +288,15 @@ export default async function ClientDetailPage({
             {sp.n === "0"
               ? `Nothing new. Checked ${sp.seen ?? "0"} message${sp.seen === "1" ? "" : "s"} with ${client.email}.`
               : `Added ${sp.n} email${sp.n === "1" ? "" : "s"} to the timeline, from ${sp.seen} checked.`}
+          </p>
+        )}
+        {sp.done === "testimonial_requested" && (
+          <p className="mb-3 rounded-lg border border-green-500/40 bg-green-500/10 px-3 py-2 text-sm text-green-700">
+            Asked {client.name.split(" ")[0]} for a testimonial. It will show up under{" "}
+            <Link href="/admin/testimonials/" className="font-semibold underline">
+              Testimonials
+            </Link>{" "}
+            once they write it.
           </p>
         )}
         {sp.error === "gmail" && (

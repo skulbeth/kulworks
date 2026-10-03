@@ -31,6 +31,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })),
     { path: "/pricing/", priority: 0.7, changeFrequency: "monthly" },
     { path: "/who-its-for/", priority: 0.7, changeFrequency: "yearly" },
+    { path: "/testimonials/", priority: 0.6, changeFrequency: "monthly" },
     { path: "/about/", priority: 0.6, changeFrequency: "yearly" },
     { path: "/contact/", priority: 0.8, changeFrequency: "yearly" },
   ];

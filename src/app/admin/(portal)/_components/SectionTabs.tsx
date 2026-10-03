@@ -16,6 +16,7 @@ export const SECTIONS = {
   work: [
     { href: "/admin/projects/", label: "Projects" },
     { href: "/admin/clients/", label: "Clients" },
+    { href: "/admin/testimonials/", label: "Testimonials" },
   ],
   newsletter: [
     { href: "/admin/subscribers/", label: "Subscribers" },
