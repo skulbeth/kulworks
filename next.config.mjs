@@ -77,6 +77,27 @@ const nextConfig = {
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
         ],
       },
+      {
+        // Static media. Next only fingerprints what it builds, and these are hand-made
+        // files served straight from public/, so they were falling back to the default
+        // "max-age=0, must-revalidate": a conditional request for every photo and clip on
+        // every visit. The bodies were not re-sent (304s), but on mobile that is still a
+        // dozen round trips before the page settles.
+        //
+        // Deliberately NOT immutable. Files here get overwritten in place rather than
+        // renamed (the carousel clips were replaced several times this week), and
+        // immutable would pin the old bytes in returning browsers with no way to bust it.
+        // A day of freshness plus a month of stale-while-revalidate means a repeat visit
+        // costs no network at all, and a replaced file is picked up on the visit after
+        // the next one at the latest. A hard refresh still bypasses it.
+        source: "/images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=2592000",
+          },
+        ],
+      },
     ];
   },
 };
