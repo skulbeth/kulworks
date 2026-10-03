@@ -67,11 +67,25 @@ should be filled with real info before launch:
       @kulworks; confirmed deliberate (2026-10-02), the brands share an audience.
 - [ ] **PayPal.me handle** — `site.ts`, still `REPLACE_WITH_PAYPAL_ME_HANDLE` (Venmo + Zelle set)
 - [ ] **Proofread every page** in Sam's voice.
-- [ ] **Real testimonials / social proof** — the home-page testimonials strip is BUILT and wired
-      (`src/components/Testimonials.tsx` + `src/data/testimonials.ts`), but it renders only when
-      `testimonials` has real entries, so nothing shows until Sam adds 2-3 genuine quotes (a Role
-      to Reign playtester, an early client, a convention customer). Format + example are in the
-      data file. Biggest remaining conversion lever alongside the Google Business Profile reviews.
+- [~] **Real testimonials / social proof** - SYSTEM BUILT (2026-10-02), CONTENT PENDING.
+      No Google Business account needed. Two ways in:
+        * Admin > a client > "Ask for a testimonial" emails them a single-use link
+          (`/testimonial/<token>`). They write it, pick the display name, tick consent.
+        * Admin > Testimonials > "Add one you already have" for a quote you have in hand,
+          a screenshot of a text/email, or both.
+      Nothing publishes without recorded consent; `consent` is enforced at publish AND in
+      the public query, so a row forced to PUBLISHED without it still renders nothing.
+      Archiving is a soft delete and is restorable. Public page is `/testimonials`; the home
+      strip shows 3 (pinned first) and only links on when there are more than 3. Both render
+      nothing at all while nothing is published.
+      Code: `src/lib/testimonials.ts`, `src/app/admin/(portal)/_testimonial-actions.ts`,
+      `src/app/admin/(portal)/testimonials/`, `src/app/testimonials/`, `src/app/testimonial/[token]/`,
+      `src/app/api/testimonial/`, `src/app/api/testimonial-image/[id]/`.
+      NOTE: the old `src/data/testimonials.ts` is GONE; testimonials live in the DB now.
+      NOTE: deliberately NO Review/AggregateRating structured data - Google has ignored
+      self-serving review markup about your own business since 2019.
+      NEXT: Sam said (2026-10-02) he already has quotes in hand. He needs to paste them in,
+      or add them at /admin/testimonials and publish, and say which to pin to the home page.
 - [~] **Real photos** — MANY DONE (2026-07-21, via a sibling session: 15 WebP images wired into
       portfolio, services, home carousel, about portrait, and 3 card sub-pages). Remaining slots
       still on labeled placeholders — see the shot-list below.
