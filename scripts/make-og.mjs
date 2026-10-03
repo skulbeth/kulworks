@@ -1,46 +1,53 @@
-// Generates the default social-share image at public/images/og-default.png (1200×630).
-// Branded placeholder until a custom share graphic exists. Re-run to regenerate:
-//   npm run og
-// Uses sharp (already a dependency). Dark brand background + light logo + tagline.
+// Generates the default social-share image at public/images/og-default.png (1200x630).
+// Re-run after changing it:  npm run og
+//
+// Design notes, because the first version got this wrong:
+//  - Link previews are rendered SMALL. Slack, Discord and iMessage shrink this to a few
+//    hundred pixels wide, so anything under ~40px here is unreadable where it matters.
+//    One short line beats three long ones.
+//  - The logo already reads CARDS - TILES - 3D, so a tagline repeating "card printing,
+//    UV tiles, 3D printing" was saying the same thing twice and crowding the wordmark.
+//  - Everything sits well inside the frame: previews get cropped to anywhere between
+//    1.91:1 and 2:1 depending on the platform, and some centre-crop.
 import sharp from "sharp";
-import { readFileSync } from "node:fs";
 
 const W = 1200, H = 630;
-const BG = "#0b0b0b";       // dark theme page base
-const GOLD = "#fcd34d";     // signature highlight (amber-300)
-const MUTED = "#cbd5e1";    // slate-300
+const BG = "#0b0b0b";   // dark theme page base
+const GOLD = "#fcd34d"; // signature highlight (amber-300)
 
-// Logo: the dark-theme wordmark (light text, transparent) so it reads on the dark bg.
+const LOGO_W = 860;
+const RULE = 8;
+
 const logo = await sharp("public/images/kulworks-logo-dark.png")
-  .resize({ width: 820 })
+  .resize({ width: LOGO_W })
   .toBuffer();
-const logoMeta = await sharp(logo).metadata();
-const logoTop = Math.round(H * 0.30);
-const logoLeft = Math.round((W - logoMeta.width) / 2);
+const { width: lw = LOGO_W, height: lh = 0 } = await sharp(logo).metadata();
 
-// Text + accent layer as an SVG overlay (Arial/sans is safe under librsvg).
+// Logo + one line, centred as a group.
+const GAP = 76;
+const TEXT_SIZE = 50;
+const blockH = lh + GAP + TEXT_SIZE;
+// The logo PNG carries transparent padding, so the measured block sits high; nudged to
+// balance the real ink, which is what the eye reads.
+const top = Math.round((H - blockH) / 2) + 6;
+const logoTop = top;
+const textBaseline = top + lh + GAP + TEXT_SIZE * 0.78;
+
 const svg = `
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
   <rect width="${W}" height="${H}" fill="${BG}"/>
-  <rect x="0" y="0" width="${W}" height="10" fill="${GOLD}"/>
-  <rect x="0" y="${H - 10}" width="${W}" height="10" fill="${GOLD}"/>
-  <text x="${W / 2}" y="${H * 0.66}" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#ffffff">
-    Custom card printing · UV tiles · 3D printing &amp; design
-  </text>
-  <text x="${W / 2}" y="${H * 0.66 + 60}" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="600" fill="${GOLD}">
-    San Antonio, TX — made in-house · ships nationwide
-  </text>
-  <text x="${W / 2}" y="${H - 40}" text-anchor="middle"
-        font-family="Arial, Helvetica, sans-serif" font-size="24" fill="${MUTED}">
-    kulworks.com
+  <rect x="0" y="0" width="${W}" height="${RULE}" fill="${GOLD}"/>
+  <rect x="0" y="${H - RULE}" width="${W}" height="${RULE}" fill="${GOLD}"/>
+  <text x="${W / 2}" y="${textBaseline}" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif" font-size="${TEXT_SIZE}"
+        font-weight="700" letter-spacing="7" fill="${GOLD}">
+    PROTOTYPE MANUFACTURER
   </text>
 </svg>`;
 
 await sharp(Buffer.from(svg))
-  .composite([{ input: logo, top: logoTop, left: logoLeft }])
+  .composite([{ input: logo, top: logoTop, left: Math.round((W - lw) / 2) }])
   .png()
   .toFile("public/images/og-default.png");
 
-console.log("✅ wrote public/images/og-default.png (1200×630)");
+console.log(`wrote public/images/og-default.png (${W}x${H})`);

@@ -91,7 +91,14 @@ export const metadata: Metadata = {
     title: "Kulworks: Custom Card, Board Game & 3D Printing in San Antonio",
     description:
       "One shop, many materials. Custom cards (poker to tarot), board game tiles, and 3D printing, designed and made in-house in San Antonio.",
-    images: [{ url: "/images/og-default.png", width: 1200, height: 630, alt: "Kulworks" }],
+    images: [
+      {
+        url: "/images/og-default.png",
+        width: 1200,
+        height: 630,
+        alt: "Kulworks: cards, tiles and 3D. Prototype manufacturer.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
