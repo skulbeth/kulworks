@@ -19,6 +19,19 @@ export interface PortfolioItem {
   /** Optional gallery: 2+ images the lightbox swipes through (cover = src). */
   images?: string[];
   alt: string;
+  /**
+   * One short line of real evidence: what the job actually was, how many, what it ran to.
+   *
+   * Only set this where there is a genuine number to give. A vague line ("small batches",
+   * "one-offs and runs") makes the page busier without making it better, so sections
+   * without a hard fact deliberately carry nothing.
+   *
+   * NOTHING HERE MAY NAME A CLIENT OR THEIR GAME. One client's NDA bars naming them or
+   * their title before its public release, another client's art is not cleared for
+   * posting at all, and none of the rest were ever asked. Describe the shape of the job
+   * and the numbers instead; both are ours to talk about.
+   */
+  note?: string;
 }
 
 export const portfolioFilters: { id: PortfolioCategory | "all"; label: string }[] = [
@@ -36,6 +49,7 @@ export const portfolioFilters: { id: PortfolioCategory | "all"; label: string }[
 export const portfolio: PortfolioItem[] = [
   {
     title: "Custom Card Design & Printing",
+    note: "Recent decks include a 56-card party game, built as four 14-card decks sharing one back, and a 116-card deck. Designed, printed and cut here.",
     category: "cards",
     src: "/images/portfolio/cards/cards-variety.webp",
     // Best work first, and one image per idea: printing, a finished deck in hand,
@@ -65,6 +79,7 @@ export const portfolio: PortfolioItem[] = [
     // that covered the same craft and between them carried nine clips. One section,
     // the best of each, and the near-duplicate clips combined at source.
     title: "UV-Printed Game Boards & Modular Hex Tiles",
+    note: "Built for real runs: around 2,000 hex pieces cut for a single crowdfunded game, 30 pieces per set across 60+ sets. A recent 80-tile order, 1.5 in square and printed both sides, was quoted at about $130 delivered.",
     category: "tiles",
     src: "/images/portfolio/tiles/cut-tile-stacks.webp",
     images: [
@@ -82,6 +97,7 @@ export const portfolio: PortfolioItem[] = [
   
   {
     title: "Custom 3D Models",
+    note: "Logos and award designs modelled from scratch in Shapr3D, then printed or UV-printed in the same shop.",
     category: "design",
     // Cover is the three awards together, all modeled from scratch. Three separate
     // shots of them in identical framing read as one image repeated; one shot of
@@ -114,6 +130,7 @@ export const portfolio: PortfolioItem[] = [
   },
   {
     title: "Color-Coded Hospital Tags",
+    note: "Ward and precaution tags for a hospital, colour-coded by department and printed here across 23 build plates.",
     category: "filament",
     src: "/images/portfolio/filament/hospital-tags-variety.webp",
     images: [

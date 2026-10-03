@@ -85,11 +85,16 @@ export default function PortfolioGrid({ initial }: { initial?: string }) {
                 className="rounded-none"
               />
             )}
-            <figcaption className="flex items-center justify-between gap-2 p-4">
-              <span className="font-semibold">{item.title}</span>
-              <span className="rounded-full bg-surface2 px-2.5 py-0.5 text-xs uppercase tracking-wide text-muted">
-                {item.category}
-              </span>
+            <figcaption className="p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold">{item.title}</span>
+                <span className="shrink-0 rounded-full bg-surface2 px-2.5 py-0.5 text-xs uppercase tracking-wide text-muted">
+                  {item.category}
+                </span>
+              </div>
+              {item.note && (
+                <p className="mt-2 text-sm leading-snug text-muted">{item.note}</p>
+              )}
             </figcaption>
           </figure>
         ))}
@@ -104,6 +109,7 @@ export default function PortfolioGrid({ initial }: { initial?: string }) {
           src={zoom.src}
           alt={zoom.alt}
           title={zoom.title}
+          note={zoom.note}
           images={zoom.images}
           onClose={() => setZoom(null)}
         />

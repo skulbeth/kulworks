@@ -16,12 +16,14 @@ export default function Lightbox({
   src,
   alt,
   title,
+  note,
   images,
   onClose,
 }: {
   src: string;
   alt: string;
   title?: string;
+  note?: string;
   images?: string[];
   onClose: () => void;
 }) {
@@ -144,9 +146,21 @@ export default function Lightbox({
       </div>
 
       {(title || gallery) && (
-        <div className="mt-3 text-center text-sm text-white/80">
-          {title}
-          {gallery && <span className="text-white/60"> · {i + 1}/{list.length}</span>}
+        <div className="mt-3 px-4 text-center text-sm text-white/80">
+          <div>
+            {title}
+            {gallery && <span className="text-white/60"> · {i + 1}/{list.length}</span>}
+          </div>
+          {note && <p className="mx-auto mt-1.5 max-w-xl text-white/60">{note}</p>}
+          {/* The only invitation to act used to be at the very bottom of the page, past
+              six sections. This is the moment someone is actually looking at the work. */}
+          <a
+            href="/contact/"
+            onClick={(e) => e.stopPropagation()}
+            className="mt-2.5 inline-block font-semibold text-white/80 underline underline-offset-4 hover:text-white"
+          >
+            Ask about something like this
+          </a>
         </div>
       )}
       {gallery && (
