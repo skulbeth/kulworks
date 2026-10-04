@@ -1,5 +1,12 @@
 # Kulworks — To-Do
 
+## Session log
+
+Full detail for 2026-10-02/03 (clips to video, carousel fixes, testimonials, caching,
+the 37 MB archive move, portfolio notes, tile pricing) is in
+`docs/SESSION-2026-10-02-03.md`, including the sources checked and rejected, the
+constraints on what may be said about client work, and the environment traps.
+
 Working list for launch + the custom backend build. Grouped by theme, not strict order.
 For how the whole system fits together, see **[ARCHITECTURE.md](ARCHITECTURE.md)**.
 
@@ -145,8 +152,9 @@ Alternates for some of these are in `D:\Kulworks\Raw Footage\Website Selects\`.
 - [ ] **Home "portfolio highlights" (3)** — still the older sibling-session shots
       (character-cards-in-jig, terrain-hexes-hero, miniatures-plate-hero); swap to newer/better
       ones for consistency (optional).
-- [ ] **Real OG/social-share image** — currently a generated branded placeholder
-      (`public/images/og-default.png`, `npm run og`); a real photo version would be nicer.
+- [x] **Real OG/social-share image** - DONE 2026-10-03. Rebuilt as the logo plus one
+      line, PROTOTYPE MANUFACTURER; the old one had an em dash and three stacked lines
+      that were illegible at the size previews actually render. `npm run og` regenerates.
 - [ ] **Home hero image or short video (optional, high-impact)** — the hero is text-only.
 - [ ] **Retired UV-printer-screen photo** (`card-layout-artwork.webp`) — kept in repo, not shown;
       decide whether to place it (a "printing in progress" shot) or leave retired.
