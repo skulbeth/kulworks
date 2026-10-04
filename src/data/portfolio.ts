@@ -132,13 +132,14 @@ export const portfolio: PortfolioItem[] = [
     title: "Color-Coded Hospital Tags",
     note: "Ward and precaution tags for a hospital, colour-coded by department and printed here across 23 build plates.",
     category: "filament",
-    src: "/images/portfolio/filament/hospital-tags-variety.webp",
+    src: "/images/portfolio/filament/hospital-tags-board.webp",
     images: [
+      "/images/portfolio/filament/hospital-tags-board.webp",
       "/images/portfolio/filament/hospital-tags-variety.webp",
       "/images/portfolio/filament/hospital-tags-spread.webp",
       "/images/portfolio/filament/hospital-precaution-tags.webp",
     ],
-    alt: "Color-coded hospital service and precaution tags designed and 3D printed by Kulworks, with UV-printed lettering, in full sets ready for a client",
+    alt: "A hospital assignment board filled with color-coded tags designed and 3D printed by Kulworks: department tags for OB/GYN, trauma, neuro, orthopedics and more across the top, with precaution and status tags below, plus loose sets and close-ups of the printed lettering",
   },
   {
     // Custom Prop Print used to be its own three-image section of the same craft.
