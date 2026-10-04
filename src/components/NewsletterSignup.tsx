@@ -56,14 +56,14 @@ export default function NewsletterSignup() {
         aria-hidden="true"
         className="hidden"
       />
-      <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="flex flex-col gap-2 lg:flex-row">
       <input
         type="email"
         name="email"
         required
         placeholder="you@email.com"
         aria-label="Email address"
-        className="flex-1 rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base text-foreground placeholder:text-muted/60 focus:border-blue focus:outline-none"
+        className="w-full min-w-0 flex-1 rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base text-foreground placeholder:text-muted/60 focus:border-blue focus:outline-none"
       />
         <button
           type="submit"
@@ -73,7 +73,7 @@ export default function NewsletterSignup() {
           {status === "submitting" ? "…" : "Subscribe"}
         </button>
       </div>
-      <TurnstileWidget onToken={setTurnstileToken} />
+      <TurnstileWidget onToken={setTurnstileToken} size="compact" />
       {error && <p className="text-xs text-red-600">{error}</p>}
     </form>
   );
