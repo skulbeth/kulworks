@@ -52,7 +52,7 @@ export default function SocialLinks({
     <ul
       className={`flex items-center ${
         header
-          ? "gap-1 min-[400px]:gap-1.5 sm:gap-2 lg:hidden min-[1160px]:flex"
+          ? "gap-1 min-[400px]:gap-1.5 sm:gap-2"
           : "gap-2.5"
       } ${className}`}
     >
@@ -77,7 +77,7 @@ export default function SocialLinks({
             title={s.name}
             className={`flex shrink-0 items-center justify-center rounded-full border border-border bg-surface transition-transform hover:-translate-y-0.5 hover:border-blue ${
               header
-                ? "h-7 w-7 min-[350px]:h-8 min-[350px]:w-8 min-[400px]:h-9 min-[400px]:w-9 sm:h-10 sm:w-10 lg:h-9 lg:w-9 xl:h-10 xl:w-10"
+                ? "h-7 w-7 min-[350px]:h-8 min-[350px]:w-8"
                 : "h-9 w-9"
             }`}
           >
