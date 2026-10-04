@@ -30,15 +30,15 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
       <nav
-        className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+        className="mx-auto flex w-full max-w-6xl items-center justify-between px-3 py-3 min-[380px]:px-4 sm:px-6 lg:px-8"
         aria-label="Main"
       >
         {/* Left: logo (+ home icon) with the social buttons beside it */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 items-center gap-1.5 min-[400px]:gap-2 sm:gap-3">
           {/* Logo */}
           <Link
             href="/"
-            className="group flex items-center gap-2 text-gold"
+            className="group flex shrink-0 items-center gap-2 text-gold"
             aria-label="Kulworks home"
             title="Home"
             onClick={() => setOpen(false)}
@@ -66,7 +66,7 @@ export default function Header() {
               width={714}
               height={181}
               priority
-              className="logo-light h-9 w-auto transition-transform group-hover:-translate-y-0.5 sm:h-10"
+              className="logo-light h-7 w-auto transition-transform group-hover:-translate-y-0.5 min-[350px]:h-8 min-[400px]:h-9 sm:h-10"
             />
             {/* Dark theme logo (shown when data-theme="dark") */}
             <Image
@@ -75,16 +75,16 @@ export default function Header() {
               width={3320}
               height={834}
               priority
-              className="logo-dark h-9 w-auto transition-transform group-hover:-translate-y-0.5 sm:h-10"
+              className="logo-dark h-7 w-auto transition-transform group-hover:-translate-y-0.5 min-[350px]:h-8 min-[400px]:h-9 sm:h-10"
             />
           </Link>
 
-          {/* Instagram + YouTube, always visible (handy on mobile) */}
-          <SocialLinks only={["Instagram", "YouTube"]} size="sm" />
+          {/* Socials, always visible (handy on mobile); sized to match the logo height */}
+          <SocialLinks only={["Instagram", "YouTube", "Facebook"]} size="header" />
         </div>
 
         {/* Desktop nav */}
-        <ul className="hidden items-center gap-7 md:flex">
+        <ul className="hidden items-center gap-7 lg:flex">
           <li>
             <Link
               href="/"
@@ -136,7 +136,7 @@ export default function Header() {
         </ul>
 
         {/* Mobile controls */}
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
           <ThemeToggle />
           <button
           type="button"
@@ -153,7 +153,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {open && (
-        <div id="mobile-menu" className="border-t border-border bg-background md:hidden">
+        <div id="mobile-menu" className="border-t border-border bg-background lg:hidden">
           <ul className="mx-auto flex w-full max-w-6xl flex-col gap-1 px-4 py-3">
             <li>
               <Link

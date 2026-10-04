@@ -26,8 +26,9 @@ const BRAND: Record<string, string> = {
 
 /** Social row with brand-colored icons (Instagram gradient, YouTube red, etc.).
  *  Renders nothing until at least one real handle is set in site.social.
- *  `only` limits + orders which platforms show (the header uses Instagram + YouTube).
- *  `size` "sm" is the tighter button used in the header bar. */
+ *  `only` limits + orders which platforms show.
+ *  `size` "header" tracks the logo height (h-9, h-10 at sm) so the buttons read as
+ *  part of the wordmark instead of small chips beside it. */
 export default function SocialLinks({
   className = "",
   only,
@@ -35,7 +36,7 @@ export default function SocialLinks({
 }: {
   className?: string;
   only?: string[];
-  size?: "sm" | "md";
+  size?: "header" | "md";
 }) {
   let reals = site.social.filter((s) => !s.url.includes("REPLACE_WITH_HANDLE"));
   if (only) {
@@ -45,10 +46,16 @@ export default function SocialLinks({
   }
   if (reals.length === 0) return null;
 
-  const small = size === "sm";
+  const header = size === "header";
 
   return (
-    <ul className={`flex items-center ${small ? "gap-1.5" : "gap-2.5"} ${className}`}>
+    <ul
+      className={`flex items-center ${
+        header
+          ? "gap-1 min-[400px]:gap-1.5 sm:gap-2 lg:hidden min-[1160px]:flex"
+          : "gap-2.5"
+      } ${className}`}
+    >
       <svg width="0" height="0" aria-hidden className="absolute h-0 w-0">
         <defs>
           <linearGradient id="kw-ig-grad" x1="0" y1="1" x2="1" y2="0">
@@ -68,14 +75,15 @@ export default function SocialLinks({
             rel="noopener noreferrer"
             aria-label={s.name}
             title={s.name}
-            className={`flex items-center justify-center rounded-full border border-border bg-surface transition-transform hover:-translate-y-0.5 hover:border-blue ${
-              small ? "h-8 w-8" : "h-9 w-9"
+            className={`flex shrink-0 items-center justify-center rounded-full border border-border bg-surface transition-transform hover:-translate-y-0.5 hover:border-blue ${
+              header
+                ? "h-7 w-7 min-[350px]:h-8 min-[350px]:w-8 min-[400px]:h-9 min-[400px]:w-9 sm:h-10 sm:w-10 lg:h-9 lg:w-9 xl:h-10 xl:w-10"
+                : "h-9 w-9"
             }`}
           >
             <svg
               viewBox="0 0 24 24"
-              width={small ? 16 : 18}
-              height={small ? 16 : 18}
+              className={header ? "h-3/5 w-3/5" : "h-[18px] w-[18px]"}
               fill={BRAND[s.name] ?? "currentColor"}
               aria-hidden
             >
