@@ -79,7 +79,7 @@ export const portfolio: PortfolioItem[] = [
     // that covered the same craft and between them carried nine clips. One section,
     // the best of each, and the near-duplicate clips combined at source.
     title: "UV-Printed Game Boards & Modular Hex Tiles",
-    note: "Built for real runs: around 2,000 hex pieces cut for a single crowdfunded game, 30 pieces per set across 60+ sets. A recent 80-tile order, 1.5 in square and printed both sides, was quoted at about $130 delivered.",
+    note: "Built for real runs: around 2,000 hex pieces cut for a single crowdfunded game, 30 pieces per set across 60+ sets. A run of 80 tiles, 1.5 in square and printed both sides, starts around $160 delivered.",
     category: "tiles",
     src: "/images/portfolio/tiles/cut-tile-stacks.webp",
     images: [

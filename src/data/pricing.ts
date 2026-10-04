@@ -1,7 +1,12 @@
 // Pricing shown on /pricing/. These are starting points, not final quotes.
 // Numbers reflect Sam's rates + market research (modestly under US market,
-// leaning on the local / US-made / in-house advantage). Resin and UV-tile
-// pricing stay quote-by-project until they're researched/costed separately.
+// leaning on the local / US-made / in-house advantage). Resin stays
+// quote-by-project until it's researched/costed separately.
+//
+// The UV tile figure must stay in step with the tiles note in data/portfolio.ts,
+// which is the other place a tile price is quoted. It is the undiscounted rate:
+// a real job came in under it because the cutting die was waived in exchange for
+// photo and video rights, which is a trade, not the standard price.
 
 export interface PriceItem {
   label: string;
@@ -83,8 +88,11 @@ export const pricing: PriceGroup[] = [
   },
   {
     name: "UV Tile Printing",
-    intro: "UV-printed board game tiles and components.",
-    items: [{ label: "Custom UV-printed tiles and tokens", price: "Quote by project" }],
-    note: "Send the size, art, and quantity and we will quote it.",
+    intro: "UV-printed board game tiles and components, printed and cut in-house.",
+    items: [
+      { label: "80 tiles, 1.5 in square, printed both sides", price: "From about $160 delivered" },
+      { label: "Other sizes, shapes, and quantities", price: "Quote by project" },
+    ],
+    note: "A tile size needs its own steel-rule cutting die. That is carried on a first order and then reused on every repeat run, so repeats come in lower than the first one. Send the size, art, and quantity and we will quote it.",
   },
 ];
