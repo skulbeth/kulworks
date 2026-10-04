@@ -2,6 +2,12 @@
 
 ## Session log
 
+Full detail for 2026-10-04 (header social buttons + Facebook, Who It's For out of the
+nav and why that is SEO-safe, the logo-distortion and nav-overlap fixes, and the sideways
+scroll on tablets which turned out to be the footer newsletter form) is in
+`docs/SESSION-2026-10-04.md`, including the traffic numbers the nav call was based on and
+how to measure layout with playwright-core.
+
 Full detail for 2026-10-02/03 (clips to video, carousel fixes, testimonials, caching,
 the 37 MB archive move, portfolio notes, tile pricing) is in
 `docs/SESSION-2026-10-02-03.md`, including the sources checked and rejected, the
@@ -14,8 +20,10 @@ For how the whole system fits together, see **[ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## ▶️ Resume here (pick up on any machine / next session)
 
-**Status:** Full custom backend is **built and shipped to production**, running behind the
-coming-soon gate (`constructionMode: true`). See the ✅ items below for everything done.
+**Status:** **LIVE since 2026-07-23** — `constructionMode: false`, the real home page is
+public and indexable at kulworks.com. The full custom backend is built and shipped. See the
+✅ items below for everything done. (The roadmap wording immediately below this still reads
+as though launch is pending; it predates the launch and has not been rewritten.)
 
 **Roadmap order (Sam, 2026-07-03):** (1) 2FA method choice app-or-email ✅ SHIPPED →
 (2) #10 Quotes & Invoices (Venmo + PayPal) ✅ SHIPPED → (3) Newsletter v2 →
@@ -56,8 +64,9 @@ connects to the **same live data** automatically. Migrations are already applied
 in `prisma/migrations/`). Handy: `npm run db:studio` (browse DB), `npm run db:seed`,
 `node scripts/smoke-test.mjs` (with dev server up).
 
-**Deploy:** push to `main` → Vercel auto-deploys production. Keep `constructionMode: true`
-until the real launch (then flip to `false` after content/socials/address are ready).
+**Deploy:** push to `main` → Vercel auto-deploys production. `constructionMode` is already
+`false` (launched 2026-07-23); leave it that way. Verify a deploy with node `fetch` against
+kulworks.com — curl is sandboxed in this environment.
 
 ---
 
