@@ -38,6 +38,9 @@ export async function publishedTestimonials(opts: { featuredOnly?: boolean; take
     take: opts.take,
     select: {
       id: true, quote: true, name: true, detail: true, imagePath: true, featured: true,
+      // Cache-buster: the image route caches hard per id, so a replaced screenshot
+      // would otherwise keep serving the old file for an hour.
+      updatedAt: true,
     },
   });
 }

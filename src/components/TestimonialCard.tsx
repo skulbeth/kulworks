@@ -11,28 +11,31 @@ export type TestimonialView = {
   name: string;
   detail: string | null;
   imagePath: string | null;
+  updatedAt?: Date | string;
 };
 
 export default function TestimonialCard({ t }: { t: TestimonialView }) {
+  const v = t.updatedAt ? new Date(t.updatedAt).getTime() : 0;
+  const imageSrc = `/api/testimonial-image/${t.id}${v ? `?v=${v}` : ""}`;
+
   return (
     <figure className="flex h-full flex-col rounded-2xl border border-border bg-surface p-6">
       {t.quote && (
-        <>
+        <div className="flex-1">
           <span aria-hidden className="text-4xl leading-none text-gold">
             &ldquo;
           </span>
-          <blockquote className="mt-2 flex-1 whitespace-pre-line text-muted">{t.quote}</blockquote>
-        </>
+          <blockquote className="mt-2 whitespace-pre-line text-muted">{t.quote}</blockquote>
+          {t.imagePath && <TestimonialProof src={imageSrc} name={t.name} />}
+        </div>
       )}
 
       {t.imagePath &&
-        (t.quote ? (
-          <TestimonialProof src={`/api/testimonial-image/${t.id}`} name={t.name} />
-        ) : (
+        (t.quote ? null : (
           // No words to show, so the screenshot IS the testimonial and stays in the card.
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/api/testimonial-image/${t.id}`}
+            src={imageSrc}
             alt={`A message from ${t.name}`}
             loading="lazy"
             decoding="async"
