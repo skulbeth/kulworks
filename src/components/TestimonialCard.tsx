@@ -1,8 +1,10 @@
+import TestimonialProof from "@/components/TestimonialProof";
+
 /** One testimonial: typed words, a screenshot of them, or both.
  *
- *  A screenshot carries no text for a screen reader or for search, so the alt
- *  text names whose words it is, and anything typed alongside it is still shown
- *  as real text rather than being replaced by the picture. */
+ *  A screenshot carries no text for a screen reader or for search, so the words
+ *  are always shown as real text. The screenshot itself opens on click rather
+ *  than sitting in the card, where it was too small to read. */
 export type TestimonialView = {
   id: string;
   quote: string | null;
@@ -23,16 +25,20 @@ export default function TestimonialCard({ t }: { t: TestimonialView }) {
         </>
       )}
 
-      {t.imagePath && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={`/api/testimonial-image/${t.id}`}
-          alt={`A message from ${t.name}`}
-          loading="lazy"
-          decoding="async"
-          className={`w-full rounded-xl border border-border ${t.quote ? "mt-4" : "flex-1"}`}
-        />
-      )}
+      {t.imagePath &&
+        (t.quote ? (
+          <TestimonialProof src={`/api/testimonial-image/${t.id}`} name={t.name} />
+        ) : (
+          // No words to show, so the screenshot IS the testimonial and stays in the card.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/api/testimonial-image/${t.id}`}
+            alt={`A message from ${t.name}`}
+            loading="lazy"
+            decoding="async"
+            className="w-full flex-1 rounded-xl border border-border"
+          />
+        ))}
 
       <figcaption className="mt-4 text-sm font-semibold">
         {t.name}
