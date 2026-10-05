@@ -19,6 +19,9 @@ import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 export const dynamic = "force-dynamic";
 
 const SITE_URL = "https://kulworks.com";
+const fileInput =
+  "block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-surface2 file:px-3 file:py-2 file:text-sm file:font-semibold";
+
 const input =
   "w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm focus:border-blue focus:outline-none";
 
@@ -42,6 +45,7 @@ export default async function TestimonialsAdminPage({
     rows.map(async (t) => ({
       ...t,
       imageUrl: t.imagePath ? await signedUploadUrl(t.imagePath) : null,
+      photoUrl: t.photoPath ? await signedUploadUrl(t.photoPath) : null,
     }))
   );
 
@@ -95,16 +99,31 @@ export default async function TestimonialsAdminPage({
               className={input}
             />
           </label>
-          <label className="sm:col-span-2">
+          <label>
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
-              Screenshot
+              Screenshot of the message
             </span>
             <input
               type="file"
               name="image"
               accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-              className="block w-full text-sm text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-surface2 file:px-3 file:py-2 file:text-sm file:font-semibold"
+              className={fileInput}
             />
+          </label>
+
+          <label>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+              Photo of the item
+            </span>
+            <input
+              type="file"
+              name="photo"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+              className={fileInput}
+            />
+            <span className="mt-1 block text-xs text-muted">
+              What you made for them. Shown on the card as &ldquo;See the item&rdquo;.
+            </span>
           </label>
 
           <div className="sm:col-span-2 rounded-xl border border-border bg-surface2/40 p-4">
@@ -206,6 +225,7 @@ export default async function TestimonialsAdminPage({
 
 type Row = Awaited<ReturnType<typeof prisma.testimonial.findMany>>[number] & {
   imageUrl: string | null;
+  photoUrl: string | null;
   client: { id: string; name: string } | null;
 };
 
@@ -315,6 +335,42 @@ function Card({ t }: { t: Row }) {
           />
         </div>
 
+        <label>
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+            {t.imageUrl ? "Replace the screenshot" : "Add a screenshot"}
+          </span>
+          <input
+            type="file"
+            name="image"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+            className={fileInput}
+          />
+          {t.imageUrl && (
+            <label className="mt-1 flex items-center gap-2 text-xs text-muted">
+              <input type="checkbox" name="removeImage" className="h-3.5 w-3.5" />
+              Remove it
+            </label>
+          )}
+        </label>
+
+        <label>
+          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted">
+            {t.photoUrl ? "Replace the item photo" : "Add a photo of the item"}
+          </span>
+          <input
+            type="file"
+            name="photo"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
+            className={fileInput}
+          />
+          {t.photoUrl && (
+            <label className="mt-1 flex items-center gap-2 text-xs text-muted">
+              <input type="checkbox" name="removePhoto" className="h-3.5 w-3.5" />
+              Remove it
+            </label>
+          )}
+        </label>
+
         <div className="sm:col-span-2">
           <button className="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold hover:border-blue hover:text-blue">
             Save changes
@@ -322,15 +378,39 @@ function Card({ t }: { t: Row }) {
         </div>
       </form>
 
-      {t.imageUrl && (
-        <a href={t.imageUrl} target="_blank" rel="noreferrer" className="mt-3 block">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={t.imageUrl}
-            alt={`Screenshot from ${t.name}`}
-            className="max-h-64 rounded-lg border border-border"
-          />
-        </a>
+      {(t.imageUrl || t.photoUrl) && (
+        <div className="mt-3 flex flex-wrap gap-4">
+          {t.imageUrl && (
+            <figure>
+              <figcaption className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                Message
+              </figcaption>
+              <a href={t.imageUrl} target="_blank" rel="noreferrer" className="block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={t.imageUrl}
+                  alt={`Screenshot from ${t.name}`}
+                  className="max-h-64 rounded-lg border border-border"
+                />
+              </a>
+            </figure>
+          )}
+          {t.photoUrl && (
+            <figure>
+              <figcaption className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                Item
+              </figcaption>
+              <a href={t.photoUrl} target="_blank" rel="noreferrer" className="block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={t.photoUrl}
+                  alt={`What was made for ${t.name}`}
+                  className="max-h-64 rounded-lg border border-border"
+                />
+              </a>
+            </figure>
+          )}
+        </div>
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">

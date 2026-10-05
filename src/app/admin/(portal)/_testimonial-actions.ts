@@ -22,6 +22,31 @@ import {
   MAX_IMAGE_BYTES,
   IMAGE_TYPES,
 } from "@/lib/testimonials";
+import { removeUploadFiles } from "@/lib/uploads";
+
+/** A testimonial carries two pictures, kept apart by the path suffix:
+ *  the message screenshot ("") and a photo of the item it is about ("-item"). */
+type Kind = "" | "-item";
+
+function pickFile(fd: FormData, field: string): File | null {
+  const f = fd.get(field);
+  return f instanceof File && f.size > 0 ? f : null;
+}
+
+/** Null when fine, otherwise the error code to redirect with. */
+function imageProblem(file: File): string | null {
+  if (file.size > MAX_IMAGE_BYTES) return "image_too_big";
+  if (!IMAGE_TYPES.includes(file.type)) return "image_type";
+  return null;
+}
+
+/** Stores the upload and returns its path, or null if the upload failed. */
+async function storeImage(file: File, id: string, kind: Kind): Promise<string | null> {
+  const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+  const path = `${TESTIMONIAL_PREFIX}/${id}${kind}.${ext}`;
+  const ok = await putTestimonialImage(path, Buffer.from(await file.arrayBuffer()), file.type);
+  return ok ? path : null;
+}
 
 const SITE_URL = "https://kulworks.com";
 const LIST = "/admin/testimonials/";
@@ -128,25 +153,27 @@ export async function addTestimonial(formData: FormData) {
   const detail = s(formData, "detail");
   const consentNote = s(formData, "consentNote");
   const consent = formData.get("consent") === "on";
-  const file = formData.get("image");
-  const hasImage = file instanceof File && file.size > 0;
+  const shot = pickFile(formData, "image");
+  const photo = pickFile(formData, "photo");
 
   if (!name) redirect(LIST + "?error=name_required");
-  if (!quote && !hasImage) redirect(LIST + "?error=empty");
-  if (hasImage) {
-    if (file.size > MAX_IMAGE_BYTES) redirect(LIST + "?error=image_too_big");
-    if (!IMAGE_TYPES.includes(file.type)) redirect(LIST + "?error=image_type");
+  if (!quote && !shot) redirect(LIST + "?error=empty");
+  for (const f of [shot, photo]) {
+    const problem = f && imageProblem(f);
+    if (problem) redirect(LIST + "?error=" + problem);
   }
 
   const row = await prisma.testimonial.create({
     data: { name: name as string, quote, detail, consent, consentNote, source: "ADDED", status: "PENDING" },
   });
 
-  if (hasImage) {
-    const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
-    const path = TESTIMONIAL_PREFIX + "/" + row.id + "." + ext;
-    const ok = await putTestimonialImage(path, Buffer.from(await file.arrayBuffer()), file.type);
-    if (ok) await prisma.testimonial.update({ where: { id: row.id }, data: { imagePath: path } });
+  const imagePath = shot ? await storeImage(shot, row.id, "") : null;
+  const photoPath = photo ? await storeImage(photo, row.id, "-item") : null;
+  if (imagePath || photoPath) {
+    await prisma.testimonial.update({
+      where: { id: row.id },
+      data: { ...(imagePath ? { imagePath } : {}), ...(photoPath ? { photoPath } : {}) },
+    });
   }
 
   await logAudit(profile.email, "testimonial.add", row.id);
@@ -163,6 +190,45 @@ export async function updateTestimonial(formData: FormData) {
   if (!current) return;
   const consent = formData.get("consent") === "on";
 
+  // Pictures can be added, swapped or taken off an existing testimonial. This is
+  // how an item photo gets onto one that was added before there was a field for it.
+  const shot = pickFile(formData, "image");
+  const photo = pickFile(formData, "photo");
+  for (const f of [shot, photo]) {
+    const problem = f && imageProblem(f);
+    if (problem) redirect(LIST + "?error=" + problem);
+  }
+  const dropShot = formData.get("removeImage") === "on";
+  const dropPhoto = formData.get("removePhoto") === "on";
+
+  const pictures: { imagePath?: string | null; photoPath?: string | null } = {};
+  const orphaned: string[] = [];
+
+  if (dropShot && current.imagePath) {
+    orphaned.push(current.imagePath);
+    pictures.imagePath = null;
+  } else if (shot) {
+    const path = await storeImage(shot, id, "");
+    if (path) {
+      // A different file type means a different path, so the old one would linger.
+      if (current.imagePath && current.imagePath !== path) orphaned.push(current.imagePath);
+      pictures.imagePath = path;
+    }
+  }
+
+  if (dropPhoto && current.photoPath) {
+    orphaned.push(current.photoPath);
+    pictures.photoPath = null;
+  } else if (photo) {
+    const path = await storeImage(photo, id, "-item");
+    if (path) {
+      if (current.photoPath && current.photoPath !== path) orphaned.push(current.photoPath);
+      pictures.photoPath = path;
+    }
+  }
+
+  if (orphaned.length) await removeUploadFiles(orphaned);
+
   await prisma.testimonial.update({
     where: { id },
     data: {
@@ -171,6 +237,7 @@ export async function updateTestimonial(formData: FormData) {
       detail: s(formData, "detail"),
       consentNote: s(formData, "consentNote"),
       consent,
+      ...pictures,
       // Withdrawing permission takes it straight back off the site.
       ...(current.status === "PUBLISHED" && !consent
         ? { status: "PENDING" as const, publishedAt: null, featured: false }
