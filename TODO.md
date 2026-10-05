@@ -2,6 +2,11 @@
 
 ## Session log
 
+Full detail for 2026-10-05 (twelve real testimonials published and blurred, the
+testimonials page and card design, item photos + the admin field for them, photos on
+every Who It's For card, and why a Facebook share preview looked stale) is in
+`docs/SESSION-2026-10-05.md`, including the image-cache and referrer gotchas.
+
 Full detail for 2026-10-04 (header social buttons + Facebook, Who It's For out of the
 nav and why that is SEO-safe, the logo-distortion and nav-overlap fixes, and the sideways
 scroll on tablets which turned out to be the footer newsletter form) is in
@@ -220,7 +225,8 @@ things that actually gate running the business. Roughly by priority:
 - [ ] **Texas Sales & Use Tax permit** — invoices now show a flat 9% *service charge* (not an
       itemized tax), but if your sales are taxable you still must register with the TX Comptroller
       and remit sales tax. Relabeling doesn't remove the obligation.
-- [ ] **Vercel plan** — the site is on the **Hobby** plan, which is for *non-commercial* use.
+- [x] **Vercel plan** — **Sam's call 2026-10-05: "Vercel is fine." Leave it; do not raise again.**
+      (Original note kept: the site is on the **Hobby** plan, which is for *non-commercial* use.)
       A real business likely needs **Vercel Pro (~$20/mo)** to comply with their ToS (also
       lifts cron/limits). Verify + upgrade before/at launch.
 - [ ] **Business payment accounts** — Zelle points to a *personal* email/phone and Venmo is
