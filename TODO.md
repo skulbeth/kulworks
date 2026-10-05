@@ -83,7 +83,27 @@ should be filled with real info before launch:
       @kulworks; confirmed deliberate (2026-10-02), the brands share an audience.
 - [ ] **PayPal.me handle** — `site.ts`, still `REPLACE_WITH_PAYPAL_ME_HANDLE` (Venmo + Zelle set)
 - [ ] **Proofread every page** in Sam's voice.
-- [~] **Real testimonials / social proof** - SYSTEM BUILT (2026-10-02), CONTENT PENDING.
+- [x] **Real testimonials / social proof** - DONE 2026-10-05. **12 published** from Sam's own
+      Messenger/WhatsApp/Facebook screenshots: Matthew H., Daena V. x2, Eddie D., Nick A. x2,
+      Brad M., Phase Game, Kevin E., Lala M., Mike M., Eric E. Each carries a project label and
+      an item photo; 11 of 12 also link the original message. Screenshots are blurred (name AND
+      profile photo) and Sam's own name was kept off the page.
+      **Placement (Sam's call): the `/testimonials` page ONLY** - the home-page strip was removed
+      and the page is linked from the FOOTER under Explore. `Testimonials.tsx` is kept but
+      unrendered, like `ComingSoon.tsx`.
+      **Neither image shows inline** - "See the item" and "See the message" are text links that
+      open the `Lightbox` (`TestimonialProof.tsx`). Inline images made every card a different
+      height and left dead space.
+      `Testimonial.photoPath` was added for the item photo (migration
+      `20261005140000_testimonial_item_photo`); most item photos came from the portfolio files
+      already in `public/images/portfolio/`.
+      STILL OPEN: (a) **the admin has no field for item photos**, so they can only be attached by
+      script - worth adding if Sam wants to maintain this himself; (b) Lala M.'s message
+      screenshot; (c) the hummingbird feeder photo is a VIDEO THUMBNAIL and has a play button
+      painted on it; (d) consent for the private DMs is recorded as "published at the owner's
+      direction", not opt-in from the authors - the built-in request-link flow would fix that.
+- [ ] ~~Real testimonials~~ (original notes kept below for reference)
+      SYSTEM BUILT (2026-10-02).
       No Google Business account needed. Two ways in:
         * Admin > a client > "Ask for a testimonial" emails them a single-use link
           (`/testimonial/<token>`). They write it, pick the display name, tick consent.
