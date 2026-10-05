@@ -11,12 +11,16 @@ export type TestimonialView = {
   name: string;
   detail: string | null;
   imagePath: string | null;
+  photoPath?: string | null;
   updatedAt?: Date | string;
 };
 
 export default function TestimonialCard({ t }: { t: TestimonialView }) {
+  // The image route caches hard per id, so a replaced file needs a new URL.
   const v = t.updatedAt ? new Date(t.updatedAt).getTime() : 0;
-  const imageSrc = `/api/testimonial-image/${t.id}${v ? `?v=${v}` : ""}`;
+  const base = `/api/testimonial-image/${t.id}`;
+  const imageSrc = `${base}?v=${v}`;
+  const photoSrc = `${base}?kind=item&v=${v}`;
 
   return (
     <figure className="flex h-full flex-col rounded-2xl border border-border bg-surface p-6">
@@ -26,7 +30,14 @@ export default function TestimonialCard({ t }: { t: TestimonialView }) {
             &ldquo;
           </span>
           <blockquote className="mt-2 whitespace-pre-line text-muted">{t.quote}</blockquote>
-          {t.imagePath && <TestimonialProof src={imageSrc} name={t.name} />}
+          {(t.photoPath || t.imagePath) && (
+            <TestimonialProof
+              photoSrc={t.photoPath ? photoSrc : undefined}
+              messageSrc={t.imagePath ? imageSrc : undefined}
+              name={t.name}
+              detail={t.detail}
+            />
+          )}
         </div>
       )}
 

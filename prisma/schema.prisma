@@ -424,7 +424,8 @@ model Testimonial {
   name   String
   detail String? // role, project, or town - whatever they're happy to show
 
-  imagePath String? // path in the uploads bucket, e.g. testimonials/<id>.png
+  imagePath String? // screenshot of the message, e.g. testimonials/<id>.png
+  photoPath String? // photo of the ITEM it is about, e.g. testimonials/<id>-item.png
 
   status   TestimonialStatus @default(PENDING)
   source   TestimonialSource @default(ADDED)

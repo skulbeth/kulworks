@@ -13,16 +13,19 @@ export const runtime = "nodejs";
  * Here the database decides what is visible, and only a published, consented,
  * non-deleted row resolves.
  */
-export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
+export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
+  // ?kind=item serves the photo of the thing that was made; default is the message.
+  const item = new URL(req.url).searchParams.get("kind") === "item";
 
   const t = await prisma.testimonial.findFirst({
     where: { id, status: "PUBLISHED", consent: true, deletedAt: null },
-    select: { imagePath: true },
+    select: { imagePath: true, photoPath: true },
   });
-  if (!t?.imagePath) return new NextResponse("Not found", { status: 404 });
+  const path = item ? t?.photoPath : t?.imagePath;
+  if (!path) return new NextResponse("Not found", { status: 404 });
 
-  const file = await getTestimonialImage(t.imagePath);
+  const file = await getTestimonialImage(path);
   if (!file) return new NextResponse("Not found", { status: 404 });
 
   return new NextResponse(new Uint8Array(file.bytes), {
