@@ -1,11 +1,24 @@
+import Image from "next/image";
 import { Audience } from "@/data/audiences";
 
 export default function AudienceCard({ audience }: { audience: Audience }) {
   const inner = (
     <>
-      <div className="text-2xl" aria-hidden>
-        {audience.icon}
-      </div>
+      {audience.image ? (
+        // Decorative: the title sits right beside it, so no alt text to repeat.
+        <Image
+          src={audience.image}
+          alt=""
+          width={160}
+          height={160}
+          sizes="80px"
+          className="h-16 w-16 shrink-0 rounded-lg object-cover"
+        />
+      ) : (
+        <div className="text-2xl" aria-hidden>
+          {audience.icon}
+        </div>
+      )}
       <div>
         <h3 className="font-bold">
           {audience.title}
