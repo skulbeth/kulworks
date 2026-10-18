@@ -61,8 +61,12 @@ export const portfolio: PortfolioItem[] = [
       "/images/studio/cards-printing-and-sheet.mp4",
       "/images/portfolio/cards/panic-cards-printing-still.webp",
       "/images/portfolio/cards/orc-character-card.webp",
+      "/images/portfolio/cards/golden-ticket.webp",
       "/images/portfolio/cards/sports-cards.webp",
+      // Players' faces and names are blurred on the youth league cards.
+      "/images/portfolio/cards/player-card-in-hand.webp",
       "/images/portfolio/cards/game-cards.webp",
+      "/images/portfolio/cards/fan-hero-cards.webp",
       "/images/portfolio/cards/game-deck-fan-still.webp",
       "/images/portfolio/cards/keepsake-cards.webp",
       "/images/portfolio/design/card-layout-photoshop.webp",
@@ -71,7 +75,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/studio/deck-printed-and-riffled.mp4",
       "/images/portfolio/cards/panic-cards-spread-still.webp",
     ],
-    alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, finished character and sports cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
+    alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, finished character and sports cards, a gold-foil ticket card, full-art hero cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
   },
   
   {
@@ -87,11 +91,13 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/tiles/hex-press-and-stacks.mp4",
       "/images/portfolio/tiles/board-panels.webp",
       "/images/portfolio/tiles/board-tiles-still.webp",
+      "/images/portfolio/tiles/tokens-wood-stacks.webp",
+      "/images/portfolio/tiles/tokens-printed-in-jig.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
       "/images/portfolio/tiles/board-print-and-finish.mp4",
       "/images/studio/board-cutting.mp4",
     ],
-    alt: "UV-printed game boards and modular hex tiles by Kulworks: navy and gold board panels printing on the flatbed and coming off finished, hex terrain tiles cut on the clicker press and freed from the die, a full run stacked and bundled on the bench, and tile artwork prepped for print",
+    alt: "UV-printed game boards, modular hex tiles and tokens by Kulworks: navy and gold board panels printing on the flatbed and coming off finished, hex terrain tiles cut on the clicker press and freed from the die, a full run stacked and bundled on the bench, double-sided wooden game tokens printed in a jig, and tile artwork prepped for print",
   },
 
   
@@ -107,12 +113,15 @@ export const portfolio: PortfolioItem[] = [
     images: [
       "/images/portfolio/filament/race-awards-trio.webp",
       "/images/portfolio/design/cad-3d-model-still.webp",
+      // Model, then the print it became.
+      "/images/portfolio/design/fantasy-medallion-shapr3d.webp",
+      "/images/portfolio/design/fantasy-medallion-print.webp",
       "/images/portfolio/design/shapr3d-astros-logo.webp",
       "/images/portfolio/design/shapr3d-bomber-bees.webp",
       "/images/portfolio/design/shapr3d-sculpt.webp",
       "/images/portfolio/design/droideka-model-still.webp",
     ],
-    alt: "Custom 3D models designed in Shapr3D: award designs modeled from scratch, client logos built as 3D artwork for Bulverde Astros and Bomber Bees, and character models.",
+    alt: "Custom 3D models designed in Shapr3D: award designs modeled from scratch, a fantasy football champion medallion shown as the model and as the finished two-colour print, client logos built as 3D artwork for Bulverde Astros and Bomber Bees, and character models.",
   },
   {
     title: "Resin 3D Printing (high-detail minis)",
@@ -151,6 +160,8 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/helmet-prop.webp",
       "/images/portfolio/filament/custom-prop-armor.webp",
       "/images/portfolio/filament/fdm-city-upgrades.webp",
+      "/images/portfolio/filament/lithophane-lamp.webp",
+      "/images/portfolio/filament/spiral-lollipops.webp",
       "/images/portfolio/filament/3d-print-03.webp",
       "/images/portfolio/filament/3d-print-10.webp",
       "/images/portfolio/filament/3d-print-09.webp",
@@ -165,7 +176,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/race-awards-number-ones.webp",
       "/images/portfolio/filament/race-awards-medallions.webp",
     ],
-    alt: "Filament (FDM) 3D printing by Kulworks: a full-size gladiator helmet and prop armour, articulated figures, terrain and city pieces, game markers, functional parts, and full runs of custom awards.",
+    alt: "Filament (FDM) 3D printing by Kulworks: a full-size gladiator helmet and prop armour, articulated figures, terrain and city pieces, a backlit lithophane lamp, a batch of spiral lollipop prints, game markers, functional parts, and full runs of custom awards.",
   },
 
 ];
