@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { site } from "@/data/site";
+import { RUSH_FEE, RUSH_WITHIN_DAYS, FEES_NOTE, isRush, todayISO } from "@/lib/order-details";
 
 /**
  * Basic card-order cost estimator. Mirrors the published card pricing. These are
@@ -8,14 +10,16 @@ import { useState } from "react";
  */
 
 // Standard poker size only; other sizes are custom and quote-only.
-const POKER_RATE = 0.13; // per card, print-ready poker size
+// Keep in step with data/pricing.ts and data/guides.ts, which publish the same rate.
+const POKER_RATE = 0.25; // per card, print-ready poker size (was $0.13 until 2026-10-20)
 
 const SETUP_FEE = 25; // one-time per project
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
 const SLEEVE_PER_100: Record<string, number> = { standard: 10, premium: 15 };
-const SERVICE_CHARGE_RATE = 0.09; // flat service charge added to estimates + invoices
+// Same percent the invoices use, so an estimate and its invoice can't drift apart.
+const SERVICE_CHARGE_RATE = site.payments.defaultServiceCharge / 100;
 
 const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -27,6 +31,7 @@ export default function CardCalculator() {
   const [backLayouts, setBackLayouts] = useState(0);
   const [addBox, setAddBox] = useState(false);
   const [sleeves, setSleeves] = useState("none");
+  const [dueDate, setDueDate] = useState("");
 
   const cpd = Math.max(0, Math.floor(cardsPerDeck) || 0);
   const deckCount = Math.max(0, Math.floor(decks) || 0);
@@ -53,7 +58,11 @@ export default function CardCalculator() {
     : 0;
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
-  const subtotal = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost;
+  // Rush: needed in under RUSH_WITHIN_DAYS days. A flat fee inside the subtotal, so the
+  // service charge applies to it exactly as it does on the invoice line.
+  const rush = isRush(dueDate);
+  const rushFee = rush ? RUSH_FEE : 0;
+  const subtotal = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost + rushFee;
   const serviceCharge = subtotal * SERVICE_CHARGE_RATE;
   const total = subtotal + serviceCharge;
 
@@ -69,11 +78,14 @@ export default function CardCalculator() {
     addBox ? "- Custom 3D-printed box: yes" : "- Custom box: no",
     sleeves !== "none" ? `- Sleeves: ${sleeves}` : "- Sleeves: none",
     bulkRate > 0 ? `- Bulk discount applied: ${Math.round(bulkRate * 100)}%` : null,
-    `- Estimated total (incl. 9% service charge): ${usd(total)}`,
+    dueDate ? `- Needed in hand by: ${dueDate}${rush ? ` (rush, +${usd(RUSH_FEE)})` : ""}` : null,
+    `- Estimated total (incl. ${site.payments.defaultServiceCharge}% service charge): ${usd(total)}`,
   ]
     .filter(Boolean)
     .join("\n");
-  const quoteHref = `/contact/?type=${quoteTypes}&details=${encodeURIComponent(summary)}`;
+  const quoteHref =
+    `/contact/?type=${quoteTypes}&details=${encodeURIComponent(summary)}` +
+    (dueDate ? `&due=${dueDate}` : "");
 
   const inputCls =
     "w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base text-foreground focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
@@ -94,6 +106,7 @@ export default function CardCalculator() {
       value: sleeveCost,
       show: sleeves !== "none",
     },
+    { label: `Rush fee (under ${RUSH_WITHIN_DAYS} days)`, value: rushFee, show: rush },
   ];
 
   return (
@@ -179,6 +192,23 @@ export default function CardCalculator() {
           </p>
         </div>
 
+        <div>
+          <label className={labelCls} htmlFor="calc-due">
+            Needed in hand by <span className="font-normal text-muted">(optional)</span>
+          </label>
+          <input
+            id="calc-due"
+            type="date"
+            min={todayISO()}
+            className={inputCls}
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+          <p className="mt-1.5 text-xs text-muted">
+            Under {RUSH_WITHIN_DAYS} days out adds a flat {usd(RUSH_FEE)} rush fee.
+          </p>
+        </div>
+
         <label className="flex items-center gap-3 text-sm">
           <input
             type="checkbox"
@@ -214,7 +244,7 @@ export default function CardCalculator() {
             <span className="font-mono font-medium text-foreground">{usd(subtotal)}</span>
           </div>
           <div className="flex justify-between gap-4 text-muted">
-            <span>Service charge (9%)</span>
+            <span>Service charge ({site.payments.defaultServiceCharge}%)</span>
             <span className="font-mono font-medium text-foreground">{usd(serviceCharge)}</span>
           </div>
         </div>
@@ -227,10 +257,10 @@ export default function CardCalculator() {
         </a>
 
         <p className="mt-auto pt-5 text-xs text-muted/70">
-          Production subtotal plus a 9% service charge. Shipping and any local
-          delivery are not included and may vary. Cards come with rounded corners. Final
-          pricing depends on files, finishing, and quantity, so send your project for an
-          exact quote.
+          Production subtotal plus a {site.payments.defaultServiceCharge}% service charge,
+          which also applies to any rush fee. {FEES_NOTE} Cards come with rounded corners.
+          Final pricing depends on files, finishing, and quantity, so send your project for
+          an exact quote.
         </p>
         <p className="mt-2 text-xs text-muted/70">
           Estimates assume print-ready files that need no adjustment (when we are not

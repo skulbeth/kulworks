@@ -100,6 +100,14 @@ model Submission {
   driveFolder    Boolean          @default(false)
   driveFolderUrl String? // auto-created Google Drive folder link, if requested
   estimate       String? // calculator estimate summary, if any
+  // Timing + hand-off, asked on the form so the first reply isn't a round of questions.
+  dueDate        DateTime? // when they need it in hand (date only)
+  deliveryMethod String? // "pickup" | "ship" | "meetup" (see lib/order-details)
+  shipStreet     String?
+  shipCity       String?
+  shipState      String?
+  shipPostalCode String?
+  cardBacks      String? // card orders: "same" | "different"
   status         SubmissionStatus @default(NEW)
   sessionId      String? // anonymous session id, to correlate with page views
   deletedAt      DateTime? // soft delete — archived, never hard-deleted

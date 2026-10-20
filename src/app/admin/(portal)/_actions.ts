@@ -8,6 +8,7 @@ import { requireProfile } from "@/lib/auth";
 import { resend, FROM, sendMail, addSubscriberToAudience } from "@/lib/email";
 import { uploadsEnabled, setUploadsEnabled, removeUploadFiles } from "@/lib/uploads";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
+import { deliveryLabel, cardBacksLabel } from "@/lib/order-details";
 import { fetchClientMessages } from "@/lib/gmail";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -131,8 +132,34 @@ export async function convertSubmissionToProject(formData: FormData) {
       stage: "LEAD",
       clientId,
       requested: sub.message,
+      // Carry over what the form asked up front, so nobody re-types it.
+      dueDate: sub.dueDate,
+      shipStreet: sub.shipStreet,
+      shipCity: sub.shipCity,
+      shipState: sub.shipState,
+      shipPostalCode: sub.shipPostalCode,
+      notes:
+        [
+          sub.deliveryMethod ? `Delivery: ${deliveryLabel(sub.deliveryMethod)}` : null,
+          sub.cardBacks ? `Card backs: ${cardBacksLabel(sub.cardBacks)}` : null,
+        ]
+          .filter(Boolean)
+          .join("\n") || null,
     },
   });
+
+  // A due date that came in on the form goes on the calendar now, same as an edit would.
+  if (project.dueDate) {
+    const { dueEventId, deliveryEventId } = await syncProjectEvents({
+      title: project.title,
+      dueDate: project.dueDate,
+      deliveryDate: null,
+      dueEventId: null,
+      deliveryEventId: null,
+    });
+    await prisma.project.update({ where: { id: project.id }, data: { dueEventId, deliveryEventId } });
+    await syncAutoReminder(project.id, project.title, project.dueDate);
+  }
 
   await prisma.submission.update({
     where: { id },

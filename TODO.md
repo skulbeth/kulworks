@@ -2,6 +2,10 @@
 
 ## Session log
 
+Full detail for 2026-10-20 (quote form asks due date, delivery and card backs; rush fee;
+card rate to $0.25; why Janice's Drive folder never appeared) is in
+`docs/SESSION-2026-10-20.md`.
+
 Full detail for 2026-10-05 (twelve real testimonials published and blurred, the
 testimonials page and card design, item photos + the admin field for them, photos on
 every Who It's For card, and why a Facebook share preview looked stale) is in
@@ -72,6 +76,35 @@ in `prisma/migrations/`). Handy: `npm run db:studio` (browse DB), `npm run db:se
 **Deploy:** push to `main` → Vercel auto-deploys production. `constructionMode` is already
 `false` (launched 2026-07-23); leave it that way. Verify a deploy with node `fetch` against
 kulworks.com — curl is sandboxed in this environment.
+
+---
+
+## 📝 Quote form + calculator changes (Sam, 2026-10-19, from the Janice Degollado quote)
+
+All four done 2026-10-20, see `docs/SESSION-2026-10-20.md`.
+
+- [x] **Ask on submission** (quote form + card calculator): due date ("When do you need
+      it in hand?", optional), delivery (local pickup in San Antonio / shipped / meet up;
+      street, city, state, ZIP when shipped), and for card orders same back vs a different
+      back per card, with the "label each back clearly" note. Real `Submission` columns
+      (`dueDate`, `deliveryMethod`, `ship*`, `cardBacks`; migration
+      `20261020120000_submission_due_delivery`), shown in admin, copied onto the Project on
+      convert (dueDate + ship*, delivery + backs into notes, due date pushed to the
+      calendar), and in both the new-request and confirmation emails.
+- [x] **Show the fees up front:** `RUSH_FEE` = $15 flat for production in under 3 days
+      (`src/lib/order-details.ts`). The calculator adds it when the date picked is under 3
+      days out, and the 9% service charge applies on top, same as an invoice line. Shipping
+      added to the invoice and the meetup travel fee are noted on the form, the calculator
+      and /pricing/. (The "% of order with a $15 minimum" idea is not built; flat $15 only.)
+- [x] **Raise the card price:** $0.13 → **$0.25** per poker card (Sam, 2026-10-20), setup
+      still $25. Updated the calculator, /pricing/ ("$0.10 to $0.15" → "$0.25", plus rush
+      and delivery lines) and the card-cost guide (example deck re-priced; its
+      `dateModified` in the structured data now 2026-10-20).
+- [x] **Drive folder auto-create didn't fire:** not a failure. Commit `fca20c4`
+      (2026-07-25) turned auto-create off on purpose (create-on-demand from the admin), so
+      the website only flagged `driveFolder`. Turned back on for requests that tick the
+      box; the link now goes out in the confirmation email, and a folder that fails to
+      create is written to the error log instead of only the server console.
 
 ---
 

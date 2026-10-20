@@ -29,9 +29,31 @@ try {
     name: "Smoke Test", email: "kulworksdesign@gmail.com",
     projectType: "card-printing", message: "Smoke test — please ignore.", driveFolder: false,
     turnstileToken: "test",
+    dueDate: "2030-01-15", deliveryMethod: "ship", cardBacks: "different",
+    shipStreet: "1 Smoke St", shipCity: "San Antonio", shipState: "TX", shipPostalCode: "78201",
   });
-  const qSaved = await prisma.submission.findFirst({ where: { email: "kulworksdesign@gmail.com" } });
+  const qSaved = await prisma.submission.findFirst({ where: { email: "kulworksdesign@gmail.com" }, orderBy: { createdAt: "desc" } });
   ok("quote: valid submit → 200 + saved + emails", q1.status === 200 && q1.json?.ok && !!qSaved, `status ${q1.status}`);
+  ok(
+    "quote: due date, delivery, address, card backs saved as fields",
+    qSaved?.dueDate?.toISOString().slice(0, 10) === "2030-01-15" && qSaved?.deliveryMethod === "ship" &&
+      qSaved?.shipCity === "San Antonio" && qSaved?.shipPostalCode === "78201" && qSaved?.cardBacks === "different",
+    JSON.stringify({ due: qSaved?.dueDate, d: qSaved?.deliveryMethod, c: qSaved?.shipCity, b: qSaved?.cardBacks })
+  );
+
+  const q4 = await post("/api/quote/", {
+    name: "Smoke Ship", email: "smoke-ship@example.com", message: "x", turnstileToken: "test",
+    deliveryMethod: "ship", shipStreet: "1 Main", shipCity: "", shipState: "TX", shipPostalCode: "",
+  });
+  const q4Saved = await prisma.submission.count({ where: { email: "smoke-ship@example.com" } });
+  ok("quote: shipped without full address → 400 + NOT saved", q4.status === 400 && q4Saved === 0, `status ${q4.status}`);
+
+  const q5 = await post("/api/quote/", {
+    name: "Smoke Junk", email: "smoke-junk@example.com", message: "x", turnstileToken: "test",
+    dueDate: "next tuesday", deliveryMethod: "teleport", cardBacks: "rainbow",
+  });
+  const q5Row = await prisma.submission.findFirst({ where: { email: "smoke-junk@example.com" } });
+  ok("quote: junk due/delivery/backs ignored (saved as null)", q5.status === 200 && q5Row && !q5Row.dueDate && !q5Row.deliveryMethod && !q5Row.cardBacks);
 
   const q2 = await post("/api/quote/", { name: "x", email: "not-an-email", message: "hi", turnstileToken: "test" });
   ok("quote: invalid email → 400", q2.status === 400 && q2.json?.ok === false);
@@ -141,6 +163,8 @@ try {
   // ── Cleanup test data ──
   await prisma.submission.deleteMany({ where: { email: "kulworksdesign@gmail.com" } });
   await prisma.client.deleteMany({ where: { email: "kulworksdesign@gmail.com" } });
+  await prisma.submission.deleteMany({ where: { email: { in: ["smoke-junk@example.com", "smoke-ship@example.com"] } } });
+  await prisma.client.deleteMany({ where: { email: { in: ["smoke-junk@example.com", "smoke-ship@example.com"] } } });
   await prisma.pageView.deleteMany({ where: { path: { in: ["/smoke-test", "/smoke-bot"] } } });
   try { await resend.contacts.remove({ email: "smoke-sub@example.com", audienceId: process.env.RESEND_AUDIENCE_ID }); } catch {}
   await prisma.subscriber.deleteMany({ where: { email: "smoke-sub@example.com" } });

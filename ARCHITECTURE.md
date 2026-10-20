@@ -67,7 +67,7 @@ the important ones).
 
 | Route | Method | Purpose | Protection |
 |---|---|---|---|
-| `/api/quote` | POST | Save quote submission → notify Sam + confirm customer + SMS ping + optional Drive folder | rate limit, honeypot, Turnstile, 60s dup guard |
+| `/api/quote` | POST | Save quote submission (incl. due date, delivery, card backs) → create Drive folder if ticked (link goes in the confirmation) → notify Sam + confirm customer + SMS ping | rate limit, honeypot, Turnstile, 60s dup guard |
 | `/api/subscribe` | POST | Newsletter signup → Subscriber + Resend Audience | rate limit, honeypot, Turnstile |
 | `/api/track` | POST | Cookieless page-view beacon | rate limit, bot-UA filter |
 | `/api/cron/reminders` | GET | Daily digest of due/overdue reminders → email Sam | `CRON_SECRET` bearer |
@@ -83,7 +83,7 @@ the important ones).
 |---|---|
 | `Profile` | Admin users (id = Supabase auth id) + role (OWNER/STAFF), `phone`, `deactivatedAt` (soft-off), `twoFactorEnabled` |
 | `Client` | CRM contact (name, email, phone, company, address, notes) |
-| `Submission` | Raw quote request (+ phone, sessionId, driveFolderUrl, status) |
+| `Submission` | Raw quote request (+ phone, sessionId, driveFolderUrl, status, dueDate, deliveryMethod + ship address, cardBacks; labels/rush rule in `lib/order-details.ts`) |
 | `Project` | Tracked job — pipeline stage, specs, costs, dates, shipping; `dueEventId`/`deliveryEventId` (Google Calendar) |
 | `Payment` | Itemized payments per project (amount + method) |
 | `Activity` | Timeline: notes, emails-sent, calls, status changes, reminders (`remindAt`, `done`, `calendarEventId`) |
@@ -156,7 +156,7 @@ Testing mode), Vercel, Squarespace (domain).
 - **Quote form errors / no submissions saving** → check Supabase env vars in Vercel; check `/admin` → Team → System errors; confirm Supabase project isn't paused.
 - **No emails arriving** → *Outbound* (quotes/confirmations/newsletter) is **Resend** → Resend dashboard (Logs), verify `RESEND_*` env vars + `kulworks.com` still verified (DKIM `resend._domainkey`). *Inbound* (mail sent TO @kulworks.com) is **Mailgun** (MX) → check the Mailgun dashboard/routes. DMARC (`_dmarc`, `p=none`) reports go to Mailgun/OnDMARC — do not add a second `_dmarc` record.
 - **Bot challenge blocking real users** → Turnstile keys in Vercel; Cloudflare Turnstile dashboard.
-- **Drive folders not creating** → `GOOGLE_*` env vars; Google Cloud OAuth app still in Testing with Sam as test user; refresh token may need re-issuing (`npm run google:auth`).
+- **Drive folders not creating** → check the admin error log for "/api/quote drive folder" first; then `GOOGLE_*` env vars; Google Cloud OAuth app still in Testing with Sam as test user; refresh token may need re-issuing (`npm run google:auth`).
 - **Calendar events not appearing** → `GOOGLE_CALENDAR_ID` set in Vercel? Refresh token must include the Calendar scope — if it predates the scope add, re-run `npm run google:auth` and update `GOOGLE_REFRESH_TOKEN`. Sync is best-effort: check server logs (`[calendar] …`) / Team → System errors. Events only sync for dates/reminders saved *after* setup — run `npm run calendar:backfill` for existing ones.
 - **No reminder/backup emails** → `CRON_SECRET` in Vercel; Vercel → Cron tab (Hobby plan cron limits).
 - **No SMS ping** → `NOTIFY_SMS` in Vercel; carrier gateways are best-effort.

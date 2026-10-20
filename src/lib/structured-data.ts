@@ -178,7 +178,7 @@ export function guideArticleSchema(guide: Guide) {
     headline: guide.title,
     description: guide.description,
     datePublished: guide.datePublished,
-    dateModified: guide.datePublished,
+    dateModified: guide.dateModified ?? guide.datePublished,
     author: { "@id": ORG_ID },
     publisher: { "@id": ORG_ID },
     mainEntityOfPage: absUrl(`/guides/${guide.slug}/`),

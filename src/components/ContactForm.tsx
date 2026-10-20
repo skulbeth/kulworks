@@ -5,6 +5,15 @@ import { useSearchParams } from "next/navigation";
 import { services } from "@/data/services";
 import { site } from "@/data/site";
 import TurnstileWidget from "@/components/TurnstileWidget";
+import {
+  DELIVERY_OPTIONS,
+  CARD_BACK_OPTIONS,
+  CARD_TYPES,
+  FEES_NOTE,
+  RUSH_FEE,
+  isRush,
+  todayISO,
+} from "@/lib/order-details";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -30,6 +39,11 @@ function FormInner() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [dueDate, setDueDate] = useState("");
+  const [delivery, setDelivery] = useState("");
+  const [cardBacks, setCardBacks] = useState("");
+  const isCardOrder = selectedTypes.some((t) => CARD_TYPES.includes(t));
+  const rush = isRush(dueDate);
 
   // Pre-fill from the URL: ?type=card-printing,card-design and ?details=<summary>
   // (used by the "Request this" CTAs and the card cost estimator).
@@ -44,6 +58,9 @@ function FormInner() {
     }
     const d = params.get("details");
     if (d) setMessage(d);
+    // The card calculator passes the due date it priced (it may have added a rush fee).
+    const due = params.get("due");
+    if (due && /^\d{4}-\d{2}-\d{2}$/.test(due)) setDueDate(due);
   }, [params]);
 
   const toggleType = (id: string) =>
@@ -55,6 +72,9 @@ function FormInner() {
     form.reset();
     setSelectedTypes([]);
     setMessage("");
+    setDueDate("");
+    setDelivery("");
+    setCardBacks("");
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -75,6 +95,13 @@ function FormInner() {
           message: fd.get("message"),
           reference: fd.get("reference"),
           driveFolder: fd.get("driveFolder") === "yes",
+          dueDate: dueDate || null,
+          deliveryMethod: delivery || null,
+          shipStreet: fd.get("shipStreet"),
+          shipCity: fd.get("shipCity"),
+          shipState: fd.get("shipState"),
+          shipPostalCode: fd.get("shipPostalCode"),
+          cardBacks: isCardOrder ? cardBacks || null : null,
           company_website: fd.get("company_website"), // honeypot
           turnstileToken,
           sessionId: (() => {
@@ -189,6 +216,90 @@ function FormInner() {
           placeholder="Tell me about your project: quantities, sizes, timeline, and anything else that helps me quote it."
         />
       </div>
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label className={label} htmlFor="dueDate">
+            When do you need it in hand? <span className="font-normal text-muted">(optional)</span>
+          </label>
+          <input
+            id="dueDate"
+            type="date"
+            min={todayISO()}
+            className={field}
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+          {rush && (
+            <p className="mt-1.5 text-xs font-semibold text-gold">
+              That&apos;s under 3 days out, so a ${RUSH_FEE} rush fee applies.
+            </p>
+          )}
+        </div>
+        <fieldset>
+          <legend className={label}>How should we get it to you?</legend>
+          <div className="space-y-2 rounded-lg border border-border bg-surface2 p-3">
+            {DELIVERY_OPTIONS.map((o) => (
+              <label key={o.id} className="flex items-center gap-2.5 text-sm">
+                <input
+                  type="radio"
+                  name="deliveryMethod"
+                  value={o.id}
+                  required
+                  className="h-4 w-4 shrink-0 accent-primary"
+                  checked={delivery === o.id}
+                  onChange={() => setDelivery(o.id)}
+                />
+                <span>{o.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      </div>
+
+      {delivery === "ship" && (
+        <fieldset className="space-y-3">
+          <legend className={label}>Shipping address</legend>
+          <input name="shipStreet" required autoComplete="street-address" className={field} placeholder="Street address" />
+          <div className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
+            <input name="shipCity" required autoComplete="address-level2" className={field} placeholder="City" />
+            <input name="shipState" required autoComplete="address-level1" className={field} placeholder="State" />
+            <input name="shipPostalCode" required autoComplete="postal-code" inputMode="numeric" className={field} placeholder="ZIP" />
+          </div>
+        </fieldset>
+      )}
+
+      {isCardOrder && (
+        <fieldset>
+          <legend className={label}>Card backs</legend>
+          <div className="grid gap-2 rounded-lg border border-border bg-surface2 p-3 sm:grid-cols-2">
+            {CARD_BACK_OPTIONS.map((o) => (
+              <label key={o.id} className="flex items-center gap-2.5 text-sm">
+                <input
+                  type="radio"
+                  name="cardBacks"
+                  value={o.id}
+                  required
+                  className="h-4 w-4 shrink-0 accent-primary"
+                  checked={cardBacks === o.id}
+                  onChange={() => setCardBacks(o.id)}
+                />
+                <span>{o.label}</span>
+              </label>
+            ))}
+          </div>
+          {cardBacks === "different" && (
+            <p className="mt-1.5 text-xs text-muted">
+              When you upload, please label each back clearly so it&apos;s obvious which front it
+              goes with (for example &quot;Card 12 front&quot; and &quot;Card 12 back&quot;).
+            </p>
+          )}
+        </fieldset>
+      )}
+
+      <p className="rounded-lg border border-border bg-surface2 px-4 py-3 text-xs text-muted">
+        {FEES_NOTE} A {site.payments.defaultServiceCharge}% service charge applies to the order total, including any rush fee.
+      </p>
 
       <div>
         <label className={label} htmlFor="reference">Reference / artwork (optional)</label>

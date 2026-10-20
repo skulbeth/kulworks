@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { fmtDateTime, fmtText } from "@/lib/format";
+import { fmtDate, fmtDateTime, fmtText } from "@/lib/format";
+import { isRush, deliveryLabel, cardBacksLabel, shipAddressLine } from "@/lib/order-details";
 import {
   updateSubmissionStatus,
   convertSubmissionToProject,
@@ -183,6 +184,36 @@ export default async function SubmissionsPage({
               {s.phone && <CopyButton text={s.phone} label="Copy" />}
             </div>
           </Field>
+          <Field label="Needed by">
+            {s.dueDate ? (
+              <span>
+                {fmtDate(s.dueDate)}
+                {isRush(s.dueDate.toISOString().slice(0, 10), s.createdAt.toISOString().slice(0, 10)) && (
+                  <span className="ml-2 rounded bg-gold/15 px-1.5 py-0.5 text-xs font-semibold text-gold">
+                    Rush at request time
+                  </span>
+                )}
+              </span>
+            ) : (
+              <span className="text-muted">Not given</span>
+            )}
+          </Field>
+          <Field label="Delivery">
+            {s.deliveryMethod ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span>{deliveryLabel(s.deliveryMethod)}</span>
+                {s.deliveryMethod === "ship" && shipAddressLine(s) && (
+                  <>
+                    <span className="text-muted">· {shipAddressLine(s)}</span>
+                    <CopyButton text={shipAddressLine(s)} label="Copy" />
+                  </>
+                )}
+              </div>
+            ) : (
+              <span className="text-muted">Not given</span>
+            )}
+          </Field>
+          {s.cardBacks && <Field label="Card backs">{cardBacksLabel(s.cardBacks)}</Field>}
           <Field label="Reference / artwork">{fmtText(s.reference)}</Field>
           <Field label="Shared Drive folder">
             {s.driveFolderUrl ? (
