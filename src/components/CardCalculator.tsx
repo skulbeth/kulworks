@@ -13,6 +13,9 @@ import { RUSH_FEE, RUSH_WITHIN_DAYS, FEES_NOTE, isRush, todayISO } from "@/lib/o
 const POKER_RATE = 0.3; // per card, print-ready poker size ($0.13 until 2026-10-20, $0.25 until 2026-10-22)
 
 const SETUP_FEE = 25; // one-time per project
+// Floor (Sam, 2026-10-22): setup + printing never works out under this per card, however
+// big the run. The bulk discount stops where it would cross it.
+const MIN_PER_CARD = 0.3;
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
@@ -39,7 +42,9 @@ export default function CardCalculator() {
   // Bulk discount on printing (setup fee always stays). Trimmed 2026-10-22 from
   // 5% @ 250 / 10% @ 500 / 12.5% @ 800. Keep in step with data/pricing.ts and data/guides.ts.
   const bulkRate = totalCards >= 1000 ? 0.1 : totalCards >= 500 ? 0.05 : 0;
-  const bulkDiscount = printing * bulkRate;
+  const maxDiscount = Math.max(0, SETUP_FEE + printing - MIN_PER_CARD * totalCards);
+  const bulkDiscount = Math.min(printing * bulkRate, maxDiscount);
+  const bulkCapped = bulkRate > 0 && printing * bulkRate > maxDiscount;
 
   // Design: $40 per layout, for as many distinct front and back layouts as needed.
   const frontN = Math.max(0, Math.floor(frontLayouts) || 0);
@@ -90,7 +95,9 @@ export default function CardCalculator() {
     { label: "Setup fee", value: SETUP_FEE, show: true },
     { label: `Printing (${totalCards} cards)`, value: printing, show: true },
     {
-      label: `Bulk discount (${Math.round(bulkRate * 100)}%)`,
+      label: bulkCapped
+        ? `Bulk discount (${Math.round(bulkRate * 100)}%, capped at ${usd(MIN_PER_CARD)}/card)`
+        : `Bulk discount (${Math.round(bulkRate * 100)}%)`,
       value: -bulkDiscount,
       show: bulkRate > 0,
     },

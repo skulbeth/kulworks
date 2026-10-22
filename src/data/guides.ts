@@ -40,7 +40,7 @@ export const guides: Guide[] = [
         h: "What goes into the price",
         body: [
           "A few things set the price. There is a one-time setup fee per project that covers getting your files ready to run on the press, and then a per-card rate. For print-ready poker-size cards that rate is $0.30 each, and there is no minimum, so a single deck, or even a single card, is fine.",
-          "Card size and quantity move the number too. Larger sizes like tarot cost more per card, roughly two to three times a poker card as you step up in size, while bigger runs earn a discount on printing: 5% at 500 cards and 10% at 1,000. Design work, if your files are not already print-ready, plus finishing like a box or sleeves and delivery, are add-ons priced to the project.",
+          "Card size and quantity move the number too. Larger sizes like tarot cost more per card, roughly two to three times a poker card as you step up in size, while bigger runs earn a discount on printing: 5% at 500 cards and 10% at 1,000, though the total never works out to less than $0.30 a card. Design work, if your files are not already print-ready, plus finishing like a box or sleeves and delivery, are add-ons priced to the project.",
         ],
       },
       {

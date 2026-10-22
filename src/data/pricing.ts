@@ -31,7 +31,7 @@ export const pricing: PriceGroup[] = [
       { label: "Setup fee (one-time, per project)", price: "$25" },
       { label: "Per card, poker size (print-ready files)", price: "$0.30" },
       { label: "Custom sizes (tarot, giant, oracle)", price: "By quote, on request" },
-      { label: "Bulk discount (on printing)", price: "5% at 500 cards, 10% at 1,000" },
+      { label: "Bulk discount (on printing)", price: "5% at 500 cards, 10% at 1,000 (never under $0.30 a card overall)" },
       { label: "Rush (production in under 3 days)", price: "$15 flat" },
       { label: "Delivery", price: "Local pickup free; shipping added to the invoice; travel fee for far meetups" },
     ],
