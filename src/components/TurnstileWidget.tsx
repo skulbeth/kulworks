@@ -19,7 +19,9 @@ export default function TurnstileWidget({
     <Turnstile
       siteKey={siteKey}
       onSuccess={onToken}
-      options={{ theme: "auto", size }}
+      // "interaction-only": the widget stays invisible unless Cloudflare actually wants a
+      // click. The default left a white "Success!" box under the footer newsletter form.
+      options={{ theme: "auto", size, appearance: "interaction-only" }}
     />
   );
 }

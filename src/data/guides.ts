@@ -46,7 +46,7 @@ export const guides: Guide[] = [
       {
         h: "A rough example",
         body: [
-          "Say you want a single poker-size prototype deck of 54 cards and your files are print-ready. That is a $25 setup fee plus $0.25 per card, so $38.50 for the printing. Add a custom 3D-printed box for $9 if you want the deck to feel finished, and a complete one-off prototype deck comes to $47.50, before delivery and the 9% service charge. Larger runs cost more in total but less per card.",
+          "Say you want a single poker-size prototype deck of 54 cards and your files are print-ready. That is a $25 setup fee plus $0.25 per card, so $38.50 for the printing. Add a custom 3D-printed box for $9 if you want the deck to feel finished, and a complete one-off prototype deck comes to $47.50, before delivery. Larger runs cost more in total but less per card.",
         ],
       },
       {

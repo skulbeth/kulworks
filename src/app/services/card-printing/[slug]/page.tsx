@@ -109,7 +109,7 @@ export default async function CardSubPage({
         <Container className="py-16 text-center">
           <h2 className="text-2xl font-extrabold sm:text-3xl">Let&apos;s print it.</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted">
-            Share your details and I&apos;ll come back with options and a quote.
+            Share your details and we&apos;ll come back with options and a quote.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
             <Button

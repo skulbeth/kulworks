@@ -4,7 +4,7 @@
 // labels and the rush rule only live here.
 
 /** Flat fee when production has to happen in under RUSH_WITHIN_DAYS days. Goes on the
- *  invoice as its own line, so the service charge applies to it like everything else. */
+ *  invoice as its own line. */
 export const RUSH_FEE = 15;
 export const RUSH_WITHIN_DAYS = 3;
 

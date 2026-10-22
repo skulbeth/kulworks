@@ -20,12 +20,15 @@ export default function ServiceCard({
           Lead Service
         </span>
       )}
-      {service.iconImage ? (
+      {service.cardImage || service.iconImage ? (
+        // A real photo of the work, wide enough to see it but kept to a banner strip so
+        // the five cards still read as a list of services.
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={service.iconImage}
+          src={service.cardImage ?? service.iconImage}
           alt=""
-          className="h-14 w-14 rounded-lg border border-border object-cover"
+          loading="lazy"
+          className="aspect-[5/2] w-full rounded-xl border border-border object-cover"
         />
       ) : (
         <div className="text-4xl">{service.icon}</div>

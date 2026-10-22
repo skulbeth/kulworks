@@ -133,7 +133,7 @@ export default function ServicesPage() {
         <Container className="py-16 text-center">
           <h2 className="text-2xl font-extrabold sm:text-3xl">Not sure which you need?</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted">
-            Describe your project and I&apos;ll point you to the right craft (or combination) and quote it.
+            Describe your project and we&apos;ll point you to the right craft (or combination) and quote it.
           </p>
           <div className="mt-6 flex justify-center">
             <Button href="/contact/" variant="gold" size="lg">Get a Quote</Button>

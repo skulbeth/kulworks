@@ -2,6 +2,9 @@
 
 ## Session log
 
+Full detail for 2026-10-22 (hero photo, factory pitch moved up, service-card photos,
+footer Turnstile box, I/we, 9% service charge removed) is in `docs/SESSION-2026-10-22.md`.
+
 Full detail for 2026-10-20 (quote form asks due date, delivery and card backs; rush fee;
 card rate to $0.25; why Janice's Drive folder never appeared) is in
 `docs/SESSION-2026-10-20.md`.

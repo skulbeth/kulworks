@@ -53,7 +53,7 @@ export default function WhoItsForPage() {
         <Container className="py-16 text-center">
           <h2 className="text-2xl font-extrabold sm:text-3xl">See yourself on this list?</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted">
-            Tell me about your project and I&apos;ll get you a quote.
+            Tell us about your project and we&apos;ll get you a quote.
           </p>
           <div className="mt-6 flex justify-center">
             <Button href="/contact/" variant="gold" size="lg">Get a Quote</Button>

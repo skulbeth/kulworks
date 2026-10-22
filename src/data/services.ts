@@ -26,6 +26,9 @@ export interface Service {
   icon: string;
   /** Optional small image icon; when set, it replaces the emoji on the service card. */
   iconImage?: string;
+  /** Optional wide photo for the home page service card banner (falls back to iconImage).
+   *  Set it when iconImage is a small or portrait shot that would crop badly as a banner. */
+  cardImage?: string;
   /** Optional sample photo shown on the Services page (4:3). Placeholder shown if omitted. */
   image?: string;
   /** Set true for the lead service (gets extra prominence). */
@@ -55,6 +58,7 @@ export const services: Service[] = [
     ],
     icon: "🃏",
     iconImage: "/images/portfolio/cards/card-icon.webp",
+    cardImage: "/images/portfolio/cards/cards-variety.webp",
     image: "/images/portfolio/cards/cards-variety.webp",
     lead: true,
   },

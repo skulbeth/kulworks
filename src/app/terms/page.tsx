@@ -48,8 +48,7 @@ export default function TermsPage() {
       <p className={p}>
         Unless otherwise agreed, we may require a deposit before production begins, with the
         balance due before delivery or pickup. We accept the payment methods shown on your invoice
-        (which may include PayPal, Venmo, Zelle, or others). A service charge is added to orders
-        as shown on your quote or invoice. Invoices are due on the date stated; work and delivery
+        (which may include PayPal, Venmo, Zelle, or others). Invoices are due on the date stated; work and delivery
         may be paused on past-due
         accounts. You are responsible for any fees your payment method charges.
       </p>

@@ -213,7 +213,7 @@ function FormInner() {
           className={field}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Tell me about your project: quantities, sizes, timeline, and anything else that helps me quote it."
+          placeholder="Tell us about your project: quantities, sizes, timeline, and anything else that helps us quote it."
         />
       </div>
 
@@ -298,7 +298,7 @@ function FormInner() {
       )}
 
       <p className="rounded-lg border border-border bg-surface2 px-4 py-3 text-xs text-muted">
-        {FEES_NOTE} A {site.payments.defaultServiceCharge}% service charge applies to the order total, including any rush fee.
+        {FEES_NOTE}
       </p>
 
       <div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { site } from "@/data/site";
 import { RUSH_FEE, RUSH_WITHIN_DAYS, FEES_NOTE, isRush, todayISO } from "@/lib/order-details";
 
 /**
@@ -18,8 +17,6 @@ const LAYOUT_FEE = 40; // per layout we design (front or back); each is a templa
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
 const SLEEVE_PER_100: Record<string, number> = { standard: 10, premium: 15 };
-// Same percent the invoices use, so an estimate and its invoice can't drift apart.
-const SERVICE_CHARGE_RATE = site.payments.defaultServiceCharge / 100;
 
 const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -58,13 +55,11 @@ export default function CardCalculator() {
     : 0;
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
-  // Rush: needed in under RUSH_WITHIN_DAYS days. A flat fee inside the subtotal, so the
-  // service charge applies to it exactly as it does on the invoice line.
+  // Rush: needed in under RUSH_WITHIN_DAYS days. A flat fee, same as its invoice line.
   const rush = isRush(dueDate);
   const rushFee = rush ? RUSH_FEE : 0;
-  const subtotal = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost + rushFee;
-  const serviceCharge = subtotal * SERVICE_CHARGE_RATE;
-  const total = subtotal + serviceCharge;
+  // No service charge on top since 2026-10-22: the estimate is the price.
+  const total = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost + rushFee;
 
   // Hand the configured estimate to the quote form (prefills type + details).
   const quoteTypes = layoutCount > 0 ? "card-printing,card-design" : "card-printing";
@@ -79,7 +74,7 @@ export default function CardCalculator() {
     sleeves !== "none" ? `- Sleeves: ${sleeves}` : "- Sleeves: none",
     bulkRate > 0 ? `- Bulk discount applied: ${Math.round(bulkRate * 100)}%` : null,
     dueDate ? `- Needed in hand by: ${dueDate}${rush ? ` (rush, +${usd(RUSH_FEE)})` : ""}` : null,
-    `- Estimated total (incl. ${site.payments.defaultServiceCharge}% service charge): ${usd(total)}`,
+    `- Estimated total: ${usd(total)}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -238,16 +233,6 @@ export default function CardCalculator() {
             ))}
         </ul>
 
-        <div className="mt-3 space-y-2 border-t border-border pt-3 text-sm">
-          <div className="flex justify-between gap-4 text-muted">
-            <span>Subtotal (production)</span>
-            <span className="font-mono font-medium text-foreground">{usd(subtotal)}</span>
-          </div>
-          <div className="flex justify-between gap-4 text-muted">
-            <span>Service charge ({site.payments.defaultServiceCharge}%)</span>
-            <span className="font-mono font-medium text-foreground">{usd(serviceCharge)}</span>
-          </div>
-        </div>
 
         <a
           href={quoteHref}
@@ -257,8 +242,7 @@ export default function CardCalculator() {
         </a>
 
         <p className="mt-auto pt-5 text-xs text-muted/70">
-          Production subtotal plus a {site.payments.defaultServiceCharge}% service charge,
-          which also applies to any rush fee. {FEES_NOTE} Cards come with rounded corners.
+          {FEES_NOTE} Cards come with rounded corners.
           Final pricing depends on files, finishing, and quantity, so send your project for
           an exact quote.
         </p>

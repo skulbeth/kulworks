@@ -31,12 +31,12 @@ export default function HomePage() {
       {/* ===== Hero ===== */}
       <section className="relative overflow-hidden border-b border-border">
         <div className="pointer-events-none absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent" />
-        <Container className="relative py-20 sm:py-28">
+        <Container className="relative grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
           <div className="animate-fade-up">
             <p className="mb-4 font-mono text-xs font-semibold uppercase tracking-[0.25em] text-gold">
               Multi-craft maker shop
             </p>
-            <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl">
+            <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl lg:text-5xl xl:text-6xl">
               <span className="text-gold text-glow-gold">Cards, tiles, and 3D.</span>
               {" "}Designed and made in San Antonio.
             </h1>
@@ -54,49 +54,18 @@ export default function HomePage() {
               </Button>
             </div>
           </div>
-        </Container>
-      </section>
-
-      {/* ===== Intro ===== */}
-      <section className="border-b border-border">
-        <Container className="py-16">
-          <RevealOnScroll>
-            <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr]">
-              <div>
-                <SectionHeading
-                  eyebrow="Inside the shop"
-                  title="Every material, under one roof"
-                  intro="Custom cards, UV-printed tiles, FDM and resin 3D printing, and the design behind it all. From a first prototype deck to a finished run, it's made right here. Take a look."
-                />
-                <div className="mt-6">
-                  <Button href="/about/" variant="ghost">About the shop</Button>
-                </div>
-              </div>
-              <Carousel slides={studioSlides} />
-            </div>
-          </RevealOnScroll>
-        </Container>
-      </section>
-
-      {/* ===== Services overview ===== */}
-      <section className="border-b border-border">
-        <Container className="py-16">
-          <RevealOnScroll>
-            <SectionHeading
-              eyebrow="Services & who it's for"
-              title="Five crafts, made for teams, designers, and sellers"
-              intro="Card printing is what we do most, for sports teams, schools, clubs, and game and card designers. If it needs designing, printing, or making, there's a good chance we can help."
-            />
-          </RevealOnScroll>
-          {/* All five services as equal sections; card printing (lead) first + badged. */}
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((s) => (
-              <ServiceCard key={s.id} service={s} featured={s.lead} />
-            ))}
-          </div>
-          <div className="mt-8">
-            <Button href="/services/" variant="ghost">All services in detail →</Button>
-          </div>
+          {/* Finished work, not machines, is what sells: a printed deck fanned out at an
+              angle, so the thickness and the print both read. Eager + high priority because
+              it's the largest thing above the fold. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/portfolio/cards/panic-cards-spread-still.webp"
+            alt="A finished custom card deck printed by Kulworks, fanned out to show the full-color card backs"
+            width={1600}
+            height={1067}
+            fetchPriority="high"
+            className="animate-fade-up w-full rounded-2xl border border-border object-cover shadow-glow"
+          />
         </Container>
       </section>
 
@@ -151,6 +120,49 @@ export default function HomePage() {
         </Container>
       </section>
 
+      {/* ===== Intro ===== */}
+      <section className="border-b border-border">
+        <Container className="py-16">
+          <RevealOnScroll>
+            <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr]">
+              <div>
+                <SectionHeading
+                  eyebrow="Inside the shop"
+                  title="Every material, under one roof"
+                  intro="Custom cards, UV-printed tiles, FDM and resin 3D printing, and the design behind it all. From a first prototype deck to a finished run, it's made right here. Take a look."
+                />
+                <div className="mt-6">
+                  <Button href="/about/" variant="ghost">About the shop</Button>
+                </div>
+              </div>
+              <Carousel slides={studioSlides} />
+            </div>
+          </RevealOnScroll>
+        </Container>
+      </section>
+
+      {/* ===== Services overview ===== */}
+      <section className="border-b border-border">
+        <Container className="py-16">
+          <RevealOnScroll>
+            <SectionHeading
+              eyebrow="Services & who it's for"
+              title="Five crafts, made for teams, designers, and sellers"
+              intro="Card printing is what we do most, for sports teams, schools, clubs, and game and card designers. If it needs designing, printing, or making, there's a good chance we can help."
+            />
+          </RevealOnScroll>
+          {/* All five services as equal sections; card printing (lead) first + badged. */}
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {services.map((s) => (
+              <ServiceCard key={s.id} service={s} featured={s.lead} />
+            ))}
+          </div>
+          <div className="mt-8">
+            <Button href="/services/" variant="ghost">All services in detail →</Button>
+          </div>
+        </Container>
+      </section>
+
       {/* ===== Closing CTA ===== */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-gradient-radial from-gold/10 via-transparent to-transparent" />
@@ -159,7 +171,7 @@ export default function HomePage() {
             Have a project in mind? Let&apos;s make it.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-muted">
-            Tell me what you&apos;re building and I&apos;ll get back to you with next steps and a quote.
+            Tell us what you&apos;re building and we&apos;ll get back to you with next steps and a quote.
           </p>
           <div className="mt-8 flex justify-center">
             <Button href="/contact/" variant="gold" size="lg">Start a Project</Button>

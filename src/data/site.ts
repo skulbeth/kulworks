@@ -100,10 +100,10 @@ export const site = {
     // Zelle recipient — email and/or phone enrolled at your bank. Shown ONLY in the
     // Zelle box on private invoice pages (never on any public/site page).
     zelle: "sam.kulbeth@gmail.com or (210) 577-3064",
-    // Flat service charge added to new invoices + the pricing estimate (percent). Replaces a
-    // separate sales-tax line — Sam covers any tax owed out of this margin. See TODO if this
-    // ever needs to become real itemized sales tax again.
-    defaultServiceCharge: 9,
+    // Flat service charge added to new invoices (percent). 0 since 2026-10-22: Sam dropped
+    // the 9% (the card rate went up and there's a setup fee). The invoice editor still has a
+    // "Service charge" toggle for a one-off job that needs it; at 0 nothing shows anywhere.
+    defaultServiceCharge: 0,
   },
 } as const;
 

@@ -27,8 +27,8 @@ export default function ContactPage() {
         <SectionHeading
           as="h1"
           eyebrow="Get a quote"
-          title="Tell me about your project"
-          intro="Share the details and I'll come back with next steps and a quote. The more you can tell me about quantities, sizes, and timeline, the faster I can help."
+          title="Tell us about your project"
+          intro="Share the details and we'll come back with next steps and a quote. The more you can tell us about quantities, sizes, and timeline, the faster we can help."
         />
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1.5fr_1fr]">
@@ -40,7 +40,7 @@ export default function ContactPage() {
           {/* Alternate contact / info */}
           <aside className="space-y-6">
             <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold">Other ways to reach me</h3>
+              <h3 className="font-bold">Other ways to reach us</h3>
               <ul className="mt-3 space-y-2 text-muted">
                 <li>
                   Email:{" "}
@@ -95,9 +95,9 @@ export default function ContactPage() {
               <h3 className="font-bold">What happens next</h3>
               <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-muted">
                 <li>You send the details.</li>
-                <li>I reply with questions, options, and a quote.</li>
+                <li>We reply with questions, options, and a quote.</li>
                 <li>We finalize artwork/files and timeline.</li>
-                <li>I make it and get it to you.</li>
+                <li>We make it and get it to you.</li>
               </ol>
             </div>
           </aside>
