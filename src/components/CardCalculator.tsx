@@ -10,7 +10,7 @@ import { RUSH_FEE, RUSH_WITHIN_DAYS, FEES_NOTE, isRush, todayISO } from "@/lib/o
 
 // Standard poker size only; other sizes are custom and quote-only.
 // Keep in step with data/pricing.ts and data/guides.ts, which publish the same rate.
-const POKER_RATE = 0.25; // per card, print-ready poker size (was $0.13 until 2026-10-20)
+const POKER_RATE = 0.3; // per card, print-ready poker size ($0.13 until 2026-10-20, $0.25 until 2026-10-22)
 
 const SETUP_FEE = 25; // one-time per project
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
@@ -36,9 +36,9 @@ export default function CardCalculator() {
 
   const printing = totalCards * POKER_RATE;
 
-  // Bulk discount on printing (setup fee always stays).
-  const bulkRate =
-    totalCards >= 800 ? 0.125 : totalCards >= 500 ? 0.1 : totalCards >= 250 ? 0.05 : 0;
+  // Bulk discount on printing (setup fee always stays). Trimmed 2026-10-22 from
+  // 5% @ 250 / 10% @ 500 / 12.5% @ 800. Keep in step with data/pricing.ts and data/guides.ts.
+  const bulkRate = totalCards >= 1000 ? 0.1 : totalCards >= 500 ? 0.05 : 0;
   const bulkDiscount = printing * bulkRate;
 
   // Design: $40 per layout, for as many distinct front and back layouts as needed.
