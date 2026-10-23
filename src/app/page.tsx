@@ -4,7 +4,6 @@ import Button from "@/components/Button";
 import SectionHeading from "@/components/SectionHeading";
 import ServiceCard from "@/components/ServiceCard";
 import RevealOnScroll from "@/components/RevealOnScroll";
-import Placeholder from "@/components/Placeholder";
 import Carousel from "@/components/Carousel";
 import ComingSoon from "@/components/ComingSoon";
 import { site } from "@/data/site";
@@ -69,73 +68,70 @@ export default function HomePage() {
         </Container>
       </section>
 
-      {/* ===== Prototyping + Portfolio (one section, side by side) ===== */}
+      {/* ===== Prototyping, next to the studio carousel ===== */}
       <section className="border-b border-border bg-surface/30">
         <Container className="py-16">
           <RevealOnScroll>
-            <div className="grid items-stretch gap-6 md:grid-cols-2">
-              {/* Prototyping pitch (condensed from the guide) */}
-              <div className="flex flex-col rounded-2xl border border-border bg-surface p-8">
-                <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Prototyping</p>
-                <h2 className="mt-2 text-3xl font-extrabold sm:text-4xl">
-                  Between a home printer and a factory
-                </h2>
-                <p className="mt-5 text-lg text-muted">
-                  Printing at home is a great, cheap way to start. A factory run of a thousand copies
-                  is a big leap. The gap between them is where we live: clean, table-ready cards and
-                  pieces in small numbers, with no huge minimum, so your game looks and plays like the
-                  real thing while you&apos;re still refining it.
-                </p>
-                <div className="mt-auto flex flex-wrap gap-3 pt-7">
+            <div className="grid items-center gap-10 md:grid-cols-[1.15fr_0.85fr] lg:min-h-[27rem]">
+              {/* Prototyping pitch (condensed from the guide); sits right of the carousel from md up */}
+              <div className="md:order-last">
+                <SectionHeading
+                  eyebrow="Prototyping"
+                  title="Between a home printer and a factory"
+                  intro="Printing at home is a great, cheap way to start. A factory run of a thousand copies is a big leap. The gap between them is where we live: clean, table-ready cards and pieces in small numbers, with no huge minimum, so your game looks and plays like the real thing while you're still refining it."
+                />
+                <div className="mt-6 flex flex-wrap gap-3">
                   <Button href="/guides/print-and-play-vs-real-prototype/" variant="ghost">
                     Print-and-play vs. a real prototype →
                   </Button>
                   <Button href="/contact/" variant="gold">Get a quote</Button>
                 </div>
               </div>
-
-              {/* Portfolio */}
-              <div className="flex flex-col rounded-2xl border border-border bg-surface p-8">
-                <Placeholder
-                  label="Custom printed cards"
-                  src="/images/portfolio/cards/cards-displayed.webp"
-                  alt="A fanned stack of finished custom printed cards"
-                  ratio="aspect-[4/3]"
-                  className="rounded-2xl"
-                />
-                <SectionHeading
-                  className="mt-6"
-                  eyebrow="Portfolio"
-                  title="See the work"
-                  intro="A sample of what we make, across cards, tiles, and 3D. The full gallery has the rest, and it keeps growing."
-                />
-                <div className="mt-auto pt-6">
-                  <Button href="/portfolio/" variant="gold" size="lg">
-                    Browse the full gallery →
-                  </Button>
-                </div>
-              </div>
+              <Carousel slides={studioSlides} />
             </div>
           </RevealOnScroll>
         </Container>
       </section>
 
-      {/* ===== Intro ===== */}
+      {/* ===== Intro, with the portfolio where the carousel used to be ===== */}
       <section className="border-b border-border">
         <Container className="py-16">
           <RevealOnScroll>
-            <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr]">
+            <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr] lg:min-h-[27rem]">
               <div>
                 <SectionHeading
                   eyebrow="Inside the shop"
                   title="Every material, under one roof"
                   intro="Custom cards, UV-printed tiles, FDM and resin 3D printing, and the design behind it all. From a first prototype deck to a finished run, it's made right here. Take a look."
                 />
-                <div className="mt-6">
+                <div className="mt-6 flex flex-wrap gap-3">
                   <Button href="/about/" variant="ghost">About the shop</Button>
+                  <Button href="/portfolio/" variant="gold">Browse the full gallery →</Button>
                 </div>
               </div>
-              <Carousel slides={studioSlides} />
+
+              {/* Portfolio: same 3:2 frame as the carousel so the rows match */}
+              <a
+                href="/portfolio/"
+                className="group relative block w-full overflow-hidden rounded-2xl border border-border shadow-lg"
+              >
+                <div className="relative w-full pb-[66%]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/portfolio/cards/cards-displayed.webp"
+                    alt="A fanned stack of finished custom printed cards"
+                    loading="lazy"
+                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-6 pt-16">
+                    <p className="text-sm font-bold uppercase tracking-[0.2em] text-gold">Portfolio</p>
+                    <p className="mt-1 text-2xl font-extrabold text-white sm:text-3xl">See the work →</p>
+                    <p className="mt-1 text-sm text-white/80">
+                      Cards, tiles, and 3D. The full gallery has the rest, and it keeps growing.
+                    </p>
+                  </div>
+                </div>
+              </a>
             </div>
           </RevealOnScroll>
         </Container>
