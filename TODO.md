@@ -2,6 +2,10 @@
 
 ## Session log
 
+Full detail for 2026-10-23 to 25 (home page rows zig-zag at equal height; tarot is a
+standard size at $0.60 a card with a size picker in the calculator; open question on
+tarot box/sleeve pricing) is in `docs/SESSION-2026-10-23-25.md`.
+
 Full detail for 2026-10-22 (hero photo, factory pitch moved up, service-card photos,
 footer Turnstile box, I/we, 9% service charge removed) is in `docs/SESSION-2026-10-22.md`.
 
