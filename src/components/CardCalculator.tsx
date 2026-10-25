@@ -8,14 +8,19 @@ import { RUSH_FEE, RUSH_WITHIN_DAYS, FEES_NOTE, isRush, todayISO } from "@/lib/o
  * estimates, not quotes. Adjust the rate constants below if pricing changes.
  */
 
-// Standard poker size only; other sizes are custom and quote-only.
-// Keep in step with data/pricing.ts and data/guides.ts, which publish the same rate.
-const POKER_RATE = 0.3; // per card, print-ready poker size ($0.13 until 2026-10-20, $0.25 until 2026-10-22)
+// Standard sizes with a published rate; bridge, giant and oracle stay custom and quote-only.
+// Keep in step with data/pricing.ts and data/guides.ts, which publish the same rates.
+// Poker: $0.13 until 2026-10-20, $0.25 until 2026-10-22. Tarot set 2026-10-25 at 2x poker
+// (about 9-10 fit a bed vs 18 poker, so twice the beds and hand placement).
+// Floor (Sam, 2026-10-22): setup + printing never works out under the size's rate per card,
+// however big the run. The bulk discount stops where it would cross it.
+const SIZES = {
+  poker: { label: "Poker (2.5 x 3.5 in)", rate: 0.3 },
+  tarot: { label: "Tarot (2.75 x 4.75 in)", rate: 0.6 },
+} as const;
+type SizeKey = keyof typeof SIZES;
 
 const SETUP_FEE = 25; // one-time per project
-// Floor (Sam, 2026-10-22): setup + printing never works out under this per card, however
-// big the run. The bulk discount stops where it would cross it.
-const MIN_PER_CARD = 0.3;
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
@@ -25,6 +30,7 @@ const usd = (n: number) =>
   n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function CardCalculator() {
+  const [sizeKey, setSizeKey] = useState<SizeKey>("poker");
   const [cardsPerDeck, setCardsPerDeck] = useState(54);
   const [decks, setDecks] = useState(1);
   const [frontLayouts, setFrontLayouts] = useState(0);
@@ -37,7 +43,9 @@ export default function CardCalculator() {
   const deckCount = Math.max(0, Math.floor(decks) || 0);
   const totalCards = cpd * deckCount;
 
-  const printing = totalCards * POKER_RATE;
+  const size = SIZES[sizeKey];
+  const MIN_PER_CARD = size.rate;
+  const printing = totalCards * size.rate;
 
   // Bulk discount on printing (setup fee always stays). Trimmed 2026-10-22 from
   // 5% @ 250 / 10% @ 500 / 12.5% @ 800. Keep in step with data/pricing.ts and data/guides.ts.
@@ -70,7 +78,7 @@ export default function CardCalculator() {
   const quoteTypes = layoutCount > 0 ? "card-printing,card-design" : "card-printing";
   const summary = [
     "Card printing estimate from the website calculator:",
-    "- Size: Poker (2.5 x 3.5 in)",
+    `- Size: ${size.label}`,
     `- Quantity: ${deckCount} deck(s) x ${cpd} cards = ${totalCards} cards`,
     layoutCount > 0
       ? `- Design: ${frontN} front + ${backN} back layout(s)`
@@ -115,9 +123,24 @@ export default function CardCalculator() {
     <div className="grid gap-6 rounded-2xl border border-border bg-surface p-6 sm:p-8 md:grid-cols-2">
       {/* Inputs */}
       <div className="space-y-5">
-        <p className="text-sm text-muted">
-          Standard poker size (2.5 x 3.5 in). Need a custom size? Ask for a quote.
-        </p>
+        <div>
+          <label className={labelCls} htmlFor="calc-size">Card size</label>
+          <select
+            id="calc-size"
+            className={inputCls}
+            value={sizeKey}
+            onChange={(e) => setSizeKey(e.target.value as SizeKey)}
+          >
+            {(Object.keys(SIZES) as SizeKey[]).map((k) => (
+              <option key={k} value={k}>
+                {SIZES[k].label}, {usd(SIZES[k].rate)} a card
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-muted">
+            Need bridge, giant, or oracle size? Those are custom, so ask for a quote.
+          </p>
+        </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>

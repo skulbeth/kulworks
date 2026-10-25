@@ -21,10 +21,10 @@ export const faqs: Faq[] = [
   },
   {
     q: "What card sizes do you print?",
-    a: "Standard poker size is our go-to, and our pricing is built around it. Other sizes are available as a custom order, just ask:",
+    a: "Poker and tarot are our standard sizes, both priced in the card calculator. Other sizes are available as a custom order, just ask:",
     bullets: [
-      "Poker (standard): 2.5 x 3.5 in / 63 x 88 mm",
-      "Tarot (custom order): 2.75 x 4.75 in / 70 x 121 mm",
+      "Poker (standard, $0.30 a card): 2.5 x 3.5 in / 63 x 88 mm",
+      "Tarot (standard, $0.60 a card): 2.75 x 4.75 in / 70 x 121 mm",
       "Giant / jumbo (custom order): about 3.5 x 5 in / 89 x 127 mm",
     ],
   },
@@ -58,7 +58,7 @@ export const faqs: Faq[] = [
   },
   {
     q: "What is the difference between poker, bridge, and tarot card sizes?",
-    a: "Poker cards are the standard size (about 2.5 by 3.5 inches) and what we print by default. Bridge cards are a bit narrower, which makes a large hand easier to hold. Tarot cards are larger overall, giving artwork more room. We print standard poker size, with tarot, bridge, giant, and oracle sizes available as a custom order.",
+    a: "Poker cards are the standard size (about 2.5 by 3.5 inches) and what we print by default. Bridge cards are a bit narrower, which makes a large hand easier to hold. Tarot cards are larger overall, giving artwork more room. We print poker and tarot as standard sizes, priced in the card calculator, with bridge, giant, and oracle sizes available as a custom order.",
   },
   {
     q: "Do you offer square or rounded corners?",

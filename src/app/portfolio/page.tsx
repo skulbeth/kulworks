@@ -53,7 +53,7 @@ export default async function PortfolioPage({
             <span className="text-foreground">UV-printed terrain tiles and custom tokens</span>,{" "}
             <span className="text-foreground">FDM replacement components and city &amp; terrain upgrade pieces</span>,
             custom 3D-printed card boxes and inserts,{" "}
-            <span className="text-foreground">tarot and giant/jumbo card sizes</span> on custom order, and more.{" "}
+            <span className="text-foreground">tarot size decks</span>, giant/jumbo cards on custom order, and more.{" "}
             <a href="/contact/" className="font-semibold text-blue hover:underline">Just ask</a>{" "}
             and we&apos;ll show you examples or make something new. You can also browse our custom 3D
             (non-proprietary) models on{" "}

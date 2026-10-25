@@ -94,7 +94,7 @@ export const cardPages: CardPage[] = [
   {
     slug: "tarot-cards",
     navLabel: "Tarot Cards",
-    hidden: true, // offered on custom order (see hub + portfolio note); no photo yet
+    hidden: true, // standard size since 2026-10-25 ($0.60/card); hidden until there is a photo
     cardBlurb: "Larger tarot-size decks with full custom artwork.",
     title: `Custom Tarot Card Printing in ${CITY}`,
     metaDescription:
@@ -119,6 +119,7 @@ export const cardPages: CardPage[] = [
     ],
     specs: [
       "Tarot size (about 2.75 x 4.75 in / 70 x 121 mm)",
+      "$0.60 a card plus a $25 setup fee, with 5% off at 500 cards and 10% off at 1,000",
       "Any card count (78-card tarot, oracle, or custom)",
       "Full custom faces and backs",
       "Single decks through short runs",
