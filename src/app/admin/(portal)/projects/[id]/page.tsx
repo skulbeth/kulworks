@@ -137,6 +137,7 @@ export default async function ProjectDetailPage({
           <TextField name="shipCity" label="City" defaultValue={project.shipCity} />
           <TextField name="shipState" label="State" defaultValue={project.shipState} />
           <TextField name="shipPostalCode" label="ZIP" defaultValue={project.shipPostalCode} />
+          <TextField name="shipCountry" label="Country (US, CA, MX)" defaultValue={project.shipCountry} />
         </FieldGroup>
 
         <TextArea name="notes" label="Notes" defaultValue={project.notes} rows={4} />

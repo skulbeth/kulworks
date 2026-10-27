@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { RUSH_FEE, RUSH_WITHIN_DAYS, FEES_NOTE, isRush, todayISO } from "@/lib/order-details";
+import InfoPopup from "@/components/InfoPopup";
+import ShippingWhy from "@/components/ShippingWhy";
+import { SUPER_RUSH_FEE, SUPER_RUSH_LABEL, FEES_NOTE, SHIP_COUNTRIES, shipCountryOf, isTightDate, todayISO } from "@/lib/order-details";
 
 /**
  * Basic card-order cost estimator. Mirrors the published card pricing. These are
@@ -38,6 +40,11 @@ export default function CardCalculator() {
   const [addBox, setAddBox] = useState(false);
   const [sleeves, setSleeves] = useState("none");
   const [dueDate, setDueDate] = useState("");
+  const [superRush, setSuperRush] = useState(false);
+  const [setupInfoOpen, setSetupInfoOpen] = useState(false);
+  // Where it's going: "" (not said), "pickup", "elsewhere", or a SHIP_COUNTRIES id.
+  const [shipTo, setShipTo] = useState("");
+  const [postal, setPostal] = useState("");
 
   const cpd = Math.max(0, Math.floor(cardsPerDeck) || 0);
   const deckCount = Math.max(0, Math.floor(decks) || 0);
@@ -68,9 +75,10 @@ export default function CardCalculator() {
     : 0;
   const sleevePacks = sleeves === "none" ? 0 : Math.ceil(totalCards / 100);
   const sleeveCost = sleeves === "none" ? 0 : sleevePacks * SLEEVE_PER_100[sleeves];
-  // Rush: needed in under RUSH_WITHIN_DAYS days. A flat fee, same as its invoice line.
-  const rush = isRush(dueDate);
-  const rushFee = rush ? RUSH_FEE : 0;
+  // Super rush: opted in, front of the queue. A flat fee, same as its invoice line.
+  // A tight due date only suggests it; it never adds the fee by itself.
+  const tight = isTightDate(dueDate);
+  const rushFee = superRush ? SUPER_RUSH_FEE : 0;
   // No service charge on top since 2026-10-22: the estimate is the price.
   const total = SETUP_FEE + printing - bulkDiscount + design + boxes + sleeveCost + rushFee;
 
@@ -86,14 +94,23 @@ export default function CardCalculator() {
     addBox ? "- Custom 3D-printed box: yes" : "- Custom box: no",
     sleeves !== "none" ? `- Sleeves: ${sleeves}` : "- Sleeves: none",
     bulkRate > 0 ? `- Bulk discount applied: ${Math.round(bulkRate * 100)}%` : null,
-    dueDate ? `- Needed in hand by: ${dueDate}${rush ? ` (rush, +${usd(RUSH_FEE)})` : ""}` : null,
+    dueDate ? `- Needed in hand by: ${dueDate}` : null,
+    shipTo === "pickup"
+      ? "- Delivery: local pickup in San Antonio"
+      : shipCountryOf(shipTo)
+        ? `- Ship to: ${shipCountryOf(shipTo)!.label}${postal ? ` ${postal}` : ""} (shipping ${shipCountryOf(shipTo)!.estimate})`
+        : null,
+    superRush ? `- Super rush: front of the queue (+${usd(SUPER_RUSH_FEE)})` : null,
     `- Estimated total: ${usd(total)}`,
   ]
     .filter(Boolean)
     .join("\n");
   const quoteHref =
     `/contact/?type=${quoteTypes}&details=${encodeURIComponent(summary)}` +
-    (dueDate ? `&due=${dueDate}` : "");
+    (dueDate ? `&due=${dueDate}` : "") +
+    (superRush ? "&rush=1" : "") +
+    (shipTo === "pickup" || shipCountryOf(shipTo) ? `&ship=${shipTo}` : "") +
+    (shipCountryOf(shipTo) && postal ? `&zip=${encodeURIComponent(postal)}` : "");
 
   const inputCls =
     "w-full rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base text-foreground focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
@@ -116,7 +133,7 @@ export default function CardCalculator() {
       value: sleeveCost,
       show: sleeves !== "none",
     },
-    { label: `Rush fee (under ${RUSH_WITHIN_DAYS} days)`, value: rushFee, show: rush },
+    { label: "Super rush (front of the queue)", value: rushFee, show: superRush },
   ];
 
   return (
@@ -229,10 +246,67 @@ export default function CardCalculator() {
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
-          <p className="mt-1.5 text-xs text-muted">
-            Under {RUSH_WITHIN_DAYS} days out adds a flat {usd(RUSH_FEE)} rush fee.
-          </p>
+          {tight && !superRush && (
+            <p className="mt-1.5 text-xs font-semibold text-gold">
+              That&apos;s tight. Add super rush to move to the front of the queue.
+            </p>
+          )}
         </div>
+
+        <div>
+          <div className="mb-1.5 flex items-baseline">
+            <label className="text-sm font-semibold" htmlFor="calc-ship">
+              Where is it going? <span className="font-normal text-muted">(optional)</span>
+            </label>
+            <ShippingWhy />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[1.4fr_1fr]">
+            <select
+              id="calc-ship"
+              className={inputCls}
+              value={shipTo}
+              onChange={(e) => {
+                setShipTo(e.target.value);
+                setPostal(""); // a US ZIP means nothing once Canada is picked
+              }}
+            >
+              <option value="">Choose…</option>
+              <option value="pickup">Local pickup in San Antonio (free)</option>
+              {SHIP_COUNTRIES.map((c) => (
+                <option key={c.id} value={c.id}>Ship to {c.label}</option>
+              ))}
+              <option value="elsewhere">Somewhere else</option>
+            </select>
+            {shipCountryOf(shipTo) && (
+              <input
+                aria-label={shipCountryOf(shipTo)!.postalLabel}
+                className={inputCls}
+                value={postal}
+                maxLength={12}
+                inputMode={shipTo === "US" ? "numeric" : "text"}
+                autoComplete="postal-code"
+                placeholder={shipCountryOf(shipTo)!.postalLabel}
+                onChange={(e) => setPostal(e.target.value)}
+              />
+            )}
+          </div>
+          {shipTo === "elsewhere" && (
+            <p className="mt-1.5 text-xs font-semibold text-gold">
+              Sorry, we can only ship to the US, Canada and Mexico. Past there, postage costs more
+              than the cards.
+            </p>
+          )}
+        </div>
+
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+            checked={superRush}
+            onChange={(e) => setSuperRush(e.target.checked)}
+          />
+          <span>{SUPER_RUSH_LABEL} (+{usd(SUPER_RUSH_FEE)} flat)</span>
+        </label>
 
         <label className="flex items-center gap-3 text-sm">
           <input
@@ -256,12 +330,63 @@ export default function CardCalculator() {
           {rows
             .filter((r) => r.show)
             .map((r) => (
-              <li key={r.label} className="flex justify-between gap-4 text-muted">
-                <span>{r.label}</span>
-                <span className="font-mono font-medium text-foreground">{usd(r.value)}</span>
+              <li key={r.label} className="text-muted">
+                <div className="flex justify-between gap-4">
+                  <span>
+                    {r.label}
+                    {r.label === "Setup fee" && (
+                      <button
+                        type="button"
+                        aria-haspopup="dialog"
+                        onClick={() => setSetupInfoOpen(true)}
+                        className="ml-2 text-xs font-semibold text-blue hover:underline"
+                      >
+                        What is this?
+                      </button>
+                    )}
+                  </span>
+                  <span className="font-mono font-medium text-foreground">{usd(r.value)}</span>
+                </div>
               </li>
             ))}
         </ul>
+
+        {/* Shipping is an estimate on the invoice, never part of the total. */}
+        {(shipTo === "pickup" || shipCountryOf(shipTo)) && (
+          <p className="mt-3 border-t border-border pt-3 text-sm text-muted">
+            {shipTo === "pickup" ? (
+              <>Local pickup: <span className="font-semibold text-foreground">free</span></>
+            ) : (
+              <>
+                Shipping to {postal || shipCountryOf(shipTo)!.label}:{" "}
+                <span className="font-semibold text-foreground">{shipCountryOf(shipTo)!.estimate}</span>
+                <span className="block text-xs">For a run of about 120 cards; added to your invoice.</span>
+              </>
+            )}
+          </p>
+        )}
+
+        {/* Sam's own explanation to a customer who asked to waive it (2026-10). */}
+        {setupInfoOpen && (
+          <InfoPopup title="What is the setup fee?" onClose={() => setSetupInfoOpen(false)}>
+            <p className="rounded-lg bg-gold/10 px-3 py-2 font-semibold text-foreground">
+              TLDR: You&apos;re paying for our expertise and knowledge, and for the time and wear on
+              the printer. It&apos;s one charge per order.
+            </p>
+            <p>
+              It&apos;s for the whole order, not per design or per card. It covers getting your
+              job onto the machine: checking your files and fitting them to the printer, arranging
+              the cards on the print bed, lining up the fronts and backs, and the time to run them.
+              Put plainly, you&apos;re paying for the know-how to get it right and for the machine
+              time, as well as the printing itself.
+            </p>
+            <p>
+              It applies even with print-ready files. On a small order the printing itself is only
+              a few dollars, so the setup is what makes a small job worth running, and it&apos;s why
+              we can take small orders at all.
+            </p>
+          </InfoPopup>
+        )}
 
 
         <a

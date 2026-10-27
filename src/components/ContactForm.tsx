@@ -5,13 +5,17 @@ import { useSearchParams } from "next/navigation";
 import { services } from "@/data/services";
 import { site } from "@/data/site";
 import TurnstileWidget from "@/components/TurnstileWidget";
+import ShippingWhy from "@/components/ShippingWhy";
 import {
   DELIVERY_OPTIONS,
   CARD_BACK_OPTIONS,
   CARD_TYPES,
   FEES_NOTE,
-  RUSH_FEE,
-  isRush,
+  SUPER_RUSH_FEE,
+  SUPER_RUSH_LABEL,
+  SHIP_COUNTRIES,
+  shipCountryOf,
+  isTightDate,
   todayISO,
 } from "@/lib/order-details";
 
@@ -42,8 +46,12 @@ function FormInner() {
   const [dueDate, setDueDate] = useState("");
   const [delivery, setDelivery] = useState("");
   const [cardBacks, setCardBacks] = useState("");
+  const [superRush, setSuperRush] = useState(false);
+  const [shipCountry, setShipCountry] = useState("US");
+  const [postal, setPostal] = useState("");
+  const country = shipCountryOf(shipCountry) ?? SHIP_COUNTRIES[0];
   const isCardOrder = selectedTypes.some((t) => CARD_TYPES.includes(t));
-  const rush = isRush(dueDate);
+  const tight = isTightDate(dueDate);
 
   // Pre-fill from the URL: ?type=card-printing,card-design and ?details=<summary>
   // (used by the "Request this" CTAs and the card cost estimator).
@@ -58,7 +66,17 @@ function FormInner() {
     }
     const d = params.get("details");
     if (d) setMessage(d);
-    // The card calculator passes the due date it priced (it may have added a rush fee).
+    // The card calculator passes the due date and whether it priced super rush.
+    if (params.get("rush") === "1") setSuperRush(true);
+    // ...and where it's going, so the address starts half filled in.
+    const ship = params.get("ship");
+    if (ship === "pickup") setDelivery("pickup");
+    else if (shipCountryOf(ship)) {
+      setDelivery("ship");
+      setShipCountry(ship as string);
+      const zip = params.get("zip");
+      if (zip) setPostal(zip.slice(0, 12));
+    }
     const due = params.get("due");
     if (due && /^\d{4}-\d{2}-\d{2}$/.test(due)) setDueDate(due);
   }, [params]);
@@ -75,6 +93,9 @@ function FormInner() {
     setDueDate("");
     setDelivery("");
     setCardBacks("");
+    setSuperRush(false);
+    setShipCountry("US");
+    setPostal("");
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -101,7 +122,9 @@ function FormInner() {
           shipCity: fd.get("shipCity"),
           shipState: fd.get("shipState"),
           shipPostalCode: fd.get("shipPostalCode"),
+          shipCountry: delivery === "ship" ? shipCountry : null,
           cardBacks: isCardOrder ? cardBacks || null : null,
+          superRush,
           company_website: fd.get("company_website"), // honeypot
           turnstileToken,
           sessionId: (() => {
@@ -230,9 +253,9 @@ function FormInner() {
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
           />
-          {rush && (
+          {tight && !superRush && (
             <p className="mt-1.5 text-xs font-semibold text-gold">
-              That&apos;s under 3 days out, so a ${RUSH_FEE} rush fee applies.
+              That&apos;s tight. Add super rush below to move to the front of the queue.
             </p>
           )}
         </div>
@@ -259,13 +282,45 @@ function FormInner() {
 
       {delivery === "ship" && (
         <fieldset className="space-y-3">
-          <legend className={label}>Shipping address</legend>
+          <legend className={`${label} flex items-baseline`}>
+            Shipping address <ShippingWhy />
+          </legend>
+          <select
+            name="shipCountry"
+            aria-label="Country"
+            autoComplete="country"
+            className={field}
+            value={shipCountry}
+            onChange={(e) => {
+              setShipCountry(e.target.value);
+              setPostal(""); // a US ZIP means nothing once Canada is picked
+            }}
+          >
+            {SHIP_COUNTRIES.map((c) => (
+              <option key={c.id} value={c.id}>{c.label}</option>
+            ))}
+          </select>
           <input name="shipStreet" required autoComplete="street-address" className={field} placeholder="Street address" />
           <div className="grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
             <input name="shipCity" required autoComplete="address-level2" className={field} placeholder="City" />
-            <input name="shipState" required autoComplete="address-level1" className={field} placeholder="State" />
-            <input name="shipPostalCode" required autoComplete="postal-code" inputMode="numeric" className={field} placeholder="ZIP" />
+            <input name="shipState" required autoComplete="address-level1" className={field} placeholder={shipCountry === "US" ? "State" : "State / province"} />
+            <input
+              name="shipPostalCode"
+              required
+              autoComplete="postal-code"
+              inputMode={shipCountry === "US" ? "numeric" : "text"}
+              className={field}
+              placeholder={shipCountry === "US" ? "ZIP" : "Postal code"}
+              value={postal}
+              onChange={(e) => setPostal(e.target.value)}
+            />
           </div>
+          <p className="text-xs text-muted">
+            Estimated shipping to {country.label}:{" "}
+            <span className="font-semibold text-foreground">{country.estimate}</span>{" "}for a run of
+            about 120 cards. The exact amount goes on your invoice. We can&apos;t ship outside the
+            US, Canada and Mexico.
+          </p>
         </fieldset>
       )}
 
@@ -296,6 +351,19 @@ function FormInner() {
           )}
         </fieldset>
       )}
+
+      <label className="flex items-start gap-3 rounded-lg border border-gold/40 bg-gold/10 px-4 py-3 text-sm">
+        <input
+          type="checkbox"
+          className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+          checked={superRush}
+          onChange={(e) => setSuperRush(e.target.checked)}
+        />
+        <span>
+          <strong className="text-foreground">{SUPER_RUSH_LABEL}</strong>{" "}
+          <span className="text-muted">(+${SUPER_RUSH_FEE} flat)</span>
+        </span>
+      </label>
 
       <p className="rounded-lg border border-border bg-surface2 px-4 py-3 text-xs text-muted">
         {FEES_NOTE}

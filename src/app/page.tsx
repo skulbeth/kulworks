@@ -33,16 +33,19 @@ export default function HomePage() {
         <Container className="relative grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
           <div className="animate-fade-up">
             <p className="mb-4 font-mono text-xs font-semibold uppercase tracking-[0.25em] text-gold">
-              Multi-craft maker shop
+              Game prototypes and short runs · San Antonio
             </p>
             <h1 className="text-4xl font-extrabold leading-tight sm:text-6xl lg:text-5xl xl:text-6xl">
-              <span className="text-gold text-glow-gold">Cards, tiles, and 3D.</span>
-              {" "}Designed and made in San Antonio.
+              <span className="text-gold text-glow-gold">
+                Your game on the table this week.
+                <sup aria-hidden className="text-[0.5em] align-super">*</sup>
+              </span>
+              {" "}Cards, tiles, and 3D, made in San Antonio.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-muted sm:text-xl">
-              UV-printed cards, tiles and boards, and 3D printing in filament and resin.
-              Game prototypes and small-run batches: poker-size card decks and more. We do
-              the card design and the 3D modeling too, so a rough idea is enough to start.
+              Send print-ready files and a run of about 120 cards is printed, cut and ready to
+              ship in about two days. A playtest set, a few decks, a con-ready run.
+              We do the card design and the 3D modeling too, so a rough idea is enough to start.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button href="/contact/" variant="primary" size="lg">
@@ -52,6 +55,11 @@ export default function HomePage() {
                 See the Work
               </Button>
             </div>
+            <p className="mt-6 text-sm text-muted/80">
+              * Shipping permitting. Ready-to-ship time is for print-ready runs of about 120
+              cards; how long it takes to reach you depends on the carrier and where you are.
+              Local pickup in San Antonio skips the wait.
+            </p>
           </div>
           {/* Finished work, not machines, is what sells: a printed deck fanned out at an
               angle, so the thickness and the print both read. Eager + high priority because
@@ -72,14 +80,20 @@ export default function HomePage() {
       <section className="border-b border-border bg-surface/30">
         <Container className="py-16">
           <RevealOnScroll>
-            <div className="grid items-center gap-10 md:grid-cols-[1.15fr_0.85fr] lg:min-h-[27rem]">
+            <div className="grid items-center gap-10 md:grid-cols-[1.15fr_0.85fr] lg:min-h-[31rem]">
               {/* Prototyping pitch (condensed from the guide); sits right of the carousel from md up */}
               <div className="md:order-last">
                 <SectionHeading
                   eyebrow="Prototyping"
                   title="Between a home printer and a factory"
-                  intro="Printing at home is a great, cheap way to start. A factory run of a thousand copies is a big leap. The gap between them is where we live: clean, table-ready cards and pieces in small numbers, with no huge minimum, so your game looks and plays like the real thing while you're still refining it."
+                  intro="Printing at home is a great, cheap way to start. A factory run of a thousand copies is a big leap, and the small-run printers in between come with a line. That gap is where we live: clean, table-ready cards and pieces in small numbers, with no huge minimum, usually in your hands in days instead of waiting your turn."
                 />
+                {/* The numbers behind "fast" (same figures as the turnaround FAQ in data/faq.ts). */}
+                <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 font-mono text-sm font-semibold text-gold">
+                  <li>About 2 days to ship</li>
+                  <li>Runs of about 120 cards</li>
+                  <li>No minimum</li>
+                </ul>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Button href="/guides/print-and-play-vs-real-prototype/" variant="ghost">
                     Print-and-play vs. a real prototype →
@@ -97,7 +111,7 @@ export default function HomePage() {
       <section className="border-b border-border">
         <Container className="py-16">
           <RevealOnScroll>
-            <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr] lg:min-h-[27rem]">
+            <div className="grid items-center gap-10 md:grid-cols-[0.85fr_1.15fr] lg:min-h-[31rem]">
               <div>
                 <SectionHeading
                   eyebrow="Inside the shop"
@@ -143,8 +157,8 @@ export default function HomePage() {
           <RevealOnScroll>
             <SectionHeading
               eyebrow="Services & who it's for"
-              title="Five crafts, made for teams, designers, and sellers"
-              intro="Card printing is what we do most, for sports teams, schools, clubs, and game and card designers. If it needs designing, printing, or making, there's a good chance we can help."
+              title="Five crafts, one shop. Games first."
+              intro="Most of our work is board and card games: prototype decks, printed tiles and boards, minis and pieces. The same machines turn out sports cards, awards, props and more, so if it needs designing, printing or making, there's a good chance we can help."
             />
           </RevealOnScroll>
           {/* All five services as equal sections; card printing (lead) first + badged. */}
@@ -156,6 +170,25 @@ export default function HomePage() {
           <div className="mt-8">
             <Button href="/services/" variant="ghost">All services in detail →</Button>
           </div>
+        </Container>
+      </section>
+
+      {/* ===== The trade-off, said plainly (full version on /pricing/) ===== */}
+      <section className="border-b border-border bg-surface/30">
+        <Container className="py-12">
+          <RevealOnScroll>
+            <div className="mx-auto max-w-3xl text-center">
+              <h2 className="text-2xl font-extrabold sm:text-3xl">Why we cost a little more</h2>
+              <p className="mt-3 text-lg text-muted">
+                You&apos;re paying for time: a few real sets made now, not a spot in someone&apos;s
+                queue. Need 500 or more copies and can wait? A manufacturer will beat our price,
+                and we&apos;ll tell you so.
+              </p>
+              <div className="mt-6 flex justify-center">
+                <Button href="/pricing/" variant="ghost">See pricing →</Button>
+              </div>
+            </div>
+          </RevealOnScroll>
         </Container>
       </section>
 

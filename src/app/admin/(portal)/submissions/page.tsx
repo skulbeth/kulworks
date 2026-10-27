@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtDateTime, fmtText } from "@/lib/format";
-import { isRush, deliveryLabel, cardBacksLabel, shipAddressLine } from "@/lib/order-details";
+import { isTightDate, SUPER_RUSH_FEE, deliveryLabel, cardBacksLabel, shipAddressLine } from "@/lib/order-details";
 import {
   updateSubmissionStatus,
   convertSubmissionToProject,
@@ -188,14 +188,20 @@ export default async function SubmissionsPage({
             {s.dueDate ? (
               <span>
                 {fmtDate(s.dueDate)}
-                {isRush(s.dueDate.toISOString().slice(0, 10), s.createdAt.toISOString().slice(0, 10)) && (
-                  <span className="ml-2 rounded bg-gold/15 px-1.5 py-0.5 text-xs font-semibold text-gold">
-                    Rush at request time
-                  </span>
-                )}
+                {!s.superRush &&
+                  isTightDate(s.dueDate.toISOString().slice(0, 10), s.createdAt.toISOString().slice(0, 10)) && (
+                    <span className="ml-2 rounded bg-gold/15 px-1.5 py-0.5 text-xs font-semibold text-gold">
+                      Tight at request time
+                    </span>
+                  )}
               </span>
             ) : (
               <span className="text-muted">Not given</span>
+            )}
+            {s.superRush && (
+              <span className="ml-2 rounded bg-primary/20 px-1.5 py-0.5 text-xs font-bold text-primary">
+                SUPER RUSH (+${SUPER_RUSH_FEE})
+              </span>
             )}
           </Field>
           <Field label="Delivery">

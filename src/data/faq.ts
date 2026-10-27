@@ -82,10 +82,9 @@ export const faqs: Faq[] = [
   },
   {
     q: "How fast is your turnaround?",
-    a: "It depends on what the project needs. We keep a supply of cards and boards on hand, so when you bring clean, print-ready files we can move fast. Development and design time varies a lot, and new materials or custom design work add time, so tell us your deadline in the quote and we will tell you what is realistic. As a rule of thumb for print-ready files:",
+    a: "It depends on what the project needs. We keep a supply of cards and boards on hand, so when you bring clean, print-ready files we can move fast. Development and design time varies a lot, and new materials or custom design work add time, so tell us your deadline in the quote and we will tell you what is realistic. Need it sooner? Super rush puts your project at the front of the queue for a flat $25. As a rule of thumb for print-ready files:",
     bullets: [
-      "About 2 days for most ready-to-print orders",
-      "Up to around 120 cards printed and ready in a single day",
+      "About 2 days before it ships for a print-ready run of about 120 cards (bigger runs take longer)",
       "Most FDM and resin 3D prints finished within about two days",
       "Board and tile printing without cutting, often about half an hour once the files are ready",
     ],

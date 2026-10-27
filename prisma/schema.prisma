@@ -107,7 +107,9 @@ model Submission {
   shipCity       String?
   shipState      String?
   shipPostalCode String?
+  shipCountry    String? // "US" | "CA" | "MX" (lib/order-details); null on older rows = US
   cardBacks      String? // card orders: "same" | "different"
+  superRush      Boolean          @default(false) // opted in: front of the queue, flat fee (lib/order-details)
   status         SubmissionStatus @default(NEW)
   sessionId      String? // anonymous session id, to correlate with page views
   deletedAt      DateTime? // soft delete — archived, never hard-deleted
@@ -169,6 +171,7 @@ model Project {
   shipCity       String?
   shipState      String?
   shipPostalCode String?
+  shipCountry    String? // "US" | "CA" | "MX" (lib/order-details); null on older rows = US
 
   notes       String?
   createdAt   DateTime     @default(now())

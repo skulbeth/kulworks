@@ -111,7 +111,7 @@ export default async function ProjectsPage() {
 
         <Section title="Shipping">
           <Field label="Address">
-            {[p.shipStreet, p.shipCity, p.shipState, p.shipPostalCode]
+            {[p.shipStreet, p.shipCity, p.shipState, p.shipPostalCode, p.shipCountry && p.shipCountry !== "US" ? p.shipCountry : null]
               .filter(Boolean)
               .join(", ") || "-"}
           </Field>

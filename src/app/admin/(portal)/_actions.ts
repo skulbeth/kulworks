@@ -138,6 +138,7 @@ export async function convertSubmissionToProject(formData: FormData) {
       shipCity: sub.shipCity,
       shipState: sub.shipState,
       shipPostalCode: sub.shipPostalCode,
+      shipCountry: sub.shipCountry,
       notes:
         [
           sub.deliveryMethod ? `Delivery: ${deliveryLabel(sub.deliveryMethod)}` : null,
@@ -216,6 +217,7 @@ export async function updateProject(formData: FormData) {
       shipCity: s(formData, "shipCity"),
       shipState: s(formData, "shipState"),
       shipPostalCode: s(formData, "shipPostalCode"),
+      shipCountry: s(formData, "shipCountry"),
       notes: s(formData, "notes"),
     },
   });

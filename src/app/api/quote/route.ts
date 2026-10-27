@@ -13,8 +13,9 @@ import { driveConfigured, createClientFolder } from "@/lib/google-drive";
 import {
   DELIVERY_OPTIONS,
   CARD_BACK_OPTIONS,
-  RUSH_FEE,
-  isRush,
+  shipCountryOf,
+  SUPER_RUSH_FEE,
+  isTightDate,
   deliveryLabel,
   cardBacksLabel,
   shipAddressLine,
@@ -84,10 +85,13 @@ export async function POST(request: Request) {
           shipCity: str(body.shipCity).slice(0, 100) || null,
           shipState: str(body.shipState).slice(0, 50) || null,
           shipPostalCode: str(body.shipPostalCode).slice(0, 20) || null,
+          // Only the three countries we ship to; anything else falls back to the default.
+          shipCountry: shipCountryOf(str(body.shipCountry))?.id ?? "US",
         }
-      : { shipStreet: null, shipCity: null, shipState: null, shipPostalCode: null };
+      : { shipStreet: null, shipCity: null, shipState: null, shipPostalCode: null, shipCountry: null };
   const backsRaw = str(body.cardBacks);
   const cardBacks = CARD_BACK_OPTIONS.some((o) => o.id === backsRaw) ? backsRaw : null;
+  const superRush = body.superRush === true;
 
   if (!name || name.length > MAX.name) {
     return NextResponse.json({ ok: false, error: "Please enter your name." }, { status: 400 });
@@ -137,6 +141,7 @@ export async function POST(request: Request) {
         deliveryMethod,
         ...ship,
         cardBacks,
+        superRush,
       },
     });
 
@@ -168,9 +173,10 @@ export async function POST(request: Request) {
       await logError(new Error("Drive folder requested but Google Drive is not configured"), "/api/quote drive folder");
     }
 
-    const rush = isRush(dueISO);
+    const tight = isTightDate(dueISO);
     const detailLines = [
-      `Due date: ${dueISO ?? "(not given)"}${rush ? ` (RUSH: under 3 days, $${RUSH_FEE} rush fee)` : ""}`,
+      `Due date: ${dueISO ?? "(not given)"}${tight && !superRush ? " (tight, super rush not chosen)" : ""}`,
+      superRush ? `SUPER RUSH: yes, front of the queue (+$${SUPER_RUSH_FEE})` : null,
       `Delivery: ${deliveryLabel(deliveryMethod) || "(not given)"}`,
       deliveryMethod === "ship" ? `Ship to: ${shipAddressLine(ship)}` : null,
       cardBacks ? `Card backs: ${cardBacksLabel(cardBacks)}` : null,
