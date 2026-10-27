@@ -106,7 +106,7 @@ export default function PricingPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/images/shipping/3d-printed-cases.webp"
-                  alt="Two 3D-printed card cases with the game name Tile Takeover raised on the lid"
+                  alt="Two 3D-printed card cases with a raised name on the lid"
                   width={496}
                   height={383}
                   loading="lazy"
