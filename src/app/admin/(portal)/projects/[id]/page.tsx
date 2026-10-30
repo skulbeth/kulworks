@@ -31,6 +31,9 @@ import AddPayment from "../../_components/AddPayment";
 import SetReminder from "../../_components/SetReminder";
 import ConfirmButton from "../../_components/ConfirmButton";
 import ResultBanner from "../../_components/ResultBanner";
+import { createProof } from "../../_proof-actions";
+import { PROOF_SIZES, publicProofUrl } from "@/lib/proofs";
+import CopyButton from "../../_components/CopyButton";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +68,10 @@ export default async function ProjectDetailPage({
         where: { deletedAt: null },
         include: { items: true },
         orderBy: { createdAt: "desc" },
+      },
+      proofs: {
+        orderBy: { createdAt: "desc" },
+        include: { items: { select: { approvedAt: true, comments: { select: { resolvedAt: true, fromClient: true } } } } },
       },
     },
   });
@@ -348,6 +355,64 @@ export default async function ProjectDetailPage({
             <InvoiceEditor projectId={project.id} defaultServiceCharge={site.payments.defaultServiceCharge} />
           </div>
         </details>
+      </section>
+
+      {/* Proofs: private review pages the client comments on */}
+      <section className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="mb-3 text-lg font-bold">Proofs</h2>
+        {project.proofs.length > 0 && (
+          <ul className="mb-4 space-y-2">
+            {project.proofs.map((pf) => {
+              const openNotes = pf.items.reduce(
+                (n, i) => n + i.comments.filter((c) => c.fromClient && !c.resolvedAt).length,
+                0
+              );
+              const url = publicProofUrl(site.url, pf.token);
+              return (
+                <li key={pf.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-surface2 px-3 py-2 text-sm">
+                  <Link href={`/admin/proofs/${pf.id}/`} className="font-semibold text-blue">
+                    {pf.title}
+                  </Link>
+                  <span className="text-xs text-muted">
+                    {pf.items.length} cards · {pf.items.filter((i) => i.approvedAt).length} approved · {openNotes} open note
+                    {openNotes === 1 ? "" : "s"} · link {pf.active ? "on" : "off"}
+                    {pf.approvedAt ? " · APPROVED" : ""}
+                  </span>
+                  <CopyButton text={url} label="Copy link" />
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        <form action={createProof} className="flex flex-wrap items-end gap-2">
+          <input type="hidden" name="projectId" value={project.id} />
+          <label className="text-xs text-muted">
+            Title
+            <input
+              name="title"
+              defaultValue={project.title}
+              className="mt-1 block rounded-lg border border-border bg-surface2 px-3 py-2 text-sm"
+            />
+          </label>
+          <label className="text-xs text-muted">
+            Size
+            <select name="size" className="mt-1 block rounded-lg border border-border bg-surface2 px-3 py-2 text-sm">
+              {PROOF_SIZES.map((z) => (
+                <option key={z.id} value={z.id}>{z.label}</option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs text-muted">
+            Or custom W x H (in)
+            <span className="mt-1 flex gap-1">
+              <input name="widthIn" inputMode="decimal" placeholder="W" className="w-16 rounded-lg border border-border bg-surface2 px-2 py-2 text-sm" />
+              <input name="heightIn" inputMode="decimal" placeholder="H" className="w-16 rounded-lg border border-border bg-surface2 px-2 py-2 text-sm" />
+            </span>
+          </label>
+          <button className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover">
+            New proof page
+          </button>
+        </form>
       </section>
 
       {/* Send progress update to the customer (manual, only on click) */}
