@@ -233,7 +233,9 @@ export async function notifyProofClient(formData: FormData) {
       ? `I've updated ${updated.length} card${many} on "${proof.title}": ${updated.map((u) => `Card ${u.n}`).join(", ")}.`
       : `Your card proof for "${proof.title}" is ready to review.`,
     "",
-    updated.length
+    updated.length === 1
+      ? `It's marked Updated on the page, and "Show only updated" takes you straight to it. Leave a note if it still needs a change, or approve it if it looks right.`
+      : updated.length
       ? `They're marked Updated on the page, and "Show only updated" takes you straight to them. Leave a note on anything that still needs a change, or approve them if they look right.`
       : `Click any card to see it up close. To ask for a change, click the spot on the card and write what it should say, then press Send my notes. When everything looks right, press Approve all.`,
     "",
@@ -256,7 +258,7 @@ export async function notifyProofClient(formData: FormData) {
     data: {
       type: "EMAIL_SENT",
       body: updated.length
-        ? `Emailed the client that ${updated.length} card${many} on "${proof.title}" were updated (${updated.map((u) => u.n).join(", ")}).`
+        ? `Emailed the client that ${updated.length} card${many} on "${proof.title}" ${updated.length === 1 ? "was" : "were"} updated (${updated.map((u) => u.n).join(", ")}).`
         : `Emailed the client the proof link for "${proof.title}".`,
       projectId: proof.projectId,
       clientId: proof.project.clientId,
