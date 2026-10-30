@@ -253,6 +253,8 @@ function CardViewer({
   const [error, setError] = useState<string | null>(null);
   const [fit, setFit] = useState(false);
   const [view, setView] = useState({ w: 1200, h: 800 });
+  // A typed-but-not-added note stops close/next/prev and asks first.
+  const [leaving, setLeaving] = useState<null | (() => void)>(null);
 
   // New card: start on its front, with no half-written note carried over.
   useEffect(() => {
@@ -260,6 +262,7 @@ function CardViewer({
     setPin(null);
     setDraft("");
     setError(null);
+    setLeaving(null);
   }, [item.id, item.front]);
 
   // Warm both sides so Flip is instant. Without this the browser keeps painting the
@@ -275,15 +278,27 @@ function CardViewer({
     return () => window.removeEventListener("resize", measure);
   }, []);
 
+  const guard = useCallback(
+    (go: () => void) => {
+      if (draft.trim()) setLeaving(() => go);
+      else go();
+    },
+    [draft]
+  );
+  const close = useCallback(() => guard(onClose), [guard, onClose]);
+  const move = useCallback((d: number) => guard(() => onMove(d)), [guard, onMove]);
+
   const onKey = useCallback(
     (e: KeyboardEvent) => {
+      if (document.querySelector("[data-calibrator]")) return; // the size popup on top handles its own keys
+      // Escape works even while typing; the unsaved-note check still applies.
+      if (e.key === "Escape") return close();
       if ((e.target as HTMLElement)?.tagName === "TEXTAREA") return;
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight") onMove(1);
-      if (e.key === "ArrowLeft") onMove(-1);
+      if (e.key === "ArrowRight") move(1);
+      if (e.key === "ArrowLeft") move(-1);
       if (e.key.toLowerCase() === "f") setSide((s) => (s === "front" ? "back" : "front"));
     },
-    [onClose, onMove]
+    [close, move]
   );
   useEffect(() => {
     window.addEventListener("keydown", onKey);
@@ -312,13 +327,18 @@ function CardViewer({
     setError(null);
   };
 
-  const save = () =>
+  const save = (then?: () => void) =>
     start(async () => {
       const r = await addProofNote({ token, itemId: item.id, side, x: pin?.x ?? null, y: pin?.y ?? null, body: draft });
-      if (!r.ok) return setError(r.error);
+      if (!r.ok) {
+        setLeaving(null);
+        return setError(r.error);
+      }
       setDraft("");
       setPin(null);
+      setLeaving(null);
       router.refresh();
+      then?.();
     });
 
   const remove = (id: string) =>
@@ -336,15 +356,25 @@ function CardViewer({
   const pinNumber = (id: string) => pinned.findIndex((n) => n.id === id) + 1;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6" style={{ background: "rgba(10,10,12,0.9)" }} role="dialog" aria-modal="true">
-      <div className="mx-auto flex max-w-5xl flex-col items-center gap-3">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto p-3 sm:p-6"
+      style={{ background: "rgba(10,10,12,0.9)" }}
+      role="dialog"
+      aria-modal="true"
+      // Tap or click the dark area around the card to close.
+      onClick={(e) => {
+        if ((e.target as HTMLElement).dataset.backdrop) close();
+      }}
+      data-backdrop="1"
+    >
+      <div className="mx-auto flex max-w-5xl flex-col items-center gap-3" data-backdrop="1">
         <div className="flex w-full flex-wrap items-center justify-between gap-2 text-white">
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => onMove(-1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Previous card">←</button>
+            <button type="button" onClick={() => move(-1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Previous card">←</button>
             {/* Position, not the file key: the key is an export index ("26") that
                 rarely matches the number printed on the card ("22"). */}
             <span className="text-sm font-semibold">Card {index + 1} of {count}</span>
-            <button type="button" onClick={() => onMove(1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Next card">→</button>
+            <button type="button" onClick={() => move(1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Next card">→</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {item.front && item.back && (
@@ -355,7 +385,7 @@ function CardViewer({
             <button type="button" onClick={() => setFit((f) => !f)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20">
               {fit ? "Real size" : "Fit to screen"}
             </button>
-            <button type="button" onClick={onClose} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Close">✕</button>
+            <button type="button" onClick={close} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Close">✕</button>
           </div>
         </div>
 
@@ -431,7 +461,7 @@ function CardViewer({
             <button
               type="button"
               disabled={pending || !draft.trim()}
-              onClick={save}
+              onClick={() => save()}
               className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover disabled:opacity-40"
             >
               Add note
@@ -443,6 +473,32 @@ function CardViewer({
             )}
             {error && <span className="text-xs text-red-600">{error}</span>}
           </div>
+          {leaving && (
+            <div className="mt-3 rounded-lg border border-primary bg-primary/10 p-3" role="alert">
+              <p className="font-semibold">You have a note you haven&apos;t added yet. Add it before you go?</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button type="button" disabled={pending} onClick={() => save(leaving)} className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover disabled:opacity-40">
+                  Add note
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const go = leaving;
+                    setDraft("");
+                    setPin(null);
+                    setLeaving(null);
+                    go();
+                  }}
+                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold"
+                >
+                  Discard it
+                </button>
+                <button type="button" onClick={() => setLeaving(null)} className="px-2 text-xs text-muted hover:underline">
+                  Keep writing
+                </button>
+              </div>
+            </div>
+          )}
 
           {allNotes.length > 0 && (
             <ul className="mt-4 space-y-2 border-t border-border pt-3">
@@ -473,26 +529,57 @@ function CardViewer({
 
 function Calibrator({ ppi, onSave, onClose }: { ppi: number; onSave: (v: number) => void; onClose: () => void }) {
   const [v, setV] = useState(ppi);
+  // A bank card is wider than most phone screens, so stand it on end there.
+  const [upright, setUpright] = useState(false);
+  const [maxV, setMaxV] = useState(300);
+  useEffect(() => {
+    const check = () => {
+      const up = window.innerWidth < BANK_CARD.w * 150;
+      setUpright(up);
+      // Room inside the popup (page padding + popup padding), so the outline never runs off it.
+      // Phones run about 150-165 px per inch, so the padding there is kept thin to reach that.
+      const room = window.innerWidth - (up ? 44 : 80);
+      setMaxV(Math.max(100, Math.min(300, Math.floor(room / (up ? BANK_CARD.h : BANK_CARD.w)))));
+    };
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [onClose]);
+  const boxW = (upright ? BANK_CARD.h : BANK_CARD.w) * v;
+  const boxH = (upright ? BANK_CARD.w : BANK_CARD.h) * v;
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4" style={{ background: "rgba(10,10,12,0.9)" }} role="dialog" aria-modal="true">
-      <div className="w-full max-w-lg rounded-2xl bg-surface p-5">
+    <div
+      className="fixed inset-0 z-[60] overflow-y-auto p-2 sm:p-4"
+      style={{ background: "rgba(10,10,12,0.9)" }}
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+      data-calibrator
+    >
+      <div className="mx-auto my-4 w-fit min-w-[min(100%,32rem)] max-w-full rounded-2xl bg-surface p-3 sm:p-5">
         <h2 className="text-lg font-bold">Set real size</h2>
-        <p className="mt-1 text-sm text-muted">
-          Hold any bank card or ID card against the screen and move the slider until the outline matches it.
-          After that, cards show at their true printed size on this device.
+        <p className="mt-1 max-w-md text-sm text-muted">
+          Hold any bank card or ID card against the screen{upright ? ", standing up," : ""} and move the slider until
+          the outline matches it. After that, cards show at their true printed size on this device.
         </p>
-        <div className="my-5 flex justify-center overflow-hidden">
+        <div className="my-5 flex justify-center">
+          {/* shrink-0: never squash the outline to fit the popup, or it stops being card-shaped */}
           <div
-            className="rounded-[0.125in] border-2 border-dashed border-blue bg-blue/5"
-            style={{ width: BANK_CARD.w * v, height: BANK_CARD.h * v, borderRadius: 0.125 * v }}
+            className="shrink-0 border-2 border-dashed border-blue bg-blue/5"
+            style={{ width: boxW, height: boxH, borderRadius: 0.125 * v }}
           />
         </div>
         <input
           type="range"
           min={50}
-          max={300}
+          max={maxV}
           step={0.5}
-          value={v}
+          value={Math.min(v, maxV)}
           onChange={(e) => setV(Number(e.target.value))}
           className="w-full"
           aria-label="Screen size adjustment"
@@ -502,7 +589,7 @@ function Calibrator({ ppi, onSave, onClose }: { ppi: number; onSave: (v: number)
           <button
             type="button"
             onClick={() => {
-              onSave(v);
+              onSave(Math.min(v, maxV));
               onClose();
             }}
             className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"
