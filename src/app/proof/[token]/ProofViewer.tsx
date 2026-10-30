@@ -32,6 +32,7 @@ export type ViewerItem = {
   front: string | null;
   back: string | null;
   approved: boolean;
+  updated: boolean; // a new version since the client last approved or commented on it
   notes: ViewerNote[];
 };
 
@@ -72,6 +73,7 @@ export default function ProofViewer({
   const [calibrated, setCalibrated] = useState(false);
   const [showCal, setShowCal] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [onlyUpdated, setOnlyUpdated] = useState(false);
 
   useEffect(() => {
     const saved = readPpi();
@@ -86,6 +88,16 @@ export default function ProofViewer({
     [items]
   );
   const approvedCount = items.filter((i) => i.approved).length;
+  const updatedCount = items.filter((i) => i.updated).length;
+  // Indexes into `items` that the grid shows; the viewer steps through these. "Card N"
+  // stays the card's place in the whole deck, filtered or not.
+  const shown = useMemo(
+    () => items.map((it, i) => ({ it, i })).filter(({ it }) => !onlyUpdated || it.updated).map(({ i }) => i),
+    [items, onlyUpdated]
+  );
+  useEffect(() => {
+    if (onlyUpdated && updatedCount === 0) setOnlyUpdated(false);
+  }, [onlyUpdated, updatedCount]);
 
   const savePpi = (v: number) => {
     setPpi(v);
@@ -121,6 +133,7 @@ export default function ProofViewer({
           <h1 className="text-2xl font-bold sm:text-3xl">{title}</h1>
           <p className="mt-1 text-sm text-muted">
             {items.length} cards · {approvedCount} approved
+            {updatedCount > 0 && ` · ${updatedCount} updated`}
             {approved && <span className="ml-2 rounded-full bg-green-500/15 px-2 py-0.5 text-xs font-bold text-green-600">Approved</span>}
           </p>
         </div>
@@ -157,6 +170,21 @@ export default function ProofViewer({
         <li>When you&apos;re done, press <b>Send my notes</b>. Press <b>Approve all</b> when everything looks right.</li>
       </ol>
 
+      {updatedCount > 0 && (
+        <div className="mt-4 flex flex-wrap items-center gap-3 rounded-lg border border-primary bg-primary/10 px-4 py-2 text-sm">
+          <span>
+            <b>{updatedCount}</b> card{updatedCount === 1 ? " has" : "s have"} been updated since you last looked.
+          </span>
+          <button
+            type="button"
+            onClick={() => setOnlyUpdated((v) => !v)}
+            className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover"
+          >
+            {onlyUpdated ? "Show all cards" : "Show only updated"}
+          </button>
+        </div>
+      )}
+
       {message && (
         <p className="mt-4 rounded-lg border border-border bg-surface2 px-4 py-2 text-sm" role="status">
           {message}
@@ -164,7 +192,8 @@ export default function ProofViewer({
       )}
 
       <ul className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-        {items.map((it, i) => {
+        {shown.map((i) => {
+          const it = items[i];
           const notes = it.notes.filter((n) => n.fromClient && !n.done).length;
           return (
             <li key={it.id}>
@@ -187,6 +216,9 @@ export default function ProofViewer({
                 ) : null}
                 {it.approved && (
                   <span className="absolute right-1.5 top-1.5 rounded-full bg-green-600 px-1.5 py-0.5 text-xs font-bold text-white">✓</span>
+                )}
+                {it.updated && (
+                  <span className="absolute left-1.5 top-1.5 rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-black">Updated</span>
                 )}
                 {notes > 0 && (
                   <span className="absolute bottom-1.5 right-1.5 rounded-full bg-blue px-2 py-0.5 text-xs font-bold text-white">
@@ -211,7 +243,14 @@ export default function ProofViewer({
           calibrated={calibrated}
           onCalibrate={() => setShowCal(true)}
           onClose={() => setOpen(null)}
-          onMove={(d) => setOpen((o) => (o === null ? o : (o + d + items.length) % items.length))}
+          onMove={(d) =>
+            setOpen((o) => {
+              if (o === null) return o;
+              const at = shown.indexOf(o);
+              if (at < 0) return shown[0] ?? null;
+              return shown[(at + d + shown.length) % shown.length];
+            })
+          }
         />
       )}
 
@@ -374,6 +413,7 @@ function CardViewer({
             {/* Position, not the file key: the key is an export index ("26") that
                 rarely matches the number printed on the card ("22"). */}
             <span className="text-sm font-semibold">Card {index + 1} of {count}</span>
+            {item.updated && <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-black">Updated</span>}
             <button type="button" onClick={() => move(1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Next card">→</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">

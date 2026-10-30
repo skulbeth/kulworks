@@ -32,7 +32,7 @@ import SetReminder from "../../_components/SetReminder";
 import ConfirmButton from "../../_components/ConfirmButton";
 import ResultBanner from "../../_components/ResultBanner";
 import { createProof } from "../../_proof-actions";
-import { PROOF_SIZES, publicProofUrl } from "@/lib/proofs";
+import { PROOF_SIZES, publicProofUrl, isProofItemUpdated } from "@/lib/proofs";
 import CopyButton from "../../_components/CopyButton";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +71,15 @@ export default async function ProjectDetailPage({
       },
       proofs: {
         orderBy: { createdAt: "desc" },
-        include: { items: { select: { approvedAt: true, comments: { select: { resolvedAt: true, fromClient: true } } } } },
+        include: {
+          items: {
+            select: {
+              approvedAt: true,
+              replacedAt: true,
+              comments: { select: { resolvedAt: true, fromClient: true, createdAt: true } },
+            },
+          },
+        },
       },
     },
   });
@@ -374,7 +382,8 @@ export default async function ProjectDetailPage({
                     {pf.title}
                   </Link>
                   <span className="text-xs text-muted">
-                    {pf.items.length} cards · {pf.items.filter((i) => i.approvedAt).length} approved · {openNotes} open note
+                    {pf.items.length} cards · {pf.items.filter((i) => i.approvedAt).length} approved ·{" "}
+                    {pf.items.filter((i) => isProofItemUpdated(i)).length} updated · {openNotes} open note
                     {openNotes === 1 ? "" : "s"} · link {pf.active ? "on" : "off"}
                     {pf.approvedAt ? " · APPROVED" : ""}
                   </span>

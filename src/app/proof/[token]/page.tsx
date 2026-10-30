@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { signProofPaths, itemLabel } from "@/lib/proofs";
+import { signProofPaths, itemLabel, isProofItemUpdated } from "@/lib/proofs";
 import { site } from "@/data/site";
 import ProofViewer, { type ViewerItem } from "./ProofViewer";
 
@@ -46,6 +46,7 @@ export default async function ProofPage({ params }: { params: Promise<{ token: s
       front: i.frontPath ? urls.get(i.frontPath) ?? null : null,
       back: i.backPath ? urls.get(i.backPath) ?? null : null,
       approved: !!i.approvedAt,
+      updated: isProofItemUpdated(i),
       notes: i.comments.map((c) => ({
         id: c.id,
         side: c.side === "back" ? "back" : "front",

@@ -5,14 +5,17 @@
 // print-resolution files never leave this computer.
 //
 // Fronts and backs pair up by file name, the way Dextrous exports them:
-// 05.png + 05_back.png (also "05-back", "05 back"). Re-uploading a name replaces it.
+// 05.png + 05_back.png (also "05-back", "05 back"). Re-uploading a name replaces it,
+// unless the file is identical to the one already up: then it's skipped, so a whole
+// export can be dropped back in and only the edited cards change.
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { PREVIEW_DPI, PROOF_BUCKET } from "@/lib/proof-constants";
+import { fingerprint } from "@/lib/proof-fingerprint";
 import { prepareProofUploads, registerProofImages, type UploadEntry } from "../_proof-actions";
 
-type Picked = UploadEntry & { file: File; position: number };
+type Picked = UploadEntry & { file: File; position: number; hash?: string };
 
 const BATCH = 8;
 
@@ -85,28 +88,32 @@ export default function ProofUploader({ proofId, widthIn }: { proofId: string; w
     const supa = createClient();
     let done = 0;
     let failed = 0;
+    let same = 0;
     try {
       for (let i = 0; i < picked.length; i += BATCH) {
         const batch = picked.slice(i, i + BATCH);
-        const slots = await prepareProofUploads(
+        setStatus(`Checking ${i + 1}-${Math.min(i + BATCH, picked.length)} of ${picked.length} for changes…`);
+        for (const p of batch) p.hash = await fingerprint(await p.file.arrayBuffer());
+        const { slots, same: unchanged } = await prepareProofUploads(
           proofId,
-          batch.map(({ key, side }) => ({ key, side }))
+          batch.map(({ key, side, hash }) => ({ key, side, hash }))
         );
+        same += unchanged.length;
         const landed = [];
         for (const p of batch) {
           const slot = slots.find((s) => s.key === p.key && s.side === p.side);
           if (!slot) {
-            failed++;
+            if (!unchanged.some((u) => u.key === p.key && u.side === p.side)) failed++;
             continue;
           }
-          setStatus(`Preparing ${p.file.name} (${done + failed + 1} of ${picked.length})…`);
+          setStatus(`Preparing ${p.file.name} (${done + failed + same + 1} of ${picked.length})…`);
           try {
             const blob = await preview(p.file, widthIn);
             const { error } = await supa.storage
               .from(PROOF_BUCKET)
               .uploadToSignedUrl(slot.path, slot.token, blob, { contentType: "image/jpeg" });
             if (error) throw error;
-            landed.push({ key: p.key, side: p.side, path: slot.path, position: p.position });
+            landed.push({ key: p.key, side: p.side, hash: p.hash, path: slot.path, position: p.position });
             done++;
           } catch {
             failed++;
@@ -114,7 +121,12 @@ export default function ProofUploader({ proofId, widthIn }: { proofId: string; w
         }
         if (landed.length) await registerProofImages(proofId, landed);
       }
-      setStatus(`Uploaded ${done} image${done === 1 ? "" : "s"}${failed ? `, ${failed} failed` : ""}.`);
+      setStatus(
+        `Uploaded ${done} image${done === 1 ? "" : "s"}` +
+          (same ? `, ${same} unchanged (skipped)` : "") +
+          (failed ? `, ${failed} failed` : "") +
+          "."
+      );
     } finally {
       setBusy(false);
       if (input.current) input.current.value = "";
@@ -128,7 +140,8 @@ export default function ProofUploader({ proofId, widthIn }: { proofId: string; w
       <p className="text-sm font-semibold">Add or replace cards</p>
       <p className="mt-1 text-xs text-muted">
         Pick the exported PNGs (fronts and backs together). 05.png and 05_back.png become one card. They&apos;re
-        shrunk to {PREVIEW_DPI} dpi and watermarked on this computer before upload.
+        shrunk to {PREVIEW_DPI} dpi and watermarked on this computer before upload. You can drop the whole export
+        in again after edits: files that haven&apos;t changed are skipped and keep their approval.
       </p>
       <div className="mt-3 flex flex-wrap gap-4 text-sm">
         <label className="block">

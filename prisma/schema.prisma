@@ -472,18 +472,19 @@ model Testimonial {
 // size, pins notes on them and approves them. Only watermarked, reduced previews
 // are stored; the print files never leave Sam's machine.
 model Proof {
-  id         String      @id @default(cuid())
-  token      String      @unique // unguessable public URL; the link IS the credential
-  project    Project     @relation(fields: [projectId], references: [id])
-  projectId  String
-  title      String
-  widthIn    Float // physical card size, for the real-size view
-  heightIn   Float
-  active     Boolean     @default(true) // off = the link shows "no longer available"
-  approvedAt DateTime? // client pressed "Approve all"
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  items      ProofItem[]
+  id               String      @id @default(cuid())
+  token            String      @unique // unguessable public URL; the link IS the credential
+  project          Project     @relation(fields: [projectId], references: [id])
+  projectId        String
+  title            String
+  widthIn          Float // physical card size, for the real-size view
+  heightIn         Float
+  active           Boolean     @default(true) // off = the link shows "no longer available"
+  approvedAt       DateTime? // client pressed "Approve all"
+  clientNotifiedAt DateTime? // Sam last emailed the client the link ("Let them know")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  items            ProofItem[]
 
   @@index([projectId])
 }
@@ -496,6 +497,9 @@ model ProofItem {
   position   Int            @default(0)
   frontPath  String? // storage paths in the uploads bucket
   backPath   String?
+  frontHash  String? // fingerprint of the print file each preview came from;
+  backHash   String? // an identical re-upload is skipped and keeps its approval
+  replacedAt DateTime? // a new version went up after the client had started reviewing
   approvedAt DateTime?
   createdAt  DateTime       @default(now())
   comments   ProofComment[]

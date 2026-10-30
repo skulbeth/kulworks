@@ -64,3 +64,18 @@ export async function proofUploadSlot(path: string) {
 export function itemLabel(key: string) {
   return /^\d+$/.test(key) ? `#${key}` : key;
 }
+
+/**
+ * "Updated" = a new version went up and the client hasn't dealt with it yet: not
+ * approved since, and no new note on it since. Derived, so nothing needs clearing.
+ */
+export function isProofItemUpdated(item: {
+  replacedAt: Date | null;
+  approvedAt: Date | null;
+  comments: { fromClient: boolean; createdAt: Date }[];
+}) {
+  if (!item.replacedAt) return false;
+  const since = item.replacedAt.getTime();
+  if (item.approvedAt && item.approvedAt.getTime() >= since) return false;
+  return !item.comments.some((c) => c.fromClient && c.createdAt.getTime() >= since);
+}

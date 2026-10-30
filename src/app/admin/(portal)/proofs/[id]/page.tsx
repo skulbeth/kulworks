@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fmtDateTime } from "@/lib/format";
-import { signProofPaths, itemLabel, publicProofUrl } from "@/lib/proofs";
+import { signProofPaths, itemLabel, publicProofUrl, isProofItemUpdated } from "@/lib/proofs";
 import { site } from "@/data/site";
 import CopyButton from "../../_components/CopyButton";
 import ConfirmButton from "../../_components/ConfirmButton";
@@ -12,6 +12,7 @@ import {
   deleteProofItem,
   deleteProof,
   resolveProofComment,
+  notifyProofClient,
 } from "../../_proof-actions";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,9 @@ export default async function AdminProofPage({ params }: { params: Promise<{ id:
     i.comments.filter((c) => c.fromClient && !c.resolvedAt).map((c) => ({ ...c, item: i }))
   );
   const approved = proof.items.filter((i) => i.approvedAt).length;
+  const updated = proof.items.filter((i) => isProofItemUpdated(i)).length;
+  const client = proof.project.client;
+  const first = client.name.trim().split(/\s+/)[0] || client.name;
 
   return (
     <div className="space-y-6">
@@ -50,8 +54,8 @@ export default async function AdminProofPage({ params }: { params: Promise<{ id:
         <div>
           <h1 className="text-2xl font-bold">{proof.title}</h1>
           <p className="text-sm text-muted">
-            {proof.widthIn} x {proof.heightIn} in · {proof.items.length} cards · {approved} approved · {open.length} open
-            note{open.length === 1 ? "" : "s"}
+            {proof.widthIn} x {proof.heightIn} in · {proof.items.length} cards · {approved} approved · {updated} updated ·{" "}
+            {open.length} open note{open.length === 1 ? "" : "s"}
             {proof.approvedAt && <b className="ml-2 text-green-600">Approved {fmtDateTime(proof.approvedAt)}</b>}
           </p>
         </div>
@@ -79,6 +83,24 @@ export default async function AdminProofPage({ params }: { params: Promise<{ id:
         <p className="mt-2 text-xs text-muted">
           Anyone with this link can view and comment. Turn it OFF when the job is done.
         </p>
+        {proof.active && client.email && (
+          <form action={notifyProofClient} className="mt-3 flex flex-wrap items-center gap-3 border-t border-border pt-3">
+            <input type="hidden" name="id" value={proof.id} />
+            <ConfirmButton
+              message={
+                updated
+                  ? `Email ${client.email} that ${updated} updated card${updated === 1 ? " is" : "s are"} ready?`
+                  : `Email ${client.email} the link to this proof?`
+              }
+              className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover"
+            >
+              {updated ? `Let ${first} know (${updated} updated)` : `Email ${first} the link`}
+            </ConfirmButton>
+            <span className="text-xs text-muted">
+              {proof.clientNotifiedAt ? `Last emailed ${fmtDateTime(proof.clientNotifiedAt)}` : "Not emailed from here yet"}
+            </span>
+          </form>
+        )}
       </section>
 
       <section className="rounded-xl border border-border bg-surface p-4">
@@ -137,6 +159,7 @@ export default async function AdminProofPage({ params }: { params: Promise<{ id:
                 <div className="mt-1 flex items-center justify-between">
                   <span className="font-semibold">{itemLabel(i.key)}</span>
                   <span>
+                    {isProofItemUpdated(i) && <b className="mr-1 rounded bg-primary px-1 text-black">Updated</b>}
                     {i.approvedAt && <b className="text-green-600">✓ </b>}
                     {notes.length > 0 && `${notes.filter((c) => !c.resolvedAt).length}/${notes.length} notes`}
                   </span>
