@@ -185,9 +185,6 @@ export default function ProofViewer({
                     style={{ aspectRatio: `${widthIn} / ${heightIn}`, objectFit: "contain" }}
                   />
                 ) : null}
-                <span className="absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-xs font-semibold text-white">
-                  {it.label}
-                </span>
                 {it.approved && (
                   <span className="absolute right-1.5 top-1.5 rounded-full bg-green-600 px-1.5 py-0.5 text-xs font-bold text-white">✓</span>
                 )}
@@ -344,7 +341,9 @@ function CardViewer({
         <div className="flex w-full flex-wrap items-center justify-between gap-2 text-white">
           <div className="flex items-center gap-2">
             <button type="button" onClick={() => onMove(-1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Previous card">←</button>
-            <span className="text-sm font-semibold">Card {item.label} · {index + 1} of {count}</span>
+            {/* Position, not the file key: the key is an export index ("26") that
+                rarely matches the number printed on the card ("22"). */}
+            <span className="text-sm font-semibold">Card {index + 1} of {count}</span>
             <button type="button" onClick={() => onMove(1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Next card">→</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
