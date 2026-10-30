@@ -27,6 +27,7 @@ const stageTone: Record<string, ExplorerItem["badgeTone"]> = {
   DELIVERED: "green",
   CLOSED: "green",
   LOST: "red",
+  REJECTED: "red",
 };
 
 const stageLabel: Record<string, string> = {
@@ -37,6 +38,7 @@ const stageLabel: Record<string, string> = {
   DELIVERED: "Delivered",
   CLOSED: "Closed",
   LOST: "Lost",
+  REJECTED: "Rejected",
 };
 
 const ADD_FIELD =

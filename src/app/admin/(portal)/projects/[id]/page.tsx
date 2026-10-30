@@ -42,6 +42,7 @@ const STAGE_OPTIONS = [
   { value: "DELIVERED", label: "Delivered" },
   { value: "CLOSED", label: "Closed" },
   { value: "LOST", label: "Lost" },
+  { value: "REJECTED", label: "Rejected" },
 ];
 
 export default async function ProjectDetailPage({

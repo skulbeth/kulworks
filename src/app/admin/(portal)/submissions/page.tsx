@@ -24,7 +24,7 @@ import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
 
 export const dynamic = "force-dynamic";
 
-const SUBMISSION_STATUSES = ["NEW", "CONTACTED", "QUOTED", "WON", "LOST"];
+const SUBMISSION_STATUSES = ["NEW", "CONTACTED", "QUOTED", "WON", "LOST", "REJECTED"];
 const ADD_FIELD =
   "rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base focus:border-blue focus:outline-none";
 
@@ -43,9 +43,10 @@ const statusTone: Record<string, ExplorerItem["badgeTone"]> = {
   QUOTED: "gold",
   WON: "green",
   LOST: "red",
+  REJECTED: "red",
 };
 
-// Filter views. "open" is the default — it hides the finished ones (won/lost)
+// Filter views. "open" is the default — it hides the finished ones (won/lost/rejected)
 // so the list is just what still needs work.
 const OPEN_STATUSES = ["NEW", "CONTACTED", "QUOTED"];
 const VIEWS: Record<string, string[] | null> = {
@@ -55,6 +56,7 @@ const VIEWS: Record<string, string[] | null> = {
   quoted: ["QUOTED"],
   won: ["WON"],
   lost: ["LOST"],
+  rejected: ["REJECTED"],
   all: null, // no status filter
 };
 
@@ -95,6 +97,7 @@ export default async function SubmissionsPage({
     { value: "quoted", label: "Quoted", count: counts.QUOTED ?? 0 },
     { value: "won", label: "Won", count: counts.WON ?? 0 },
     { value: "lost", label: "Lost", count: counts.LOST ?? 0 },
+    { value: "rejected", label: "Rejected", count: counts.REJECTED ?? 0 },
     { value: "all", label: "All", count: all.length },
   ];
 

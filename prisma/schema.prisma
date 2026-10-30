@@ -86,6 +86,7 @@ enum SubmissionStatus {
   QUOTED
   WON
   LOST
+  REJECTED // we turned the job down (Lost = they walked)
 }
 
 model Submission {
@@ -134,6 +135,7 @@ enum ProjectStage {
   DELIVERED
   CLOSED
   LOST
+  REJECTED // we turned the job down (Lost = they walked)
 }
 
 model Project {
