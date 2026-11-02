@@ -10,6 +10,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
+import { notify, projectUrl } from "@/lib/notify";
 import { computeTotals, quoteExpired, fmtValidDate } from "@/lib/invoice";
 import { site } from "@/data/site";
 
@@ -54,6 +55,14 @@ export async function saveClientAddress(formData: FormData) {
   });
 
   const parts = [street, city, state, postalCode, country].filter(Boolean).join(", ");
+  await notify({
+    kind: "address",
+    title: `Shipping details saved (${inv.number})`,
+    body: [parts, phone].filter(Boolean).join(" · "),
+    url: projectUrl(inv.projectId),
+    projectId: inv.projectId,
+    clientId: inv.clientId,
+  });
   await prisma.activity.create({
     data: {
       type: "NOTE",
@@ -97,6 +106,15 @@ export async function acceptQuote(formData: FormData) {
       projectId: q.projectId,
     },
   });
+  await notify({
+    kind: "quote_accepted",
+    title: `Quote accepted: ${q.client.name}`,
+    body: `${q.number} · $${total.toFixed(2)} · ${q.project.title}`,
+    url: projectUrl(q.projectId),
+    projectId: q.projectId,
+    clientId: q.clientId,
+    dedupeKey: `quote_accepted:${q.id}`,
+  });
   await sendMail({
     to: NOTIFY_TO(),
     replyTo: q.client.email,
@@ -131,6 +149,14 @@ export async function requestQuoteExtension(formData: FormData) {
       clientId: q.clientId,
       projectId: q.projectId,
     },
+  });
+  await notify({
+    kind: "quote_extend",
+    title: `Extend quote? ${q.client.name}`,
+    body: `${q.number} · $${total.toFixed(2)}${note ? ` · "${note.slice(0, 120)}"` : ""}`,
+    url: projectUrl(q.projectId),
+    projectId: q.projectId,
+    clientId: q.clientId,
   });
   await sendMail({
     to: NOTIFY_TO(),

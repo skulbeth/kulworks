@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
+import { notify } from "@/lib/notify";
 import { site } from "@/data/site";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { logError } from "@/lib/log-error";
@@ -132,6 +133,15 @@ export async function POST(request: Request) {
     if (paths.length) {
       await prisma.submission.update({ where: { id: submission.id }, data: { storagePaths: paths } });
     }
+
+    await notify({
+      kind: "lead",
+      title: `New order: ${name}`,
+      body: `${template.name}${paths.length ? ` · ${paths.length} photo(s)` : ""}`,
+      url: "/admin/submissions/",
+      clientId: client.id,
+      dedupeKey: `lead:${submission.id}`,
+    });
 
     // Notify Sam.
     try {

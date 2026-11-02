@@ -41,3 +41,65 @@ export async function docViews(paths: string[]): Promise<Map<string, DocViews>> 
   }
   return out;
 }
+
+/**
+ * Called after a client page view is stored: tells Sam the first time a client opens
+ * a quote/invoice/proof, and again when they come back after a quiet day (a sign
+ * they're deciding). Never throws; it runs after the beacon has been answered.
+ */
+export async function announceDocView(path: string, city: string | null, device: string | null) {
+  try {
+    const m = /^\/(invoice|proof)\/([^/]+)\/?$/.exec(path);
+    if (!m) return;
+    const [, kind, token] = m;
+    const p = kind === "invoice" ? invoicePath(token) : proofPath(token);
+    const views = await prisma.pageView.findMany({
+      where: { path: { in: [p, p.replace(/\/$/, "")] } },
+      orderBy: { createdAt: "desc" },
+      take: 2,
+      select: { createdAt: true },
+    });
+    if (views.length === 0) return;
+    const prior = views[1]?.createdAt ?? null;
+    const DAY = 24 * 3600_000;
+    if (prior && Date.now() - prior.getTime() < DAY) return; // same sitting, already told
+    const again = !!prior;
+    const where = [city, device].filter(Boolean).join(", ");
+    const { notify, projectUrl } = await import("@/lib/notify");
+
+    if (kind === "invoice") {
+      const inv = await prisma.invoice.findUnique({
+        where: { token },
+        select: { number: true, type: true, status: true, deletedAt: true, projectId: true, clientId: true, client: { select: { name: true } } },
+      });
+      if (!inv || inv.deletedAt || inv.status === "DRAFT") return;
+      const what = inv.type === "QUOTE" ? "quote" : "invoice";
+      await notify({
+        kind: "doc_viewed",
+        title: `${inv.client.name} ${again ? "came back to" : "opened"} ${inv.number}`,
+        body: `Their ${what}${where ? ` · ${where}` : ""}${again ? ` · last looked ${prior!.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}`,
+        url: projectUrl(inv.projectId),
+        projectId: inv.projectId,
+        clientId: inv.clientId,
+        dedupeKey: again ? `doc_viewed:again:${token}:${new Date().toISOString().slice(0, 10)}` : `doc_viewed:first:${token}`,
+      });
+    } else {
+      const proof = await prisma.proof.findUnique({
+        where: { token },
+        select: { id: true, title: true, projectId: true, project: { select: { clientId: true, client: { select: { name: true } } } } },
+      });
+      if (!proof) return;
+      await notify({
+        kind: "proof_viewed",
+        title: `${proof.project.client.name} ${again ? "came back to" : "opened"} their proofs`,
+        body: `${proof.title}${where ? ` · ${where}` : ""}`,
+        url: `/admin/proofs/${proof.id}/`,
+        projectId: proof.projectId,
+        clientId: proof.project.clientId,
+        dedupeKey: again ? `proof_viewed:again:${token}:${new Date().toISOString().slice(0, 10)}` : `proof_viewed:first:${token}`,
+      });
+    }
+  } catch (e) {
+    console.error("[announceDocView]", e);
+  }
+}

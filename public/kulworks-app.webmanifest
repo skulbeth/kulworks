@@ -1,0 +1,22 @@
+{
+  "name": "Kulworks",
+  "short_name": "Kulworks",
+  "description": "Kulworks shop: quotes, projects, proofs and client alerts.",
+  "id": "/admin/",
+  "start_url": "/admin/?source=app",
+  "scope": "/admin/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1220",
+  "theme_color": "#0d1220",
+  "icons": [
+    { "src": "/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Notifications", "url": "/admin/notifications/", "icons": [{ "src": "/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Inbox", "url": "/admin/submissions/", "icons": [{ "src": "/app/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Work", "url": "/admin/projects/", "icons": [{ "src": "/app/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

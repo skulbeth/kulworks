@@ -7,12 +7,13 @@
 //
 // Cookieless: the client passes an anonymous session id (sessionStorage). Bots
 // are skipped. Writes are capped per IP and restricted to known origins.
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { visitorHash } from "@/lib/visitor";
 import { logError } from "@/lib/log-error";
 import { getSessionUser } from "@/lib/auth";
+import { announceDocView } from "@/lib/doc-views";
 
 export const runtime = "nodejs";
 
@@ -128,18 +129,24 @@ export async function POST(request: Request) {
       }
     }
 
+    const city = geoHeader(request, "x-vercel-ip-city");
+    const device = deviceFromUA(ua);
     await prisma.pageView.create({
       data: {
         site: from,
         path: path.slice(0, 500),
         referrer: ref ? ref.slice(0, 500) : null,
         country: geoHeader(request, "x-vercel-ip-country"),
-        city: geoHeader(request, "x-vercel-ip-city"),
-        device: deviceFromUA(ua),
+        city,
+        device,
         sessionId: typeof sessionId === "string" ? sessionId.slice(0, 100) : null,
         visitorHash: visitorHash(clientIp(request)),
       },
     });
+    // A client opening their quote/invoice/proof pings Sam, after the beacon is answered.
+    if (from === "kulworks" && /^\/(invoice|proof)\//.test(path)) {
+      after(() => announceDocView(path, city, device));
+    }
     return ok();
   } catch (err) {
     await logError(err, "/api/track");

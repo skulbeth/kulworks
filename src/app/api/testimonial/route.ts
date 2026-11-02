@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
+import { notify } from "@/lib/notify";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { logError } from "@/lib/log-error";
 import { MAX_QUOTE_CHARS } from "@/lib/testimonials";
@@ -75,6 +76,14 @@ export async function POST(request: Request) {
         submittedAt: new Date(),
         status: "PENDING",
       },
+    });
+
+    await notify({
+      kind: "testimonial",
+      title: `New testimonial from ${displayName}`,
+      body: quote.slice(0, 160),
+      url: "/admin/testimonials/",
+      dedupeKey: `testimonial:${row.id}`,
     });
 
     // Best-effort nudge so it doesn't sit unseen. Never fails the submission.

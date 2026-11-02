@@ -9,6 +9,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
+import { notify } from "@/lib/notify";
 import { rateLimit } from "@/lib/rate-limit";
 import { itemLabel, publicProofUrl } from "@/lib/proofs";
 import { site } from "@/data/site";
@@ -114,6 +115,14 @@ export async function sendProofNotes(token: string) {
     where: { id: { in: pending.map((c) => c.id) } },
     data: { notifiedAt: new Date() },
   });
+  await notify({
+    kind: "proof_notes",
+    title: `Proof notes: ${proof.title}`,
+    body: `${pending.length} new note(s). First: "${pending[0].body.slice(0, 120)}"`,
+    url: `/admin/proofs/${proof.id}/`,
+    projectId: proof.projectId,
+    clientId: proof.project.clientId,
+  });
   await prisma.activity.create({
     data: {
       type: "EMAIL_RECEIVED",
@@ -135,6 +144,15 @@ export async function approveWholeProof(token: string) {
   const now = new Date();
   await prisma.proof.update({ where: { id: proof.id }, data: { approvedAt: now } });
   await prisma.proofItem.updateMany({ where: { proofId: proof.id, approvedAt: null }, data: { approvedAt: now } });
+  await notify({
+    kind: "proof_approved",
+    title: `Proof APPROVED: ${proof.title}`,
+    body: open ? `Every card approved, ${open} note(s) still open.` : "Every card approved. Ready to print.",
+    url: `/admin/proofs/${proof.id}/`,
+    projectId: proof.projectId,
+    clientId: proof.project.clientId,
+    dedupeKey: `proof_approved:${proof.id}:${now.toISOString()}`,
+  });
   await sendMail({
     to: NOTIFY_TO(),
     subject: `Proof APPROVED: ${proof.title}`,

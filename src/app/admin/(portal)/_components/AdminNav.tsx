@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
 // Ten top-level items for a handful of records was a lot of nav. Related pages are
@@ -20,9 +21,25 @@ const tabs: { href: string; label: string; siblings?: string[] }[] = [
 
 const norm = (p: string) => p.replace(/\/+$/, "") || "/";
 
-export default function AdminNav({ email, role }: { email: string; role: string }) {
+export default function AdminNav({ email, role, unread = 0 }: { email: string; role: string; unread?: number }) {
   const pathname = usePathname() ?? "/admin";
   const p = norm(pathname);
+  const router = useRouter();
+
+  // A push arriving while the admin is open refreshes the bell count; the app-icon
+  // dot clears once everything has been read.
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.type === "kulworks-push") router.refresh();
+    };
+    navigator.serviceWorker.addEventListener("message", onMsg);
+    return () => navigator.serviceWorker.removeEventListener("message", onMsg);
+  }, [router]);
+  useEffect(() => {
+    const nav = navigator as Navigator & { clearAppBadge?: () => Promise<void> };
+    if (unread === 0) nav.clearAppBadge?.().catch(() => {});
+  }, [unread]);
 
   const isActive = (href: string, siblings: string[] = []) => {
     const h = norm(href);
@@ -51,6 +68,23 @@ export default function AdminNav({ email, role }: { email: string; role: string 
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-3 text-sm text-muted">
+          <Link
+            href="/admin/notifications/"
+            title={unread ? `${unread} new notification${unread === 1 ? "" : "s"}` : "Notifications"}
+            className={`relative flex items-center rounded-full border px-2.5 py-1.5 font-semibold hover:border-blue hover:text-blue ${
+              p.startsWith("/admin/notifications") ? "border-blue text-blue" : "border-border"
+            }`}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-4 w-4">
+              <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+            </svg>
+            {unread > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 min-w-5 rounded-full bg-primary px-1 text-center text-[11px] font-black leading-5 text-black">
+                {unread > 99 ? "99+" : unread}
+              </span>
+            )}
+          </Link>
           <Link
             href="/"
             title="Go to the main site"

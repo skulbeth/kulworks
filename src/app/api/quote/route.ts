@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
+import { notify } from "@/lib/notify";
 import { site } from "@/data/site";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
@@ -181,6 +182,15 @@ export async function POST(request: Request) {
       deliveryMethod === "ship" ? `Ship to: ${shipAddressLine(ship)}` : null,
       cardBacks ? `Card backs: ${cardBacksLabel(cardBacks)}` : null,
     ].filter(Boolean) as string[];
+
+    await notify({
+      kind: "lead",
+      title: `New quote request: ${name}`,
+      body: [projectType, message.slice(0, 140)].filter(Boolean).join(" · "),
+      url: "/admin/submissions/",
+      clientId: client.id,
+      dedupeKey: `lead:${submission.id}`,
+    });
 
     // Notify Sam of the new request. Reply-To is the customer, so hitting Reply in
     // the inbox goes straight to them. Non-blocking — never fail the save on email.

@@ -29,6 +29,45 @@ model Profile {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   activities       Activity[]
+  pushDevices      PushDevice[]
+}
+
+// ── Phones / browsers that get push notifications (Web Push, VAPID). One row per
+// browser subscription; the Android app is Chrome under the hood, so it is one too.
+model PushDevice {
+  id         String    @id @default(cuid())
+  profile    Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profileId  String
+  endpoint   String    @unique // the push service URL; also identifies the device
+  p256dh     String
+  auth       String
+  label      String? // "Android app", "Chrome on Windows"...
+  createdAt  DateTime  @default(now())
+  lastPushAt DateTime? // last successful delivery
+  failCount  Int       @default(0) // consecutive failures; dead endpoints are deleted
+
+  @@index([profileId])
+}
+
+// ── The shop's notification inbox. Every notify() call lands here whether or not a
+// push got through, so nothing is missed when the phone is off.
+model Notification {
+  id        String    @id @default(cuid())
+  kind      String // lead, doc_viewed, quote_accepted, proof_approved, payment... (lib/notify.ts)
+  title     String
+  body      String
+  url       String? // where tapping it goes (admin path)
+  projectId String?
+  clientId  String?
+  // Optional uniqueness key so a repeat event (a refresh, a retried sweep) can't
+  // notify twice, e.g. "doc_viewed:first:<token>".
+  dedupeKey String?   @unique
+  pushed    Int       @default(0) // devices it reached
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([readAt])
 }
 
 // ── One-time email 2FA codes (hashed). One row per outstanding code per admin. ──

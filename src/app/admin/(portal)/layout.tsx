@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { requireProfile } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import AdminNav from "./_components/AdminNav";
 import IdleLogout from "./_components/IdleLogout";
 
@@ -17,11 +18,12 @@ export default async function PortalLayout({
   // Guards every page in this group: no session → redirect to login.
   // Also bootstraps the Profile row on first login.
   const { profile } = await requireProfile();
+  const unread = await prisma.notification.count({ where: { readAt: null } });
 
   return (
     <div className="min-h-screen bg-background">
       <IdleLogout />
-      <AdminNav email={profile.email} role={profile.role} />
+      <AdminNav email={profile.email} role={profile.role} unread={unread} />
       <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>
     </div>
   );
