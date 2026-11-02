@@ -73,8 +73,9 @@ export default function TwoFactorSetup({ enabled }: { enabled: boolean }) {
   async function removeApp() {
     if (!factorId) return;
     setBusy(true);
-    await supabase.auth.mfa.unenroll({ factorId });
+    const { error } = await supabase.auth.mfa.unenroll({ factorId });
     setBusy(false);
+    if (error) return setError(error.message);
     setFactorId(null);
     setApp("off");
   }

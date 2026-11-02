@@ -34,9 +34,13 @@ export async function rateLimit(rawKey: string, limit: number, windowMs: number)
     await prisma.rateLimit.deleteMany({ where: { key, createdAt: { lt: since } } });
     // Record this hit FIRST, then count: a burst of parallel requests each sees the
     // others, instead of all counting the same "under the limit" total.
-    await prisma.rateLimit.create({ data: { key } });
+    const hit = await prisma.rateLimit.create({ data: { key } });
     const count = await prisma.rateLimit.count({ where: { key, createdAt: { gte: since } } });
-    return count <= limit;
+    if (count <= limit) return true;
+    // Refused hits don't count, so the wait ends one window after the last allowed one
+    // instead of sliding forward with every retry.
+    await prisma.rateLimit.delete({ where: { id: hit.id } }).catch(() => {});
+    return false;
   } catch {
     // Public forms fail open (a limiter hiccup must not block real people); sign-in
     // codes fail closed, so overloading the database can't buy unlimited guesses.

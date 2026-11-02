@@ -1,5 +1,4 @@
 import { NextResponse, after } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
 import { site } from "@/data/site";
