@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.kulworks.app",
+      "sha256_cert_fingerprints": [
+        "79:3A:C9:EC:92:EB:F7:84:83:F9:7C:81:38:B5:09:46:AF:97:42:B0:14:7C:45:08:61:64:5E:A4:03:B7:E6:41"
+      ]
+    }
+  }
+]
