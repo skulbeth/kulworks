@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
 import { notify, setNotifyPrefs, NOTIFY_KINDS } from "@/lib/notify";
+import { maybeSweepInbox } from "@/lib/inbox-sweep";
 
 export async function markAllNotificationsRead() {
   await requireProfile();
@@ -39,4 +40,11 @@ export async function removePushDevice(formData: FormData) {
   const id = formData.get("id");
   if (typeof id === "string") await prisma.pushDevice.deleteMany({ where: { id } });
   revalidatePath("/admin/notifications");
+}
+
+export async function checkInboxNow() {
+  await requireProfile();
+  const r = await maybeSweepInbox(true);
+  revalidatePath("/admin", "layout");
+  redirect(`/admin/notifications/?checked=${r.error ? "error" : String(r.checked ?? 0)}#devices`);
 }

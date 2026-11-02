@@ -8,6 +8,8 @@
 // link cannot already see, and nothing here touches money. Accepting a quote or
 // asking to extend one only records the request and emails Sam.
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify, projectUrl } from "@/lib/notify";
@@ -173,4 +175,51 @@ export async function requestQuoteExtension(formData: FormData) {
 
   revalidatePath(`/invoice/${q.token}`);
   revalidatePath("/admin", "layout");
+}
+
+// "Message Sam" from a quote/invoice or proof page: contact that doesn't depend on
+// email or texting. Lands on the project timeline, buzzes Sam's phone, and is
+// emailed to him with Reply-To set to the client so he can answer from Gmail.
+export async function sendClientMessage(formData: FormData) {
+  const kind = clean(formData, "kind", 10);
+  const token = clean(formData, "token", 200);
+  const body = clean(formData, "message", 2000);
+  if (!token || (kind !== "invoice" && kind !== "proof")) return;
+  const back = kind === "invoice" ? `/invoice/${token}/` : `/proof/${token}/`;
+  if (!body) redirect(`${back}?msg=empty#message`);
+
+  let ctx: { projectId: string; clientId: string; clientName: string; clientEmail: string; label: string } | null = null;
+  if (kind === "invoice") {
+    const inv = await prisma.invoice.findUnique({ where: { token }, include: { client: true } });
+    if (inv && !inv.deletedAt && inv.status !== "DRAFT") {
+      ctx = { projectId: inv.projectId, clientId: inv.clientId, clientName: inv.client.name, clientEmail: inv.client.email, label: inv.number };
+    }
+  } else {
+    const p = await prisma.proof.findUnique({ where: { token }, include: { project: { include: { client: true } } } });
+    if (p && p.active && !p.project.deletedAt) {
+      ctx = { projectId: p.projectId, clientId: p.project.clientId, clientName: p.project.client.name, clientEmail: p.project.client.email, label: `proof "${p.title}"` };
+    }
+  }
+  if (!ctx) return;
+  if (!(await rateLimit(`client-msg:${token}`, 8, 60 * 60_000))) redirect(`${back}?msg=slow#message`);
+
+  await prisma.activity.create({
+    data: { type: "EMAIL_RECEIVED", body: `Message from ${ctx.label} page:\n${body}`, clientId: ctx.clientId, projectId: ctx.projectId },
+  });
+  await notify({
+    kind: "message",
+    title: `Message from ${ctx.clientName}`,
+    body: body.slice(0, 180),
+    url: projectUrl(ctx.projectId),
+    projectId: ctx.projectId,
+    clientId: ctx.clientId,
+  });
+  await sendMail({
+    to: NOTIFY_TO(),
+    replyTo: ctx.clientEmail,
+    subject: `Message from ${ctx.clientName} (${ctx.label})`,
+    text: [`${ctx.clientName} (${ctx.clientEmail}) wrote from their ${ctx.label} page:`, "", body, "", "Reply to this email to answer them."].join("\n"),
+  });
+  revalidatePath("/admin", "layout");
+  redirect(`${back}?msg=sent#message`);
 }

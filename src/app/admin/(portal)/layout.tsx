@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { requireProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { after } from "next/server";
+import { maybeSweepInbox } from "@/lib/inbox-sweep";
 import AdminNav from "./_components/AdminNav";
 import IdleLogout from "./_components/IdleLogout";
 
@@ -19,6 +21,8 @@ export default async function PortalLayout({
   // Also bootstraps the Profile row on first login.
   const { profile } = await requireProfile();
   const unread = await prisma.notification.count({ where: { readAt: null } });
+  // Opening the admin/app checks the inbox for client emails and payment receipts.
+  after(() => maybeSweepInbox());
 
   return (
     <div className="min-h-screen bg-background">

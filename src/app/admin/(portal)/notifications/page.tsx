@@ -8,6 +8,7 @@ import {
   saveNotifyPrefs,
   sendTestNotification,
   removePushDevice,
+  checkInboxNow,
 } from "../_notify-actions";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +54,7 @@ const SHORT: Record<NotifyKind, string> = {
 export default async function NotificationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tested?: string; saved?: string }>;
+  searchParams: Promise<{ tested?: string; saved?: string; checked?: string }>;
 }) {
   const sp = await searchParams;
   const [items, unread, devices, prefs, keys] = await Promise.all([
@@ -151,6 +152,16 @@ export default async function NotificationsPage({
             ))}
           </ul>
         )}
+        <form action={checkInboxNow} className="flex flex-wrap items-center gap-3">
+          <button className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue">
+            Check email for client replies and payments now
+          </button>
+          {sp.checked && (
+            <span className="text-sm text-muted">
+              {sp.checked === "error" ? "Couldn't reach Gmail. Try again in a minute." : `Checked ${sp.checked} new email${sp.checked === "1" ? "" : "s"}.`}
+            </span>
+          )}
+        </form>
         <form action={sendTestNotification} className="flex flex-wrap items-center gap-3">
           <button className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue">
             Send a test notification

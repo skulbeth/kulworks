@@ -14,7 +14,8 @@ import {
 import { site, paymentConfig, paypalLink, venmoLink } from "@/data/site";
 import { saveClientAddress, acceptQuote, requestQuoteExtension } from "./actions";
 import PrintButton from "./PrintButton";
-import SubmitButton from "./SubmitButton";
+import MessageSam from "@/components/MessageSam";
+import SubmitButton from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 // Private document — never index it.
@@ -22,10 +23,13 @@ export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export default async function InvoiceViewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ msg?: string }>;
 }) {
   const { token } = await params;
+  const { msg } = await searchParams;
   const inv = await prisma.invoice.findUnique({
     where: { token },
     include: { client: true, project: true, items: { orderBy: { position: "asc" } } },
@@ -346,6 +350,8 @@ export default async function InvoiceViewPage({
             </SubmitButton>
           </form>
         )}
+
+        {inv.status !== "DRAFT" && inv.status !== "VOID" && <MessageSam kind="invoice" token={inv.token} status={msg} />}
 
         {!isInvoice && !hasSplit && (
           <p className="mt-6 text-xs text-muted">This is an estimate, not a bill. Questions? Reply to {site.email}.</p>

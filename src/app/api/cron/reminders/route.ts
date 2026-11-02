@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
+import { maybeSweepInbox } from "@/lib/inbox-sweep";
 
 export const runtime = "nodejs";
 
@@ -12,6 +13,10 @@ export async function GET(request: Request) {
   if (secret && auth !== `Bearer ${secret}`) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
+
+  // Daily floor for the client-email / payment-receipt check (traffic and the app
+  // run it more often; see lib/inbox-sweep.ts).
+  await maybeSweepInbox(true);
 
   const now = new Date();
   const endOfToday = new Date();

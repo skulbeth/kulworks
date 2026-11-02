@@ -14,6 +14,7 @@ import { visitorHash } from "@/lib/visitor";
 import { logError } from "@/lib/log-error";
 import { getSessionUser } from "@/lib/auth";
 import { announceDocView } from "@/lib/doc-views";
+import { maybeSweepInbox } from "@/lib/inbox-sweep";
 
 export const runtime = "nodejs";
 
@@ -147,6 +148,8 @@ export async function POST(request: Request) {
     if (from === "kulworks" && /^\/(invoice|proof)\//.test(path)) {
       after(() => announceDocView(path, city, device));
     }
+    // Site traffic doubles as the inbox-check clock (throttled inside).
+    if (from === "kulworks") after(() => maybeSweepInbox());
     return ok();
   } catch (err) {
     await logError(err, "/api/track");
