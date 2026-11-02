@@ -52,12 +52,14 @@ export default function AdminNav({ email, role, unread = 0 }: { email: string; r
     <header className="border-b border-border bg-surface">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
         <span className="font-bold">Kulworks Admin</span>
-        <nav className="flex flex-wrap gap-1">
+        {/* Phone (and the Android app): one swipeable row under the title instead of
+            three wrapped rows of tabs. */}
+        <nav className="order-last -mx-4 flex w-[calc(100%+2rem)] gap-1 overflow-x-auto whitespace-nowrap px-4 pb-1 sm:order-none sm:mx-0 sm:w-auto sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0">
           {tabs.map((t) => (
             <Link
               key={t.href}
               href={t.href}
-              className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
+              className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
                 isActive(t.href, t.siblings)
                   ? "bg-primary text-black"
                   : "text-muted hover:text-foreground"
