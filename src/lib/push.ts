@@ -14,11 +14,35 @@ const SUBJECT = process.env.VAPID_SUBJECT || "mailto:contact@kulworks.com";
 type Keys = { publicKey: string; privateKey: string };
 let cached: Keys | null = null;
 
+// Pull one key out of an env value, forgiving a messy paste: surrounding quotes or
+// spaces, or the whole {"publicKey":"…","privateKey":"…"} line from the database.
+// Returns null unless the result is a real key (base64url, right length), so a bad
+// paste can never be served as "the public key" (GET /api/push/ is public).
+function envKey(raw: string | undefined, field: keyof Keys): string | null {
+  let v = (raw ?? "").trim();
+  if (v.startsWith("{")) {
+    try {
+      v = String((JSON.parse(v) as Partial<Keys>)[field] ?? "");
+    } catch {
+      return null;
+    }
+  }
+  v = v.replace(/^["']+|["']+$/g, "").trim();
+  if (!/^[A-Za-z0-9_-]+$/.test(v)) return null;
+  const bytes = Buffer.from(v, "base64url").length;
+  return bytes === (field === "publicKey" ? 65 : 32) ? v : null;
+}
+
 export async function vapidKeys(): Promise<Keys> {
   if (cached) return cached;
-  if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
-    cached = { publicKey: process.env.VAPID_PUBLIC_KEY, privateKey: process.env.VAPID_PRIVATE_KEY };
-    return cached;
+  if (process.env.VAPID_PUBLIC_KEY || process.env.VAPID_PRIVATE_KEY) {
+    const publicKey = envKey(process.env.VAPID_PUBLIC_KEY, "publicKey");
+    const privateKey = envKey(process.env.VAPID_PRIVATE_KEY, "privateKey");
+    if (publicKey && privateKey) {
+      cached = { publicKey, privateKey };
+      return cached;
+    }
+    console.error("[push] VAPID env vars are set but not valid keys; using the stored pair");
   }
   const row = await prisma.setting.findUnique({ where: { key: KEY } });
   if (row) {
