@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify, projectUrl } from "@/lib/notify";
 import { computeTotals, quoteExpired, fmtValidDate } from "@/lib/invoice";
+import { ensureProjectFolder } from "@/lib/project-folder";
 import { site } from "@/data/site";
 
 const NOTIFY_TO = () => process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com";
@@ -118,10 +119,13 @@ export async function acceptQuote(formData: FormData) {
   if (q.project.stage === "LEAD" || q.project.stage === "QUOTED") {
     await prisma.project.update({ where: { id: q.projectId }, data: { stage: "APPROVED" } });
   }
+  // Somewhere to send their files, ready the moment the page reloads ("Setting up your
+  // upload folder..." on the button covers the wait). A Drive hiccup never blocks the accept.
+  const folder = await ensureProjectFolder(q.projectId).catch(() => null);
   await prisma.activity.create({
     data: {
       type: "STATUS_CHANGE",
-      body: `Client accepted ${q.number} ($${total.toFixed(2)}) from the quote page.`,
+      body: `Client accepted ${q.number} ($${total.toFixed(2)}) from the quote page.${folder ? ` Upload folder: ${folder.url}` : ""}`,
       clientId: q.clientId,
       projectId: q.projectId,
     },
@@ -130,7 +134,7 @@ export async function acceptQuote(formData: FormData) {
     notify({
       kind: "quote_accepted",
       title: `Quote accepted: ${q.client.name}`,
-      body: `${q.number} · $${total.toFixed(2)} · ${q.project.title}`,
+      body: `${q.number} · $${total.toFixed(2)} · ${q.project.title}${folder ? " · upload folder ready" : ""}`,
       url: projectUrl(q.projectId),
       projectId: q.projectId,
       clientId: q.clientId,
@@ -146,6 +150,9 @@ export async function acceptQuote(formData: FormData) {
       `Total: $${total.toFixed(2)}`,
       "",
       `Quote page: ${url}`,
+      folder
+        ? `Their upload folder (shared with ${q.client.email}): ${folder.url}`
+        : "No upload folder was made (Google Drive didn't answer). Make one from the admin.",
       "Reply to this email to answer them directly.",
     ].join("\n"),
   });

@@ -228,6 +228,11 @@ model Project {
   dueEventId      String? // event for `dueDate`
   deliveryEventId String? // event for `deliveryDate`
 
+  // The client's Google Drive folder for this job (made when they accept the quote, or
+  // adopted from the one their request already had). Files they upload land here.
+  driveFolderId  String?
+  driveFolderUrl String?
+
   @@index([stage])
   @@index([dueDate])
   @@index([createdAt])

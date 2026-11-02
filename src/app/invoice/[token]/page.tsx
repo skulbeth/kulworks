@@ -18,6 +18,7 @@ import { saveClientAddress, acceptQuote, requestQuoteExtension } from "./actions
 import PrintButton from "./PrintButton";
 import MessageSam from "@/components/MessageSam";
 import PayOptions from "@/components/PayOptions";
+import SendFiles from "@/components/SendFiles";
 import SubmitButton from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
@@ -153,7 +154,10 @@ export default async function InvoiceViewPage({
       ) : inv.acceptedAt && isQuoteLive ? (
         <div className={`${banner} border-green-500/40 bg-green-500/10`}>
           <p className="font-bold text-green-600">You accepted this quote on {fmtDay(inv.acceptedAt)}.</p>
-          <p className="mt-0.5 text-muted">Thank you! I&apos;ll be in touch about next steps. Your invoice will show up right here.</p>
+          <p className="mt-0.5 text-muted">
+            Thank you! {inv.project.driveFolderUrl ? "Send your files below whenever they're ready. " : ""}
+            I&apos;ll be in touch about next steps. Your invoice and proofs will show up right here.
+          </p>
         </div>
       ) : expired ? (
         <div className={`${banner} border-gold/40 bg-gold/10`}>
@@ -265,13 +269,18 @@ export default async function InvoiceViewPage({
         {canAccept && (
           <form action={acceptQuote} className="mt-6 border-t border-border pt-5 print:hidden">
             <input type="hidden" name="token" value={inv.token} />
-            <SubmitButton pendingText="Sending..." className="min-h-11 block w-full rounded-full bg-primary px-6 py-3 text-center font-bold text-black hover:bg-primary-hover">
+            <SubmitButton pendingText="Setting up your upload folder..." className="min-h-11 block w-full rounded-full bg-primary px-6 py-3 text-center font-bold text-black hover:bg-primary-hover">
               Looks good, let&apos;s do it
             </SubmitButton>
             <p className="mt-2 text-center text-xs text-muted">
-              This just lets me know you&apos;re ready. Nothing is charged, and payment only comes after you approve your sample.
+              This lets me know you&apos;re ready and opens a spot right here to send your files. Nothing is charged, and payment only comes after you approve your sample.
             </p>
           </form>
+        )}
+
+        {/* Their files, straight into their Drive folder, once they've said yes. */}
+        {inv.type === "QUOTE" && inv.acceptedAt && inv.status !== "VOID" && inv.project.driveFolderUrl && (
+          <SendFiles token={inv.token} folderUrl={inv.project.driveFolderUrl} />
         )}
 
         {/* Invoices raised from this quote (one, or deposit + balance on a split). */}

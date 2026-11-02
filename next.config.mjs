@@ -61,7 +61,7 @@ const nextConfig = {
               "font-src 'self' https://fonts.gstatic.com data:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com",
-              "connect-src 'self' https://gzavumiukhahbrgzcaxo.supabase.co wss://gzavumiukhahbrgzcaxo.supabase.co https://challenges.cloudflare.com",
+              "connect-src 'self' https://gzavumiukhahbrgzcaxo.supabase.co wss://gzavumiukhahbrgzcaxo.supabase.co https://challenges.cloudflare.com https://www.googleapis.com",
               "frame-src https://challenges.cloudflare.com",
               "upgrade-insecure-requests",
             ].join("; "),

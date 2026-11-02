@@ -69,3 +69,66 @@ export async function createClientFolder(name: string): Promise<string | null> {
     return null;
   }
 }
+
+/** The folder id inside a Drive folder link (…/folders/<id>?usp=…), or null. */
+export function folderIdFromUrl(url: string | null | undefined): string | null {
+  const m = /\/folders\/([A-Za-z0-9_-]{10,})/.exec(url ?? "");
+  return m ? m[1] : null;
+}
+
+/** Give one person edit access to a folder, without Google emailing them (the link is on
+ *  their quote page). Google only accepts addresses tied to a Google account; for anyone
+ *  else this fails quietly and they use the upload box on the page instead. */
+export async function shareFolderWith(folderId: string, email: string): Promise<boolean> {
+  const token = await getAccessToken();
+  if (!token || !email) return false;
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${folderId}/permissions?sendNotificationEmail=false`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "writer", type: "user", emailAddress: email }),
+      }
+    );
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Start a resumable upload of one file into a folder and return the session URL. The
+ *  browser then PUTs the bytes straight to Google (no size cap from our server, and the
+ *  client needs no Google account). `origin` must be the page's origin, or Google refuses
+ *  the browser's cross-origin upload. */
+export async function startDriveUpload(opts: {
+  folderId: string;
+  name: string;
+  mimeType: string;
+  size: number;
+  origin: string;
+}): Promise<string | null> {
+  const token = await getAccessToken();
+  if (!token) return null;
+  try {
+    const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable&fields=id", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json; charset=UTF-8",
+        "X-Upload-Content-Type": opts.mimeType,
+        "X-Upload-Content-Length": String(opts.size),
+        Origin: opts.origin,
+      },
+      body: JSON.stringify({ name: opts.name, parents: [opts.folderId] }),
+    });
+    if (!res.ok) {
+      await logError(new Error(`Drive upload start failed (${res.status}): ${(await res.text()).slice(0, 300)}`), "drive startDriveUpload");
+      return null;
+    }
+    return res.headers.get("location");
+  } catch (e) {
+    await logError(e, "drive startDriveUpload");
+    return null;
+  }
+}

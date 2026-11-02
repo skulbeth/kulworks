@@ -5,7 +5,7 @@
 //
 // Real size needs the screen's pixels-per-inch, which a browser cannot know, so the
 // client matches an on-screen outline to a real bank card once and we remember it.
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   addProofNote,
@@ -165,7 +165,7 @@ export default function ProofViewer({
       </header>
 
       <ol className="mt-4 list-decimal space-y-1 pl-5 text-sm text-muted">
-        <li>Click a card to see it up close. Use Flip to see the back.</li>
+        <li>Click a card to see it up close. Use Flip, or drag the card sideways, to see the back.</li>
         <li>Click the spot you want changed and write what it should say.</li>
         <li>When you&apos;re done, press <b>Send my notes</b>. Press <b>Approve all</b> when everything looks right.</li>
       </ol>
@@ -304,6 +304,75 @@ function CardViewer({
     setLeaving(null);
   }, [item.id, item.front]);
 
+  // Flip spins the card over like the real thing: a quarter turn away, swap sides
+  // edge-on, a quarter turn back. Skipped for anyone who has reduced motion turned on.
+  const [turn, setTurn] = useState<{ deg: number; animate: boolean }>({ deg: 0, animate: false });
+  const flipping = useRef(false);
+  const flip = useCallback(() => {
+    if (flipping.current) return;
+    const other = (s: "front" | "back") => (s === "front" ? "back" : "front");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return setSide(other);
+    flipping.current = true;
+    setTurn({ deg: 90, animate: true });
+    window.setTimeout(() => {
+      setSide(other);
+      setTurn({ deg: -90, animate: false });
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          setTurn({ deg: 0, animate: true });
+          window.setTimeout(() => (flipping.current = false), 200);
+        })
+      );
+    }, 190);
+  }, []);
+
+  // Grab and spin: drag the card sideways and it turns with your finger, like holding
+  // it up to the light. Let go past halfway and it lands on the other side; short of
+  // that it settles back. A tap (no real drag) still drops a note pin.
+  const drag = useRef<{ x: number; id: number; moved: boolean } | null>(null);
+  const dragged = useRef(false);
+  const reduced = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (flipping.current || reduced()) return;
+    drag.current = { x: e.clientX, id: e.pointerId, moved: false };
+    dragged.current = false;
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    const dx = e.clientX - d.x;
+    if (!d.moved && Math.abs(dx) < 8) return;
+    if (!d.moved) {
+      d.moved = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    setTurn({ deg: Math.max(-180, Math.min(180, dx * 0.6)), animate: false });
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d || !d.moved) return;
+    dragged.current = true; // the click that follows this release isn't a pin tap
+    const deg = turn.deg;
+    if (Math.abs(deg) > 90 && item.front && item.back) {
+      // Past edge-on: show the other side, already turned the rest of the way.
+      setSide((s) => (s === "front" ? "back" : "front"));
+      setTurn({ deg: deg > 0 ? deg - 180 : deg + 180, animate: false });
+      requestAnimationFrame(() => requestAnimationFrame(() => setTurn({ deg: 0, animate: true })));
+    } else {
+      setTurn({ deg: 0, animate: true });
+    }
+  };
+
+  // Each card swings in a little as it opens, so it reads as a card you're holding.
+  useEffect(() => {
+    if (reduced()) return;
+    setTurn({ deg: -28, animate: false });
+    // Long enough for the tilted start to be on screen before it swings to flat.
+    const t = window.setTimeout(() => setTurn({ deg: 0, animate: true }), 60);
+    return () => window.clearTimeout(t);
+  }, [item.id]);
+
   // Warm both sides so Flip is instant. Without this the browser keeps painting the
   // old side until the new image arrives, so the back can briefly show the front.
   useEffect(() => {
@@ -335,9 +404,9 @@ function CardViewer({
       if ((e.target as HTMLElement)?.tagName === "TEXTAREA") return;
       if (e.key === "ArrowRight") move(1);
       if (e.key === "ArrowLeft") move(-1);
-      if (e.key.toLowerCase() === "f") setSide((s) => (s === "front" ? "back" : "front"));
+      if (e.key.toLowerCase() === "f") flip();
     },
-    [close, move]
+    [close, move, flip]
   );
   useEffect(() => {
     window.addEventListener("keydown", onKey);
@@ -361,6 +430,10 @@ function CardViewer({
   const allNotes = item.notes;
 
   const place = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (dragged.current) {
+      dragged.current = false;
+      return;
+    }
     const r = e.currentTarget.getBoundingClientRect();
     setPin({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height });
     setError(null);
@@ -418,7 +491,7 @@ function CardViewer({
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {item.front && item.back && (
-              <button type="button" onClick={() => setSide((s) => (s === "front" ? "back" : "front"))} className="min-h-11 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-black">
+              <button type="button" onClick={flip} className="min-h-11 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-black">
                 Flip to {side === "front" ? "back" : "front"}
               </button>
             )}
@@ -448,7 +521,17 @@ function CardViewer({
 
         <div
           className="relative cursor-crosshair select-none overflow-hidden rounded-xl bg-white shadow-2xl"
-          style={{ width: dispW, height: dispH }}
+          style={{
+            width: dispW,
+            height: dispH,
+            transform: `perspective(1400px) rotateY(${turn.deg}deg)`,
+            transition: turn.animate ? `transform ${turn.deg ? "190ms ease-in" : "380ms cubic-bezier(.2,.9,.3,1.25)"}` : "none",
+            touchAction: "pan-y", // sideways drags spin the card; up and down still scrolls
+          }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
           onClick={place}
           onContextMenu={(e) => e.preventDefault()}
         >
