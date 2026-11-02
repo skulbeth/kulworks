@@ -165,6 +165,26 @@ Testing mode), Vercel, Squarespace (domain).
 
 ---
 
+## 8b. Android app + notifications (added 2026-11-02)
+
+- **The app** = the admin, wrapped as a Trusted Web Activity: package `com.kulworks.app`,
+  project `C:\skulbeth\Kulworks-android` (own git repo), build with
+  `powershell -File build-apk.ps1 [-Bump]` → `D:\Kulworks\Kulworks App\Kulworks-<ver>.apk`.
+  Signing key: `D:\Kulworks\Kulworks App\signing\` (password in README-PASSWORD.txt; NOT in git;
+  losing it means the app can never be updated in place). `public/.well-known/assetlinks.json`
+  carries its SHA-256, which is what makes it open full screen. Website changes need no new APK.
+- **notify()** (`lib/notify.ts`) = Notification row (the inbox at `/admin/notifications`, bell in
+  the nav) + Web Push to every `PushDevice` (`lib/push.ts`, VAPID from env or the Setting
+  `vapid_keys`). Never throws; `dedupeKey` prevents repeats; per-kind mute in Setting `notify_prefs`.
+- **Triggers:** /api/quote, /api/order, /api/upload, /api/testimonial, quote accept/extend/address
+  and Message Sam (invoice/[token]/actions.ts), proof notes/approve, first open / came-back of
+  quotes, invoices and proofs (`announceDocView` from /api/track), client emails + payment
+  receipts (`lib/inbox-sweep.ts`, lazy every 10 min + daily cron + "Check now").
+- **Client hub:** the quote link shows linked invoices (`Invoice.sourceQuoteId`), proofs, accept,
+  soft expiry (`validUntil`, 7 days from first send), Save as PDF, Message Sam.
+- `public/sw.js` handles push + clicks only (scope /admin/, no caching). The manifest is
+  `/kulworks-app.webmanifest`: nothing public may live under `/admin*`, the auth proxy bounces it.
+
 ## 9. Resume on any machine
 
 See `TODO.md` → "Resume here". Short version: `git clone`, `npm install`, then pull the
