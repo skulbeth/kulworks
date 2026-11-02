@@ -18,13 +18,15 @@ export async function GET(request: Request) {
   try {
     const { json, filename, counts } = await buildBackup();
     if (resend) {
-      await resend.emails.send({
+      // Resend hands a failure back instead of throwing, so check for one.
+      const { error } = await resend.emails.send({
         from: FROM,
         to: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
         subject: `Kulworks weekly backup: ${filename}`,
         text: `Attached is your weekly data backup.\n\nRecord counts:\n${JSON.stringify(counts, null, 2)}`,
         attachments: [{ filename, content: Buffer.from(json).toString("base64") }],
       });
+      if (error) throw new Error(`backup email: ${error.message}`);
     }
     // Weekly stats digest rides on this same Monday cron (keeps within Hobby cron limits).
     try {
