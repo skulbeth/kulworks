@@ -6,13 +6,14 @@ import JsonLd from "@/components/JsonLd";
 import CardCalculator from "@/components/CardCalculator";
 import { pricing, pricingIntro } from "@/data/pricing";
 import { breadcrumbSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Pricing & Card Cost Estimator",
   description:
     "Starting prices for Kulworks card printing, card design, and 3D modeling in San Antonio. Setup fees, per-card rates, and design rates, with final pricing by quote.",
   alternates: { canonical: "/pricing/" },
-};
+});
 
 export default function PricingPage() {
   return (

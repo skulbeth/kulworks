@@ -7,13 +7,14 @@ import Button from "@/components/Button";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema } from "@/lib/structured-data";
 import { audiences } from "@/data/audiences";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Who It's For",
   description:
     "Kulworks works with game and card designers, game stores, sports teams and clubs, schools, photographers, wedding venues, and convention-goers in San Antonio and beyond.",
   alternates: { canonical: "/who-its-for/" },
-};
+});
 
 export default function WhoItsForPage() {
   return (

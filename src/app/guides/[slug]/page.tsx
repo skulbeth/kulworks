@@ -6,6 +6,7 @@ import JsonLd from "@/components/JsonLd";
 import CardDesignPromo from "@/components/CardDesignPromo";
 import { guides, getGuide } from "@/data/guides";
 import { guideArticleSchema, breadcrumbSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
 export function generateStaticParams() {
   return guides.map((g) => ({ slug: g.slug }));
@@ -19,12 +20,12 @@ export async function generateMetadata({
   const { slug } = await params;
   const guide = getGuide(slug);
   if (!guide) return {};
-  return {
+  return withSocial({
     title: guide.title,
     description: guide.description,
     keywords: guide.keywords ? [...guide.keywords] : undefined,
     alternates: { canonical: `/guides/${guide.slug}/` },
-  };
+  });
 }
 
 export default async function GuidePage({

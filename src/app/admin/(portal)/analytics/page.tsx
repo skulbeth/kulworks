@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { fmtDateTime, SHOP_TZ } from "@/lib/format";
 import { ipFromHeaders, visitorHash } from "@/lib/visitor";
 import { getOwnerHashes, rememberOwnerHash } from "@/lib/owner-visits";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function AnalyticsPage({
 }: {
   searchParams: Promise<{ range?: string; showme?: string; site?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const sp = await searchParams;
   const range = (RANGES.find((r) => r.key === sp.range)?.key ?? "30d") as RangeKey;
   const rangeMs = RANGES.find((r) => r.key === range)!.ms;

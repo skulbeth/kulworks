@@ -5,6 +5,7 @@ import { after } from "next/server";
 import { maybeSweepInbox } from "@/lib/inbox-sweep";
 import AdminNav from "./_components/AdminNav";
 import IdleLogout from "./_components/IdleLogout";
+import PushHeal from "./_components/PushHeal";
 
 // The admin portal is never indexed.
 export const metadata: Metadata = {
@@ -17,8 +18,8 @@ export default async function PortalLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Guards every page in this group: no session → redirect to login.
-  // Also bootstraps the Profile row on first login.
+  // Guards every page in this group: no session or not on the team → login.
+  // (Each page also calls requireProfile itself.)
   const { profile } = await requireProfile();
   const unread = await prisma.notification.count({ where: { readAt: null } });
   // Opening the admin/app checks the inbox for client emails and payment receipts.
@@ -27,6 +28,7 @@ export default async function PortalLayout({
   return (
     <div className="min-h-screen bg-background">
       <IdleLogout />
+      <PushHeal />
       <AdminNav email={profile.email} role={profile.role} unread={unread} />
       <div className="mx-auto max-w-6xl px-4 py-8">{children}</div>
     </div>

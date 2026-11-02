@@ -26,6 +26,7 @@ const DONE: Record<string, string> = {
 };
 
 const ERROR: Record<string, string> = {
+  email: "The email didn't go out (the mail service refused it), so nothing was logged as sent. Try again in a minute.",
   noitems: "Add at least one line item first. A line needs a description to count.",
   "not-draft": "That document has already gone out, so its numbers are locked. Void it and raise a new one instead.",
   "no-balance": "There is no balance to invoice. That document has no deposit set, or the deposit is the whole amount.",

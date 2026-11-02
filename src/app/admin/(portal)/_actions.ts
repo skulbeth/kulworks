@@ -4,8 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { requireProfile } from "@/lib/auth";
-import { resend, FROM, sendMail, addSubscriberToAudience } from "@/lib/email";
+import { logError } from "@/lib/log-error";
+import { resend, FROM, sendMail, mailSent, addSubscriberToAudience } from "@/lib/email";
 import { uploadsEnabled, setUploadsEnabled, removeUploadFiles } from "@/lib/uploads";
 import { createClientFolder, driveConfigured } from "@/lib/google-drive";
 import { deliveryLabel, cardBacksLabel } from "@/lib/order-details";
@@ -52,9 +54,15 @@ function int(fd: FormData, k: string): number | null {
   const n = num(fd, k);
   return n === null ? null : Math.trunc(n);
 }
+// Counts, money and hours on a project can't be negative; a stray minus is dropped.
+function nn(n: number | null): number | null {
+  return n !== null && n < 0 ? null : n;
+}
 function date(fd: FormData, k: string): Date | null {
   const v = s(fd, k);
-  return v ? new Date(`${v}T00:00:00`) : null;
+  // Noon UTC, like the quote form: the same calendar day in UTC (server, Google Calendar)
+  // and in Texas, so a date never slips a day depending on who reads it.
+  return v ? new Date(`${v}T12:00:00Z`) : null;
 }
 
 const PROJECT_STAGES = [
@@ -123,7 +131,8 @@ async function syncAutoReminder(projectId: string, title: string, dueDate: Date 
     return;
   }
 
-  const dateChanged = keep.remindAt?.getTime() !== remindAt.getTime();
+  // Compare days, not instants: older rows hold midnight, newer ones noon.
+  const dateChanged = keep.remindAt?.toISOString().slice(0, 10) !== remindAt.toISOString().slice(0, 10);
   const closed = keep.done || !!keep.deletedAt;
   // Done/archived and the date hasn't moved -> stays closed (the title may still update).
   const reopen = closed && dateChanged;
@@ -282,15 +291,15 @@ export async function updateProject(formData: FormData) {
       stage: stage && PROJECT_STAGES.includes(stage) ? (stage as never) : undefined,
       requested: s(formData, "requested"),
       deliverables: s(formData, "deliverables"),
-      cardCount: int(formData, "cardCount"),
+      cardCount: nn(int(formData, "cardCount")),
       cardSize: s(formData, "cardSize"),
-      quantity: int(formData, "quantity"),
+      quantity: nn(int(formData, "quantity")),
       finish: s(formData, "finish"),
       specsNotes: s(formData, "specsNotes"),
-      quotedAmount: num(formData, "quotedAmount"),
-      finalAmount: num(formData, "finalAmount"),
-      materialCost: num(formData, "materialCost"),
-      devHours: num(formData, "devHours"),
+      quotedAmount: nn(num(formData, "quotedAmount")),
+      finalAmount: nn(num(formData, "finalAmount")),
+      materialCost: nn(num(formData, "materialCost")),
+      devHours: nn(num(formData, "devHours")),
       dueDate,
       startDate: date(formData, "startDate"),
       deliveryDate,
@@ -437,22 +446,22 @@ export async function updateClient(formData: FormData) {
   const { profile } = await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
-  await prisma.client.update({
-    where: { id },
-    data: {
-      name: s(formData, "name") ?? "Unnamed",
-      phone: s(formData, "phone"),
-      company: s(formData, "company"),
-      street: s(formData, "street"),
-      city: s(formData, "city"),
-      state: s(formData, "state"),
-      postalCode: s(formData, "postalCode"),
-      country: s(formData, "country"),
-      notes: s(formData, "notes"),
-      // Only contacts render this field — don't wipe it from the client form.
-      ...(formData.has("lostReason") ? { lostReason: s(formData, "lostReason") } : {}),
-    },
-  });
+  // Write only the fields Sam changed. The client can save their own address and phone
+  // from their quote page while this form sits open; resaving the page's old values
+  // would quietly put the old (or blank) address back.
+  let orig: Record<string, string | null> = {};
+  try {
+    orig = JSON.parse(s(formData, "orig") ?? "{}");
+  } catch {}
+  const data: Record<string, string | null> = {};
+  for (const k of ["name", "phone", "company", "street", "city", "state", "postalCode", "country", "notes", "lostReason"]) {
+    // Only contacts render lostReason; a field that isn't on the form is left alone.
+    if (!formData.has(k)) continue;
+    const v = s(formData, k);
+    if (k in orig && (orig[k] ?? null) === v) continue;
+    data[k] = k === "name" ? (v ?? "Unnamed") : v;
+  }
+  if (Object.keys(data).length) await prisma.client.update({ where: { id }, data });
   await logAudit(profile.email, "update.client", id);
   revalidateAdmin();
   redirect(`/admin/clients/${id}/`);
@@ -581,7 +590,8 @@ export async function addPayment(formData: FormData) {
   await requireProfile();
   const projectId = s(formData, "projectId");
   const amount = num(formData, "amount");
-  if (!projectId || amount === null) return;
+  // A payment is money in; zero or negative is a typo, not a payment.
+  if (!projectId || amount === null || amount <= 0) return;
   const method = s(formData, "method") ?? "OTHER";
   const paidAt = date(formData, "paidAt");
   await prisma.payment.create({
@@ -620,7 +630,13 @@ export async function addReminder(formData: FormData) {
       authorId: profile.id,
     },
   });
-  const calendarEventId = await syncReminderEvent({ body, remindAt, done: false, calendarEventId: null });
+  const calendarEventId = await syncReminderEvent({
+    activityId: activity.id,
+    body,
+    remindAt,
+    done: false,
+    calendarEventId: null,
+  });
   if (calendarEventId) {
     await prisma.activity.update({ where: { id: activity.id }, data: { calendarEventId } });
   }
@@ -694,8 +710,10 @@ export async function deleteProject(formData: FormData) {
   const clearedReminderIds = reminders.filter((_, i) => remindersGone[i]).map((r) => r.id);
   // Archive the project + its payments & activities; unlink submissions so they can
   // be re-converted. Nothing is hard-deleted.
-  await prisma.payment.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
-  await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
+  // Rows already deleted keep their own time, so a restore (which matches on the
+  // project's archive time) doesn't bring them back.
+  await prisma.payment.updateMany({ where: { projectId: id, deletedAt: null }, data: { deletedAt: now } });
+  await prisma.activity.updateMany({ where: { projectId: id, deletedAt: null }, data: { deletedAt: now } });
   if (clearedReminderIds.length) {
     await prisma.activity.updateMany({
       where: { id: { in: clearedReminderIds } },
@@ -730,9 +748,13 @@ export async function restoreProject(formData: FormData) {
   const { profile } = await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
+  const archived = await prisma.project.findUnique({ where: { id }, select: { deletedAt: true } });
+  if (!archived?.deletedAt) redirect("/admin/archive/");
+  const at = archived.deletedAt;
   await prisma.project.update({ where: { id }, data: { deletedAt: null } });
-  await prisma.payment.updateMany({ where: { projectId: id }, data: { deletedAt: null } });
-  await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: null } });
+  // Only what the archive itself hid; a payment or note deleted before that stays deleted.
+  await prisma.payment.updateMany({ where: { projectId: id, deletedAt: at }, data: { deletedAt: null } });
+  await prisma.activity.updateMany({ where: { projectId: id, deletedAt: at }, data: { deletedAt: null } });
 
   // Re-push the project's calendar events (removed on archive), then rebuild the auto-reminder.
   const proj = await prisma.project.findUnique({
@@ -753,7 +775,7 @@ export async function restoreProject(formData: FormData) {
     await syncAutoReminder(id, proj.title, proj.dueDate);
     // Manual reminders came off the calendar on archive; put the open ones back.
     const reminders = await prisma.activity.findMany({
-      where: { projectId: id, type: "REMINDER", body: { not: { startsWith: AUTO_TAG } } },
+      where: { projectId: id, type: "REMINDER", deletedAt: null, body: { not: { startsWith: AUTO_TAG } } },
       select: { id: true, body: true, remindAt: true, done: true, calendarEventId: true },
     });
     for (const r of reminders) await resyncReminder(r);
@@ -867,7 +889,8 @@ export async function updateAdmin(formData: FormData) {
 
   // Never let the last remaining owner be demoted to staff.
   if (target!.role === "OWNER" && role !== "OWNER") {
-    const owners = await prisma.profile.count({ where: { role: "OWNER" } });
+    // Active owners only: a deactivated owner can't manage the team.
+    const owners = await prisma.profile.count({ where: { role: "OWNER", deactivatedAt: null } });
     if (owners <= 1) redirect("/admin/team/?error=lastowner");
   }
 
@@ -935,6 +958,8 @@ export async function deactivateAdmin(formData: FormData) {
     redirect("/admin/team/?error=update");
   }
   await prisma.profile.update({ where: { id }, data: { deactivatedAt: new Date() } });
+  // Their phone must stop showing client alerts too.
+  await prisma.pushDevice.deleteMany({ where: { profileId: id } });
   await logAudit(profile.email, "team.deactivate", target!.email);
   revalidateAdmin();
   redirect("/admin/team/?done=deactivated");
@@ -1028,7 +1053,9 @@ export async function sendClientEmail(formData: FormData) {
     }
   }
 
-  await sendMail({ to: client.email, replyTo: site.email, subject, text: body });
+  const sent = await sendMail({ to: client.email, replyTo: site.email, subject, text: body });
+  // A failed send must not be logged as sent.
+  if (!mailSent(sent)) redirect(`/admin/clients/${clientId}/?error=email`);
 
   // Timestamped record of what was sent.
   await prisma.activity.create({
@@ -1198,12 +1225,13 @@ export async function sendProjectUpdate(formData: FormData) {
   });
   if (!project) return;
 
-  await sendMail({
+  const sent = await sendMail({
     to: project.client.email,
     replyTo: site.email,
     subject: `Update on your Kulworks project: ${project.title}`,
     text: `Hi ${project.client.name},\n\n${message}\n\nKulworks`,
   });
+  if (!mailSent(sent)) redirect(`/admin/projects/${projectId}/?error=email`);
   await prisma.activity.create({
     data: {
       type: "EMAIL_SENT",
@@ -1249,12 +1277,13 @@ export async function notifyProjectStarted(formData: FormData) {
   );
   const text = lines.join("\n");
 
-  await sendMail({
+  const sent = await sendMail({
     to: project.client.email,
     replyTo: site.email,
     subject: `We've started your Kulworks project: ${project.title}`,
     text,
   });
+  if (!mailSent(sent)) redirect(`/admin/projects/${projectId}/?error=email`);
   await prisma.activity.create({
     data: {
       type: "EMAIL_SENT",
@@ -1290,9 +1319,21 @@ function lineItems(fd: FormData) {
   return out;
 }
 
-async function nextDocNumber(type: "QUOTE" | "INVOICE") {
-  const count = await prisma.invoice.count({ where: { type: type as never } });
-  return `${type === "QUOTE" ? "Q" : "INV"}-${String(count + 1).padStart(4, "0")}`;
+// Create a numbered quote/invoice. The number is picked and the row written inside one
+// transaction holding a lock, so two docs made at once (double click, two tabs) can't
+// both get the same Q-/INV- number.
+async function createNumberedDoc<T>(
+  type: "QUOTE" | "INVOICE",
+  create: (number: string, tx: Prisma.TransactionClient) => Promise<T>
+): Promise<{ number: string; doc: T }> {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(4207001)`;
+    const rows = await tx.invoice.findMany({ where: { type: type as never }, select: { number: true } });
+    // Highest number in use + 1 (not a count, which repeats a number if a row is ever removed).
+    const top = rows.reduce((m, r) => Math.max(m, Number(r.number.match(/(\d+)$/)?.[1] ?? 0)), 0);
+    const number = `${type === "QUOTE" ? "Q" : "INV"}-${String(top + 1).padStart(4, "0")}`;
+    return { number, doc: await create(number, tx) };
+  });
 }
 
 // Create a quote or invoice (DRAFT) for a project.
@@ -1307,21 +1348,22 @@ export async function createInvoiceDoc(formData: FormData) {
   const items = lineItems(formData);
   if (items.length === 0) redirect(`/admin/projects/${projectId}/?error=noitems`);
 
-  const number = await nextDocNumber(type);
-  await prisma.invoice.create({
-    data: {
-      number,
-      type: type as never,
-      status: "DRAFT",
-      projectId,
-      clientId: project!.clientId,
-      taxRate: num(formData, "taxRate") ?? 0,
-      depositPct: num(formData, "depositPct"),
-      dueDate: date(formData, "dueDate") ?? undefined,
-      notes: s(formData, "notes"),
-      items: { create: items },
-    },
-  });
+  const { number } = await createNumberedDoc(type, (number, tx) =>
+    tx.invoice.create({
+      data: {
+        number,
+        type: type as never,
+        status: "DRAFT",
+        projectId,
+        clientId: project!.clientId,
+        taxRate: num(formData, "taxRate") ?? 0,
+        depositPct: num(formData, "depositPct"),
+        dueDate: date(formData, "dueDate") ?? undefined,
+        notes: s(formData, "notes"),
+        items: { create: items },
+      },
+    })
+  );
   await logAudit(profile.email, "invoice.create", `${number}: ${project!.title}`);
   revalidateAdmin();
   redirect(`/admin/projects/${projectId}/?done=doc-created`);
@@ -1388,30 +1430,31 @@ export async function createBalanceInvoice(formData: FormData) {
     redirect(`/admin/projects/${src.projectId}/?error=deposit-unpaid`);
   }
 
-  const number = await nextDocNumber("INVOICE");
-  await prisma.invoice.create({
-    data: {
-      number,
-      type: "INVOICE",
-      status: "DRAFT",
-      projectId: src.projectId,
-      clientId: src.clientId,
-      taxRate: 0,
-      depositPct: null,
-      sourceQuoteId: src.type === "QUOTE" ? src.id : src.sourceQuoteId,
-      notes: `${marker}. Deposit of ${src.depositPct}% was billed on ${src.number}; this is the remainder.`,
-      items: {
-        create: [
-          {
-            description: `Balance due on ${src.project.title}`,
-            quantity: 1,
-            unitPrice: balance,
-            position: 0,
-          },
-        ],
+  const { number } = await createNumberedDoc("INVOICE", (number, tx) =>
+    tx.invoice.create({
+      data: {
+        number,
+        type: "INVOICE",
+        status: "DRAFT",
+        projectId: src.projectId,
+        clientId: src.clientId,
+        taxRate: 0,
+        depositPct: null,
+        sourceQuoteId: src.type === "QUOTE" ? src.id : src.sourceQuoteId,
+        notes: `${marker}. Deposit of ${src.depositPct}% was billed on ${src.number}; this is the remainder.`,
+        items: {
+          create: [
+            {
+              description: `Balance due on ${src.project.title}`,
+              quantity: 1,
+              unitPrice: balance,
+              position: 0,
+            },
+          ],
+        },
       },
-    },
-  });
+    })
+  );
 
   await logAudit(profile.email, "invoice.balance", `${src.number} -> ${number} ($${balance.toFixed(2)})`);
   revalidateAdmin();
@@ -1506,19 +1549,20 @@ export async function quoteFromSubmission(formData: FormData) {
 
   // Seed a draft quote with one line taken from what they asked for, so there is
   // something to edit rather than an empty form.
-  const number = await nextDocNumber("QUOTE");
   const requested = (sub.projectType ?? sub.message ?? "Custom work").slice(0, 120);
-  const invoice = await prisma.invoice.create({
-    data: {
-      number,
-      type: "QUOTE",
-      status: "DRAFT",
-      projectId: projectId!,
-      clientId: clientId!,
-      taxRate: site.payments.defaultServiceCharge,
-      items: { create: [{ description: requested, quantity: 1, unitPrice: 0, position: 0 }] },
-    },
-  });
+  const { number, doc: invoice } = await createNumberedDoc("QUOTE", (number, tx) =>
+    tx.invoice.create({
+      data: {
+        number,
+        type: "QUOTE",
+        status: "DRAFT",
+        projectId: projectId!,
+        clientId: clientId!,
+        taxRate: site.payments.defaultServiceCharge,
+        items: { create: [{ description: requested, quantity: 1, unitPrice: 0, position: 0 }] },
+      },
+    })
+  );
 
   await logAudit(profile.email, "quote.from_submission", `${number}: ${sub.email}`);
   revalidateAdmin();
@@ -1712,29 +1756,30 @@ export async function convertQuoteToInvoice(formData: FormData) {
     redirect(`/admin/projects/${q.projectId}/?error=already-converted`);
   }
 
-  const number = await nextDocNumber("INVOICE");
-  await prisma.invoice.create({
-    data: {
-      number,
-      type: "INVOICE",
-      status: "DRAFT",
-      projectId: q.projectId,
-      clientId: q.clientId,
-      taxRate: q.taxRate,
-      depositPct: q.depositPct, // keep the split; converting shouldn't quietly bill in full
-      sourceQuoteId: q.id, // so the quote page can show this invoice once it is sent
-      dueDate: q.dueDate ?? undefined,
-      notes: q.notes,
-      items: {
-        create: q.items.map((it, i) => ({
-          description: it.description,
-          quantity: it.quantity,
-          unitPrice: it.unitPrice,
-          position: i,
-        })),
+  const { number } = await createNumberedDoc("INVOICE", (number, tx) =>
+    tx.invoice.create({
+      data: {
+        number,
+        type: "INVOICE",
+        status: "DRAFT",
+        projectId: q.projectId,
+        clientId: q.clientId,
+        taxRate: q.taxRate,
+        depositPct: q.depositPct, // keep the split; converting shouldn't quietly bill in full
+        sourceQuoteId: q.id, // so the quote page can show this invoice once it is sent
+        dueDate: q.dueDate ?? undefined,
+        notes: q.notes,
+        items: {
+          create: q.items.map((it, i) => ({
+            description: it.description,
+            quantity: it.quantity,
+            unitPrice: it.unitPrice,
+            position: i,
+          })),
+        },
       },
-    },
-  });
+    })
+  );
   await logAudit(profile.email, "invoice.convert", `${q.number} → ${number}`);
   revalidateAdmin();
   redirect(`/admin/projects/${q.projectId}/?done=doc-converted`);
@@ -1774,7 +1819,7 @@ function escapeHtml(v: string): string {
 }
 
 export async function sendBroadcast(formData: FormData) {
-  await requireProfile();
+  const { profile } = await requireProfile();
   const subject = s(formData, "subject");
   const body = s(formData, "body");
   const audienceId = process.env.RESEND_AUDIENCE_ID;
@@ -1795,9 +1840,16 @@ export async function sendBroadcast(formData: FormData) {
     subject: subject!,
     html,
   });
-  if (created.data?.id) {
-    await resend!.broadcasts.send(created.data.id);
+  // Resend returns failures instead of throwing; only report "sent" when it really went.
+  const sent = created.data?.id ? await resend!.broadcasts.send(created.data.id) : null;
+  if (!sent || sent.error) {
+    await logError(
+      new Error(`Broadcast failed: ${created.error?.message ?? sent?.error?.message ?? "no id"}`),
+      "sendBroadcast"
+    );
+    redirect("/admin/newsletter/?error=send");
   }
+  await logAudit(profile.email, "newsletter.send", subject!);
   revalidateAdmin();
   redirect("/admin/newsletter/?sent=1");
 }

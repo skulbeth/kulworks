@@ -37,6 +37,7 @@ import { createProof } from "../../_proof-actions";
 import { PROOF_SIZES, publicProofUrl, isProofItemUpdated } from "@/lib/proofs";
 import CopyButton from "../../_components/CopyButton";
 import SubmitButton from "@/components/SubmitButton";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -58,6 +59,7 @@ export default async function ProjectDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ done?: string; error?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const { id } = await params;
   const { done, error } = await searchParams;
   const project = await prisma.project.findFirst({

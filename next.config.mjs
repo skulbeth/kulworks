@@ -24,6 +24,13 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        // One home for search engines and logins: www goes to the bare domain.
+        source: "/:path*",
+        has: [{ type: "host", value: "www.kulworks.com" }],
+        destination: "https://kulworks.com/:path*",
+        permanent: true,
+      },
+      {
         // Merged into the broader "prototype vs. short run" guide (2026-07-24).
         source: "/guides/how-many-prototype-copies",
         destination: "/guides/prototype-vs-short-run/",

@@ -32,7 +32,6 @@ const config: Config = {
         // Brand wordmark only.
         wordmark: ["var(--font-dumbledoor)", "serif"],
         // Available for occasional fantasy accents if desired.
-        vinque: ["var(--font-vinque)", "serif"],
       },
       borderRadius: {
         lg: "0.5rem",

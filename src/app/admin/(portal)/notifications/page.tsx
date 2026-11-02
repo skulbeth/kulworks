@@ -10,6 +10,7 @@ import {
   removePushDevice,
   checkInboxNow,
 } from "../_notify-actions";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +57,7 @@ export default async function NotificationsPage({
 }: {
   searchParams: Promise<{ tested?: string; saved?: string; checked?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const sp = await searchParams;
   const [items, unread, devices, prefs, keys] = await Promise.all([
     prisma.notification.findMany({ orderBy: { createdAt: "desc" }, take: 150 }),

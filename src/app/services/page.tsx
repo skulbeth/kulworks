@@ -9,13 +9,14 @@ import { services } from "@/data/services";
 import { examplesForService, portfolioHrefForService } from "@/data/portfolio";
 import ServiceExamples from "@/components/ServiceExamples";
 import ServiceImage from "@/components/ServiceImage";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Services: Card & Board Game Printing, Tiles & 3D",
   description:
     "Custom UV card printing (standard poker and tarot sizes, other sizes on request), UV-printed board game tiles, FDM and resin 3D printing, and 3D modeling and design, all in-house at Kulworks in San Antonio.",
   alternates: { canonical: "/services/" },
-};
+});
 
 export default function ServicesPage() {
   const ordered = [...services].sort((a, b) => (b.lead ? 1 : 0) - (a.lead ? 1 : 0));

@@ -14,6 +14,7 @@ import {
   resolveProofComment,
   notifyProofClient,
 } from "../../_proof-actions";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ export default async function AdminProofPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string; sent?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const { id } = await params;
   const { error, sent } = await searchParams;
   const proof = await prisma.proof.findUnique({

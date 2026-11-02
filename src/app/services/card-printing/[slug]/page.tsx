@@ -8,6 +8,7 @@ import RevealOnScroll from "@/components/RevealOnScroll";
 import JsonLd from "@/components/JsonLd";
 import { cardPages, getCardPage } from "@/data/cardCluster";
 import { cardServiceSchema, breadcrumbSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
 // Pre-render one static page per card sub-page (required for output: "export").
 export function generateStaticParams() {
@@ -22,14 +23,14 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = getCardPage(slug);
   if (!page) return {};
-  return {
+  return withSocial({
     title: page.title,
     description: page.metaDescription,
     keywords: page.keywords ? [...page.keywords] : undefined,
     alternates: { canonical: `/services/card-printing/${page.slug}/` },
     // Hidden pages (offered on custom order) are kept + buildable but not indexed.
     robots: page.hidden ? { index: false, follow: false } : undefined,
-  };
+  });
 }
 
 export default async function CardSubPage({

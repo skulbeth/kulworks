@@ -46,7 +46,8 @@ export type PushPayload = {
 export async function pushToAll(payload: PushPayload): Promise<number> {
   let delivered = 0;
   try {
-    const devices = await prisma.pushDevice.findMany();
+    // Only devices of admins who still have access.
+    const devices = await prisma.pushDevice.findMany({ where: { profile: { deactivatedAt: null } } });
     if (devices.length === 0) return 0;
     const { publicKey, privateKey } = await vapidKeys();
     const body = JSON.stringify(payload);

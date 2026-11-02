@@ -7,13 +7,14 @@ import Button from "@/components/Button";
 import JsonLd from "@/components/JsonLd";
 import SocialLinks from "@/components/SocialLinks";
 import { breadcrumbSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "About: A San Antonio Maker Shop",
   description:
     "Kulworks is a small San Antonio maker shop with its own machines: custom cards, UV-printed board game tiles, and 3D printing in filament and resin, designed and finished in-house.",
   alternates: { canonical: "/about/" },
-};
+});
 
 export default function AboutPage() {
   return (

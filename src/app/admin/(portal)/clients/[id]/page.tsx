@@ -16,6 +16,7 @@ import { TextField, TextArea, FieldGroup } from "../../_components/FormFields";
 import AddActivity from "../../_components/AddActivity";
 import SetReminder from "../../_components/SetReminder";
 import ConfirmButton from "../../_components/ConfirmButton";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +27,7 @@ export default async function ClientDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ done?: string; error?: string; detail?: string; n?: string; seen?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const { id } = await params;
   const sp = await searchParams;
   const client = await prisma.client.findUnique({
@@ -117,6 +119,18 @@ export default async function ClientDetailPage({
 
       <form action={updateClient} className="space-y-4">
         <input type="hidden" name="id" value={client.id} />
+        {/* What the form opened with, so a save only writes what changed. */}
+        <input
+          type="hidden"
+          name="orig"
+          value={JSON.stringify(
+            Object.fromEntries(
+              (["name", "phone", "company", "street", "city", "state", "postalCode", "country", "notes", "lostReason"] as const).map(
+                (k) => [k, client[k]?.trim() || null]
+              )
+            )
+          )}
+        />
         <FieldGroup title="Contact">
           <TextField name="name" label="Name" defaultValue={client.name} />
           <TextField name="phone" label="Phone" defaultValue={client.phone} />
@@ -297,6 +311,11 @@ export default async function ClientDetailPage({
               Testimonials
             </Link>{" "}
             once they write it.
+          </p>
+        )}
+        {sp.error === "email" && (
+          <p className="mb-3 rounded-lg border border-red-500/40 bg-red-500/10 px-3 py-2 text-sm text-red-700">
+            The email didn&apos;t go out (the mail service refused it), so nothing was logged as sent. Try again in a minute.
           </p>
         )}
         {sp.error === "gmail" && (

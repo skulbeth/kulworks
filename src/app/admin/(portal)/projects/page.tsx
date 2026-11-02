@@ -7,6 +7,7 @@ import RecordExplorer, {
   type ExplorerItem,
 } from "../_components/RecordExplorer";
 import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +46,7 @@ const ADD_FIELD =
   "rounded-lg border border-border bg-surface2 px-3 py-2.5 text-base focus:border-blue focus:outline-none";
 
 export default async function ProjectsPage() {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const projects = await prisma.project.findMany({
     where: { deletedAt: null },
     orderBy: [{ dueDate: "asc" }, { createdAt: "desc" }],

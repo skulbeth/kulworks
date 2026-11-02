@@ -98,12 +98,14 @@ async function liveQuote(fd: FormData) {
 // "Looks good, let's do it." Once per quote; a second press changes nothing.
 export async function acceptQuote(formData: FormData) {
   const q = await liveQuote(formData);
-  if (!q || q.acceptedAt || q.status === "PAID" || quoteExpired(q.validUntil)) return;
+  // Nothing to do from a stale tab: refresh it so the page shows the real state.
+  const stale = () => revalidatePath(`/invoice/${clean(formData, "token", 200)}`);
+  if (!q || q.acceptedAt || q.status === "PAID" || quoteExpired(q.validUntil)) return stale();
   // Once there's an invoice for it, the quote is past accepting.
   const invoiced = await prisma.invoice.count({
     where: { sourceQuoteId: q.id, deletedAt: null, status: { in: ["SENT", "PAID"] } },
   });
-  if (invoiced > 0) return;
+  if (invoiced > 0) return stale();
   const { total } = computeTotals(q.items, q.taxRate);
   const url = `${site.url}/invoice/${q.token}/`;
 
@@ -112,7 +114,7 @@ export async function acceptQuote(formData: FormData) {
     where: { id: q.id, acceptedAt: null },
     data: { acceptedAt: new Date() },
   });
-  if (claimed.count === 0) return;
+  if (claimed.count === 0) return stale();
   if (q.project.stage === "LEAD" || q.project.stage === "QUOTED") {
     await prisma.project.update({ where: { id: q.projectId }, data: { stage: "APPROVED" } });
   }
@@ -156,7 +158,10 @@ export async function acceptQuote(formData: FormData) {
 // extends it from the admin. Once a day at most, so a refresh can't spam him.
 export async function requestQuoteExtension(formData: FormData) {
   const q = await liveQuote(formData);
-  if (!q || !quoteExpired(q.validUntil)) return;
+  // Stale tab (Sam already extended it, or it was asked today): refresh the page so it
+  // shows where things stand instead of a button that silently does nothing.
+  const stale = () => revalidatePath(`/invoice/${clean(formData, "token", 200)}`);
+  if (!q || !quoteExpired(q.validUntil)) return stale();
   const note = clean(formData, "note", 2000);
   const { total } = computeTotals(q.items, q.taxRate);
 
@@ -166,7 +171,7 @@ export async function requestQuoteExtension(formData: FormData) {
     where: { id: q.id, OR: [{ extendRequestedAt: null }, { extendRequestedAt: { lt: dayAgo } }] },
     data: { extendRequestedAt: new Date() },
   });
-  if (claimed.count === 0) return;
+  if (claimed.count === 0) return stale();
   await prisma.activity.create({
     data: {
       type: "NOTE",

@@ -7,10 +7,12 @@ import { toggleUploads, markUploadHandled, deleteUpload, uploadToSubmission } fr
 import ConfirmButton from "../_components/ConfirmButton";
 import CopyButton from "../_components/CopyButton";
 import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function UploadsPage() {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const uploadUrl = `${site.url}/upload`;
   const [enabled, qrDataUrl, uploads] = await Promise.all([
     uploadsEnabled(),

@@ -6,12 +6,13 @@ import JsonLd from "@/components/JsonLd";
 import CardPrintingAccordion from "@/components/CardPrintingAccordion";
 import { cardHub } from "@/data/cardCluster";
 import { cardHubServiceSchema, breadcrumbSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: cardHub.title,
   description: cardHub.metaDescription,
   alternates: { canonical: "/services/card-printing/" },
-};
+});
 
 export default function CardPrintingHub() {
   return (

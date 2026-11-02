@@ -3,15 +3,16 @@ import Container from "@/components/Container";
 import SectionHeading from "@/components/SectionHeading";
 import TestimonialCard from "@/components/TestimonialCard";
 import { publishedTestimonials } from "@/lib/testimonials";
+import { withSocial } from "@/lib/page-meta";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Testimonials",
   description:
     "What clients say about working with Kulworks: custom card printing, UV-printed boards and tiles, and 3D design and printing in San Antonio.",
   alternates: { canonical: "/testimonials/" },
-};
+});
 
 export default async function TestimonialsPage() {
   const items = await publishedTestimonials();

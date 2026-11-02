@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import InfoPopup from "@/components/InfoPopup";
 import ShippingWhy from "@/components/ShippingWhy";
 import { SUPER_RUSH_FEE, SUPER_RUSH_LABEL, FEES_NOTE, SHIP_COUNTRIES, shipCountryOf, isTightDate, todayISO } from "@/lib/order-details";
@@ -40,6 +40,10 @@ export default function CardCalculator() {
   const [addBox, setAddBox] = useState(false);
   const [sleeves, setSleeves] = useState("none");
   const [dueDate, setDueDate] = useState("");
+  // Set in the browser: this page is prerendered, so a min baked in at build time would
+  // let people pick dates that have already passed.
+  const [minDay, setMinDay] = useState<string>();
+  useEffect(() => setMinDay(todayISO()), []);
   const [superRush, setSuperRush] = useState(false);
   const [setupInfoOpen, setSetupInfoOpen] = useState(false);
   // Where it's going: "" (not said), "pickup", "elsewhere", or a SHIP_COUNTRIES id.
@@ -241,7 +245,7 @@ export default function CardCalculator() {
           <input
             id="calc-due"
             type="date"
-            min={todayISO()}
+            min={minDay}
             className={inputCls}
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}

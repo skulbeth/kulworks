@@ -33,6 +33,11 @@ export default function Carousel({
 }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Autoplay also holds while the pointer or keyboard focus is on it, and is off for
+  // anyone who asked their device for reduced motion, or who pressed pause.
+  const [hovering, setHovering] = useState(false);
+  const [stopped, setStopped] = useState(false);
+  const [reduced, setReduced] = useState(false);
   const [pauseTimeout, setPauseTimeout] = useState<NodeJS.Timeout | null>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -76,10 +81,20 @@ export default function Carousel({
   };
 
   useEffect(() => {
-    if (!autoPlay || paused || length <= 1) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  const playing = autoPlay && !reduced && !stopped && length > 1;
+  useEffect(() => {
+    if (!playing || paused || hovering) return;
     const timer = setInterval(next, autoPlayInterval);
     return () => clearInterval(timer);
-  }, [autoPlay, autoPlayInterval, paused, length]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing, autoPlayInterval, paused, hovering, length]);
 
   // Grow the "loaded" set to include the current slide + its neighbours.
   useEffect(() => {
@@ -98,13 +113,20 @@ export default function Carousel({
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      onFocusCapture={() => setHovering(true)}
+      onBlurCapture={() => setHovering(false)}
+      role="region"
+      aria-roledescription="carousel"
     >
       <div
         className="flex transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {slides.map((slide, idx) => (
-          <div key={idx} className="w-full flex-shrink-0">
+          // Off-screen slides are hidden from screen readers and the Tab order.
+          <div key={idx} className="w-full flex-shrink-0" aria-hidden={idx !== current} inert={idx !== current}>
             <div className={`relative w-full ${ratio}`}>
               {slide.src && loaded.has(idx) && isClip(slide.src) ? (
                 <Clip
@@ -166,6 +188,18 @@ export default function Carousel({
             </svg>
           </button>
 
+          {autoPlay && !reduced && (
+            <button
+              type="button"
+              onClick={() => setStopped((v) => !v)}
+              className="absolute bottom-1.5 left-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+              aria-label={stopped ? "Play slideshow" : "Pause slideshow"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                {stopped ? <path d="M7 4l13 8-13 8z" /> : <path d="M6 4h4v16H6zM14 4h4v16h-4z" />}
+              </svg>
+            </button>
+          )}
           <div className="absolute bottom-3 left-0 right-0 flex justify-center space-x-2">
             {slides.map((_, idx) => (
               <button

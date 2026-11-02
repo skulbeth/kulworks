@@ -90,13 +90,14 @@ export async function requireProfile(): Promise<{
     return { user, profile: existing };
   }
 
+  // No profile = not on the team. Supabase lets anyone sign up for an account with the
+  // public key, so a session alone proves nothing: team members are added from the Team
+  // page (which creates their profile). The one exception is the very first login of a
+  // brand-new install, which becomes the OWNER.
   const isFirst = (await prisma.profile.count()) === 0;
+  if (!isFirst) redirect("/admin/login/?error=not-team"); // the login page drops the session
   const profile = await prisma.profile.create({
-    data: {
-      id: user.id,
-      email: user.email ?? "",
-      role: isFirst ? "OWNER" : "STAFF",
-    },
+    data: { id: user.id, email: user.email ?? "", role: "OWNER" },
   });
   return { user, profile };
 }

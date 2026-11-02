@@ -45,7 +45,7 @@ export async function POST(request: Request) {
   try {
     await prisma.subscriber.upsert({
       where: { email },
-      create: { email, source: str(body.source) || "footer" },
+      create: { email, source: str(body.source).slice(0, 50) || "footer" },
       update: { unsubscribedAt: null }, // re-subscribe if they'd previously left
     });
 

@@ -87,9 +87,9 @@ export async function POST(request: Request) {
       types.push(type);
     }
 
-    // Bot protection on the forms that carry the widget (the order builder). Checked
-    // after the cheap validation so a typo doesn't burn the token.
-    if (kind === "order" && !(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
+    // Bot protection (both forms carry the widget). Checked after the cheap validation
+    // so a typo doesn't burn the token. The submit routes trust a valid grant as proof.
+    if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
       return NextResponse.json(
         { ok: false, error: "Verification failed. Please try again." },
         { status: 400 }

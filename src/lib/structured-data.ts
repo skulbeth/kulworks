@@ -144,7 +144,8 @@ export function cardHubServiceSchema() {
     hasOfferCatalog: {
       "@type": "OfferCatalog",
       name: "Card printing options",
-      itemListElement: cardPages.map((p) => ({
+      // Hidden (custom-order) pages are noindex, so they aren't offered here either.
+      itemListElement: cardPages.filter((p) => !p.hidden).map((p) => ({
         "@type": "Offer",
         itemOffered: {
           "@type": "Service",

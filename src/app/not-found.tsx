@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Button from "@/components/Button";
+
+// Its own title, never indexed, and no canonical pointing at the homepage.
+export const metadata: Metadata = {
+  title: "Page not found",
+  robots: { index: false, follow: true },
+  alternates: { canonical: null },
+};
 
 // Custom 404. Rendered inside the root layout, so the marketing header/footer apply.
 export default function NotFound() {

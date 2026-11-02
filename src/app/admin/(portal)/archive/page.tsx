@@ -6,10 +6,12 @@ import {
   restoreActivity,
   restorePayment,
 } from "../_actions";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function ArchivePage() {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const [subs, projects, activities, payments] = await Promise.all([
     prisma.submission.findMany({
       where: { deletedAt: { not: null } },

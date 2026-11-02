@@ -21,6 +21,7 @@ import ConfirmButton from "../_components/ConfirmButton";
 import CopyButton from "../_components/CopyButton";
 import { signedUploadUrl } from "@/lib/uploads";
 import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -65,6 +66,7 @@ export default async function SubmissionsPage({
 }: {
   searchParams: Promise<{ open?: string; show?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const { open, show } = await searchParams;
   const view = show && show in VIEWS ? show : "open";
 

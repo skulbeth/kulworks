@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { site } from "@/data/site";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Privacy Policy",
   description: "How Kulworks collects, uses, and protects your information.",
   alternates: { canonical: "/privacy/" },
-};
+});
 
 export default function PrivacyPage() {
   const h2 = "mt-8 text-xl font-bold";

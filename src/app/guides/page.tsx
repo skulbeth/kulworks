@@ -7,13 +7,14 @@ import CardDesignPromo from "@/components/CardDesignPromo";
 import FaqSection from "@/components/Faq";
 import { guides } from "@/data/guides";
 import { breadcrumbSchema, faqSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Guides & FAQ",
   description:
     "Guides and frequently asked questions on custom card printing: card sizes, prepping art for print, prototyping, pricing, and getting your deck made.",
   alternates: { canonical: "/guides/" },
-};
+});
 
 export default function GuidesPage() {
   return (

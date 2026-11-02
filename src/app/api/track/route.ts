@@ -22,7 +22,7 @@ export const runtime = "nodejs";
 const BOT = /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|headless|preview|monitor/i;
 
 // Sites allowed to write rows, and the origins allowed to do it for them.
-// A body claiming any other site is recorded as "unknown" rather than trusted.
+// A beacon naming any other site is dropped.
 const SITES = ["kulworks", "roletoreign"] as const;
 type Site = (typeof SITES)[number];
 
@@ -101,7 +101,8 @@ export async function POST(request: Request) {
     }
     const { path, referrer, sessionId, site } = (parsed ?? {}) as Record<string, unknown>;
 
-    if (typeof path !== "string" || !path) {
+    // A real page path, and one of our sites; anything else is a script, not a visit.
+    if (typeof path !== "string" || !path.startsWith("/") || path.length > 500 || !SITES.includes(site as Site)) {
       return NextResponse.json({ ok: false }, { status: 400, headers: cors });
     }
 
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
       if (vh && (await getOwnerHashes().catch(() => [] as string[])).includes(vh)) return ok();
     }
 
-    const from: Site | "unknown" = SITES.includes(site as Site) ? (site as Site) : "unknown";
+    const from = site as Site;
 
     // Drop self-referrals: a view is "direct" if the referrer is the site itself.
     let ref = typeof referrer === "string" && referrer ? referrer : null;

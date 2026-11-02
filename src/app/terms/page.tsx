@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { site } from "@/data/site";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Terms of Service",
   description:
     "The terms that govern quotes, orders, payment, artwork rights, and delivery when you work with Kulworks.",
   alternates: { canonical: "/terms/" },
-};
+});
 
 export default function TermsPage() {
   const h2 = "mt-8 text-xl font-bold";

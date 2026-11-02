@@ -49,6 +49,18 @@ export default async function InvoiceViewPage({
           orderBy: { createdAt: "asc" },
         })
       : [];
+  // An invoice drafted from this quote: payment moves to it, so the quote stops taking
+  // money now (the admin won't record a payment against a converted quote either).
+  const drafting =
+    inv.type === "QUOTE" &&
+    (await prisma.invoice.count({
+      where: {
+        sourceQuoteId: inv.id,
+        deletedAt: null,
+        status: "DRAFT",
+        OR: [{ notes: null }, { NOT: { notes: { startsWith: BALANCE_PREFIX } } }],
+      },
+    })) > 0;
   const proofs = await prisma.proof.findMany({
     where: { projectId: inv.projectId, active: true },
     orderBy: { createdAt: "asc" },
@@ -76,7 +88,8 @@ export default async function InvoiceViewPage({
     linkedDocs.some((d) => d.kind === "Deposit") && !linkedDocs.some((d) => d.kind === "Balance");
   // Once an invoice exists for this quote, paying happens there, not off the quote.
   // Drafts are Sam's previews: the numbers can still change, so nothing is payable yet.
-  const showPay = live && inv.status !== "DRAFT" && (isInvoice || hasSplit) && linkedDocs.length === 0;
+  const showPay =
+    live && inv.status !== "DRAFT" && (isInvoice || hasSplit) && linkedDocs.length === 0 && !drafting;
   const isQuoteLive = !isInvoice && live && inv.status !== "DRAFT";
   const expired = isQuoteLive && linkedDocs.length === 0 && !inv.acceptedAt && quoteExpired(inv.validUntil);
   const canAccept = isQuoteLive && linkedDocs.length === 0 && !inv.acceptedAt && !expired;
@@ -304,6 +317,12 @@ export default async function InvoiceViewPage({
               ))}
             </ul>
           </div>
+        )}
+
+        {drafting && live && linkedDocs.length === 0 && hasSplit && (
+          <p className="mt-6 border-t border-border pt-5 text-sm text-muted print:hidden">
+            Your invoice is being prepared. It will show up right here to pay.
+          </p>
         )}
 
         {/* Pay options (invoices only, when unpaid) */}

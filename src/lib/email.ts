@@ -38,6 +38,13 @@ export async function sendMail(opts: {
   }
 }
 
+/** Did sendMail actually hand the email to Resend? (Skipped counts only outside production.) */
+export function mailSent(r: Awaited<ReturnType<typeof sendMail>>): boolean {
+  if ("error" in r && r.error) return false;
+  if ("skipped" in r && r.skipped) return process.env.NODE_ENV !== "production";
+  return true;
+}
+
 // log-error imports this file (its alert is an email), so load it lazily. Its own alert
 // is throttled to one per 15 min, so a failing alert can't loop.
 async function logMailFailure(message: string, subject: string) {

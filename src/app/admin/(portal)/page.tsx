@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, fmtDateTime, SHOP_TZ } from "@/lib/format";
 import { completeReminder } from "./_actions";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,7 @@ const ACTIVE_STAGES = ["LEAD", "QUOTED", "APPROVED", "IN_PRODUCTION"] as const;
 const DAY = 24 * 60 * 60 * 1000;
 
 export default async function DashboardPage() {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const now = new Date();
   const newLeadCutoff = new Date(now.getTime() - 2 * DAY); // NEW & sitting 2+ days
   const followUpCutoff = new Date(now.getTime() - 4 * DAY); // CONTACTED/QUOTED, quiet 4+ days

@@ -35,6 +35,8 @@ export default function Lightbox({
   const [shown, setShown] = useState(false);
   const [mounted, setMounted] = useState(false);
   const touch = useRef<{ x: number; y: number } | null>(null);
+  const dialog = useRef<HTMLDivElement>(null);
+  const closeBtn = useRef<HTMLButtonElement>(null);
   const closing = useRef(false);
 
   function close() {
@@ -48,9 +50,29 @@ export default function Lightbox({
 
   useEffect(() => {
     setMounted(true);
-    const raf = requestAnimationFrame(() => setShown(true));
+    // Keyboard focus moves into the dialog, stays there, and goes back where it came from.
+    const opener = document.activeElement as HTMLElement | null;
+    const raf = requestAnimationFrame(() => {
+      setShown(true);
+      closeBtn.current?.focus();
+    });
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
+      if (e.key === "Tab" && dialog.current) {
+        const els = dialog.current.querySelectorAll<HTMLElement>("button, a[href]");
+        if (!els.length) return;
+        const first = els[0];
+        const last = els[els.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        } else if (!dialog.current.contains(document.activeElement)) {
+          e.preventDefault();
+          first.focus();
+        }
+      } else if (e.key === "Escape") close();
       else if (gallery && e.key === "ArrowRight") next();
       else if (gallery && e.key === "ArrowLeft") prev();
     };
@@ -61,6 +83,7 @@ export default function Lightbox({
       cancelAnimationFrame(raf);
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = prevOverflow;
+      opener?.focus?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -72,6 +95,7 @@ export default function Lightbox({
 
   return createPortal(
     <div
+      ref={dialog}
       role="dialog"
       aria-modal="true"
       aria-label={title || alt}
@@ -96,6 +120,7 @@ export default function Lightbox({
       }`}
     >
       <button
+        ref={closeBtn}
         type="button"
         aria-label="Close"
         onClick={(e) => {

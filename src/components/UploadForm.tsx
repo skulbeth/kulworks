@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import TurnstileWidget from "@/components/TurnstileWidget";
 import { photoType, putToSignedUrl, requestUploadSlots } from "@/lib/direct-upload";
 
 // A picked photo, and once it's in storage, its { path, grant }.
@@ -25,6 +26,8 @@ export default function UploadForm({
   const [items, setItems] = useState<Item[]>([]);
   const [status, setStatus] = useState<"idle" | "uploading" | "sending" | "done" | "error">("idle");
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
 
   const input =
     "w-full rounded-xl border border-border bg-surface px-4 py-3 text-base focus:border-blue focus:outline-none";
@@ -69,8 +72,12 @@ export default function UploadForm({
       const got = await requestUploadSlots({
         kind: "upload",
         files: todo.map((it) => ({ type: photoType(it.file), size: it.file.size })),
+        turnstileToken,
         company: fd.get("company"), // honeypot
       });
+      // Tokens are single-use: spent either way, so get a fresh one for any retry.
+      setTurnstileToken(null);
+      setTurnstileKey((k) => k + 1);
       if ("error" in got) {
         setStatus("error");
         setError(got.error);
@@ -236,6 +243,8 @@ export default function UploadForm({
         </label>
         <textarea id={`${uid}-note`} name="note" rows={3} className={input} />
       </div>
+
+      <TurnstileWidget key={turnstileKey} onToken={setTurnstileToken} />
 
       {error && (
         <p role="alert" className="text-sm font-semibold text-red-600">

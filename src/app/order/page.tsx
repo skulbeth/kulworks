@@ -4,8 +4,9 @@ import SectionHeading from "@/components/SectionHeading";
 import OrderBuilder from "@/components/OrderBuilder";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Design Your Cards",
   description:
     "Pick a card design, fill in your details, and attach your photos. Kulworks prints custom trading cards, player cards, and more in San Antonio.",
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   // Not linked or indexed yet — placeholder designs. Remove once real designs are in
   // and the page is ready to be linked + added back to the sitemap.
   robots: { index: false, follow: false },
-};
+});
 
 export default function OrderPage() {
   return (

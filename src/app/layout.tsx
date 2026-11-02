@@ -33,18 +33,13 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
-// Brand wordmark font (the logo only — unchanged).
+// Brand wordmark font (the logo only — unchanged). Not preloaded: it's only the
+// footer wordmark, so it shouldn't hold up every page's first paint.
 const dumbledoor = localFont({
   src: "../../fonts/dum1.ttf",
   variable: "--font-dumbledoor",
   display: "swap",
-});
-
-// Available for occasional fantasy accents.
-const vinque = localFont({
-  src: "../../fonts/vinque.otf",
-  variable: "--font-vinque",
-  display: "swap",
+  preload: false,
 });
 
 const SITE_URL = "https://kulworks.com";
@@ -126,7 +121,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${body.variable} ${display.variable} ${mono.variable} ${dumbledoor.variable} ${vinque.variable}`}
+      className={`${body.variable} ${display.variable} ${mono.variable} ${dumbledoor.variable}`}
       // The pre-paint theme script below sets data-theme on <html>, so the
       // client differs from server-rendered HTML by design. Suppress the
       // expected attribute mismatch on this element only.

@@ -8,9 +8,7 @@ import { logError } from "@/lib/log-error";
 import {
   uploadsEnabled,
   signedUploadUrl,
-  checkPendingUpload,
-  claimPendingUpload,
-  pendingExt,
+  claimUploads,
   MAX_FILES,
 } from "@/lib/uploads";
 
@@ -67,26 +65,20 @@ export async function POST(request: Request) {
     }
     // Each path must be one /api/upload-url/ issued, and really be in the bucket
     // (allowed type, under the size cap) before we attach it.
-    for (const [i, f] of files.entries()) {
-      if (!(await checkPendingUpload("upload", f.path, f.grant))) {
-        return NextResponse.json(
-          { ok: false, error: `Photo ${i + 1} didn't upload. Please add it again.` },
-          { status: 400 }
-        );
-      }
+    // They're moved to their final paths before anything is saved; already moved means
+    // this is a resend of an upload that went through (its reply was lost), so say ok.
+    const claim = await claimUploads("upload", files);
+    if (claim.status === "missing") {
+      return NextResponse.json(
+        { ok: false, error: `Photo ${claim.index + 1} didn't upload. Please add it again.` },
+        { status: 400 }
+      );
     }
-
-    // Create the record first so its id is the storage folder.
+    if (claim.status === "duplicate") return NextResponse.json({ ok: true });
+    const paths = claim.paths;
     const upload = await prisma.upload.create({
-      data: { name, contact, note, storagePaths: [] },
+      data: { name, contact, note, storagePaths: paths },
     });
-
-    // Move each checked photo into the record's folder (same layout as before).
-    const paths: string[] = [];
-    for (const [i, { path }] of files.entries()) {
-      paths.push(await claimPendingUpload(path, `${upload.id}/${i}.${pendingExt(path)}`));
-    }
-    await prisma.upload.update({ where: { id: upload.id }, data: { storagePaths: paths } });
 
     // Push alert after the response is sent: a slow push service must not hold up the client.
     after(() =>

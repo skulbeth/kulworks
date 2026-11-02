@@ -80,12 +80,12 @@ try {
   ok("subscribe: invalid email → 400", s4.status === 400);
 
   // ── 3. Analytics tracker ──
-  const t1 = await post("/api/track/", { path: "/smoke-test", referrer: "https://ex.com/", sessionId: "smoke-sess" },
+  const t1 = await post("/api/track/", { path: "/smoke-test", referrer: "https://ex.com/", sessionId: "smoke-sess", site: "kulworks" },
     { "User-Agent": "Mozilla/5.0 (Macintosh)" });
   const t1Count = await prisma.pageView.count({ where: { path: "/smoke-test" } });
   ok("track: valid → 200 + logged", t1.status === 200 && t1Count >= 1);
 
-  await post("/api/track/", { path: "/smoke-bot", sessionId: "smoke-bot" }, { "User-Agent": "Googlebot/2.1" });
+  await post("/api/track/", { path: "/smoke-bot", sessionId: "smoke-bot", site: "kulworks" }, { "User-Agent": "Googlebot/2.1" });
   const botCount = await prisma.pageView.count({ where: { path: "/smoke-bot" } });
   ok("track: bot UA → NOT logged", botCount === 0);
 

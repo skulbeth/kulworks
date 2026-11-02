@@ -60,10 +60,16 @@ export default function AdminLoginPage() {
       const supabase = createClient();
       // Deactivated: the portal bounced them here. Drop this device's session (local only)
       // and explain, instead of auto-routing back to /admin/ and looping.
-      if (new URLSearchParams(window.location.search).get("error") === "deactivated") {
+      // Same for an account that isn't on the team at all.
+      const bounced = new URLSearchParams(window.location.search).get("error");
+      if (bounced === "deactivated" || bounced === "not-team") {
         await supabase.auth.signOut({ scope: "local" });
         await fetch("/admin/logout/", { method: "POST" }).catch(() => {});
-        setError("This admin account has been deactivated. Ask the owner to reactivate it.");
+        setError(
+          bounced === "deactivated"
+            ? "This admin account has been deactivated. Ask the owner to reactivate it."
+            : "This account isn't on the Kulworks team. Ask the owner to add you."
+        );
         return;
       }
       const { data: { session } } = await supabase.auth.getSession();

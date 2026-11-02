@@ -8,6 +8,7 @@ import RecordExplorer, {
 } from "../_components/RecordExplorer";
 import FilterTabs, { type FilterTab } from "../_components/FilterTabs";
 import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default async function ClientsPage({
 }: {
   searchParams: Promise<{ show?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const { show } = await searchParams;
   const view: View = VIEWS.includes(show as View) ? (show as View) : "clients";
 

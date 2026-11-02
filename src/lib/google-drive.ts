@@ -55,7 +55,14 @@ export async function createClientFolder(name: string): Promise<string | null> {
         );
       }
     }
-    if (!shared) return null;
+    if (!shared) {
+      // Don't leave a private, empty folder behind; the admin button makes a fresh one.
+      await fetch(`https://www.googleapis.com/drive/v3/files/${folder.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+      return null;
+    }
     return folder.webViewLink ?? `https://drive.google.com/drive/folders/${folder.id}`;
   } catch (e) {
     console.error("[drive] createClientFolder failed:", e);

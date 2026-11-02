@@ -34,7 +34,9 @@ const EXT_BY_TYPE: Record<string, string> = {
 };
 
 function grantSig(path: string, exp: number): string {
-  const key = `${process.env.SUPABASE_SECRET_KEY || "kulworks"}:upload-grant`;
+  const secret = process.env.SUPABASE_SECRET_KEY;
+  if (!secret) throw new Error("SUPABASE_SECRET_KEY is not set"); // never sign with a guessable key
+  const key = `${secret}:upload-grant`;
   return createHmac("sha256", key).update(`${path}|${exp}`).digest("base64url");
 }
 
@@ -72,12 +74,7 @@ export function grantValid(kind: UploadKind, path: string, grant: string): boole
 }
 
 /** Grant OK + the object really landed in the bucket with an allowed type and size. */
-export async function checkPendingUpload(
-  kind: UploadKind,
-  path: string,
-  grant: string
-): Promise<boolean> {
-  if (!grantValid(kind, path, grant)) return false;
+async function pendingOk(path: string): Promise<boolean> {
   const supa = createAdminClient();
   const { data, error } = await supa.storage.from(UPLOAD_BUCKET).info(path);
   if (error || !data) return false;
@@ -86,21 +83,82 @@ export async function checkPendingUpload(
   return size > 0 && size <= MAX_FILE_BYTES && ALLOWED_TYPES.includes(type);
 }
 
-/** Move a checked pending file to its final path. Returns where it ended up (the pending
- *  path itself if the move fails, so the photo is never lost). */
-export async function claimPendingUpload(path: string, dest: string): Promise<string> {
-  const supa = createAdminClient();
-  const { error } = await supa.storage.from(UPLOAD_BUCKET).move(path, dest);
-  if (error) {
-    console.error("[uploads] move failed:", error.message);
-    return path;
-  }
-  return dest;
+async function exists(path: string): Promise<boolean> {
+  const { data, error } = await createAdminClient().storage.from(UPLOAD_BUCKET).info(path);
+  return !error && !!data;
 }
 
-/** File extension of a pending path (for naming the final copy). */
-export function pendingExt(path: string): string {
-  return PENDING_RE.exec(path)?.[3] ?? "jpg";
+// Where a claimed file lives: its pending path minus "pending/", e.g.
+// pending/order/<uuid>/0.jpg -> order/<uuid>/0.jpg. Fixed per file, so a retried submit
+// (the first one worked but its reply was lost) can see the file was already claimed.
+function claimedPath(path: string): string {
+  return path.slice(PENDING_PREFIX.length);
+}
+
+export type ClaimResult =
+  | { status: "ok"; paths: string[] }
+  | { status: "duplicate" } // every file was already claimed: a resend of a saved form
+  | { status: "missing"; index: number }; // this file isn't in storage (or the grant is bad)
+
+/** Check every file first, then move them all to their final paths. Call BEFORE saving
+ *  the record, so a resend or a racing double submit never saves a second one. */
+export async function claimUploads(
+  kind: UploadKind,
+  files: { path: string; grant: string }[]
+): Promise<ClaimResult> {
+  const fresh: boolean[] = [];
+  for (const [i, f] of files.entries()) {
+    if (!grantValid(kind, f.path, f.grant)) return { status: "missing", index: i };
+    if (await pendingOk(f.path)) fresh.push(true);
+    else if (await exists(claimedPath(f.path))) fresh.push(false);
+    else return { status: "missing", index: i };
+  }
+  if (files.length && fresh.every((x) => !x)) return { status: "duplicate" };
+
+  const supa = createAdminClient();
+  const paths: string[] = [];
+  let lostRace = false;
+  for (const [i, f] of files.entries()) {
+    const dest = claimedPath(f.path);
+    if (fresh[i]) {
+      const { error } = await supa.storage.from(UPLOAD_BUCKET).move(f.path, dest);
+      if (error) {
+        // Another request moved it a moment ago (double submit), or storage hiccuped.
+        if (await exists(dest)) lostRace = true;
+        else if (await exists(f.path)) {
+          console.error("[uploads] move failed, keeping pending path:", error.message);
+          paths.push(f.path);
+          continue;
+        } else return { status: "missing", index: i };
+      }
+    }
+    paths.push(dest);
+  }
+  if (lostRace) return { status: "duplicate" };
+  return { status: "ok", paths };
+}
+
+/** Delete pending/ files nobody claimed (form abandoned after the photos went up).
+ *  Grants die after 2h, so anything a day old can never be claimed. Returns the count. */
+export async function sweepPendingUploads(maxAgeMs = 24 * 60 * 60 * 1000): Promise<number> {
+  const supa = createAdminClient();
+  const bucket = supa.storage.from(UPLOAD_BUCKET);
+  const cutoff = Date.now() - maxAgeMs;
+  const stale: string[] = [];
+  for (const kind of ["order", "upload"] as UploadKind[]) {
+    const base = `${PENDING_PREFIX}${kind}`;
+    const { data: folders, error } = await bucket.list(base, { limit: 1000 });
+    if (error) throw new Error(`pending list ${base}: ${error.message}`);
+    for (const folder of folders ?? []) {
+      const { data: files } = await bucket.list(`${base}/${folder.name}`, { limit: 100 });
+      for (const f of files ?? []) {
+        const at = Date.parse(f.created_at ?? "");
+        if (Number.isFinite(at) && at < cutoff) stale.push(`${base}/${folder.name}/${f.name}`);
+      }
+    }
+  }
+  for (let i = 0; i < stale.length; i += 100) await bucket.remove(stale.slice(i, i + 100));
+  return stale.length;
 }
 
 const UPLOADS_ENABLED_KEY = "uploads_enabled";

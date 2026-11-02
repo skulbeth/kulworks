@@ -35,8 +35,8 @@ export async function POST(request: Request) {
 
     const token = str(form.get("token"));
     const quote = str(form.get("quote"));
-    const displayName = str(form.get("displayName"));
-    const detail = str(form.get("detail"));
+    const displayName = str(form.get("displayName"))?.slice(0, 100) ?? null;
+    const detail = str(form.get("detail"))?.slice(0, 200) ?? null;
     const consent = form.get("consent") === "on" || form.get("consent") === "true";
 
     if (!token) return NextResponse.json({ ok: false, error: "Bad link." }, { status: 400 });

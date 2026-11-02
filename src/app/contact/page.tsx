@@ -6,13 +6,14 @@ import JsonLd from "@/components/JsonLd";
 import SocialLinks from "@/components/SocialLinks";
 import { breadcrumbSchema } from "@/lib/structured-data";
 import { site } from "@/data/site";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Get a Quote: Custom Card & Game Printing",
   description:
     "Tell Kulworks about your project, whether it's card printing, tiles, 3D printing, or design, and get a quote in San Antonio. We also take projects to game conventions.",
   alternates: { canonical: "/contact/" },
-};
+});
 
 export default function ContactPage() {
   return (
@@ -40,7 +41,7 @@ export default function ContactPage() {
           {/* Alternate contact / info */}
           <aside className="space-y-6">
             <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold">Other ways to reach us</h3>
+              <h2 className="font-bold">Other ways to reach us</h2>
               <ul className="mt-3 space-y-2 text-muted">
                 <li>
                   Email:{" "}
@@ -63,7 +64,7 @@ export default function ContactPage() {
             </div>
 
             <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold">Where we work</h3>
+              <h2 className="font-bold">Where we work</h2>
               <p className="mt-2 text-sm text-muted">
                 Local to San Antonio and the surrounding Hill Country: Bulverde, Blanco, Spring
                 Branch, New Braunfels, Boerne, Bandera and nearby towns. Not close by? We ship
@@ -72,7 +73,7 @@ export default function ContactPage() {
             </div>
 
             <div className="rounded-2xl border border-gold/40 bg-gold/5 p-6">
-              <h3 className="font-bold text-gold">Catch me at a convention</h3>
+              <h2 className="font-bold text-gold">Catch me at a convention</h2>
               <p className="mt-2 text-muted">
                 I take projects to game conventions and can design cards right there, with quick
                 turnaround and delivery, sometimes even next day at the con. Going to one? Mention
@@ -81,7 +82,7 @@ export default function ContactPage() {
             </div>
 
             <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold">How fast?</h3>
+              <h2 className="font-bold">How fast?</h2>
               <p className="mt-2 text-sm text-muted">
                 It depends on the project, but with clean, print-ready files we move fast: a
                 print-ready run of about 120 cards is ready to ship in about two days (bigger runs
@@ -93,7 +94,7 @@ export default function ContactPage() {
             </div>
 
             <div className="rounded-2xl border border-border bg-surface p-6">
-              <h3 className="font-bold">What happens next</h3>
+              <h2 className="font-bold">What happens next</h2>
               <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-muted">
                 <li>You send the details.</li>
                 <li>We reply with questions, options, and a quote.</li>

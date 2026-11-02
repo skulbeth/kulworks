@@ -5,13 +5,14 @@ import PortfolioGrid from "@/components/PortfolioGrid";
 import Button from "@/components/Button";
 import JsonLd from "@/components/JsonLd";
 import { breadcrumbSchema } from "@/lib/structured-data";
+import { withSocial } from "@/lib/page-meta";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Portfolio: Custom Cards, Tiles & 3D Prints",
   description:
     "A gallery of Kulworks work: custom cards, UV-printed board game tiles, filament and resin 3D prints, and design. Filter by craft.",
   alternates: { canonical: "/portfolio/" },
-};
+});
 
 export default async function PortfolioPage({
   searchParams,

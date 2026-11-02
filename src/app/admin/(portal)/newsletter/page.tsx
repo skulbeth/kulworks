@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { sendBroadcast } from "../_actions";
 import ConfirmButton from "../_components/ConfirmButton";
 import SectionTabs, { SECTIONS } from "../_components/SectionTabs";
+import { requireProfile } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ export default async function NewsletterPage({
 }: {
   searchParams: Promise<{ sent?: string; error?: string }>;
 }) {
+  await requireProfile(); // not just the layout: a client navigation can skip it
   const { sent, error } = await searchParams;
   const activeCount = await prisma.subscriber.count({ where: { unsubscribedAt: null } });
   const configured = !!process.env.RESEND_AUDIENCE_ID;
@@ -34,7 +36,9 @@ export default async function NewsletterPage({
       )}
       {error && (
         <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-600">
-          Couldn&apos;t send. Check that a subject and message are filled in.
+          {error === "send"
+            ? "The mail service refused the newsletter, so nothing went out. Try again in a few minutes."
+            : "Couldn't send. Check that a subject and message are filled in."}
         </p>
       )}
 

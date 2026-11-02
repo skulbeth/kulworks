@@ -14,9 +14,7 @@ import { getCardTemplate } from "@/data/cardTemplates";
 import {
   signedUploadUrl,
   grantValid,
-  checkPendingUpload,
-  claimPendingUpload,
-  pendingExt,
+  claimUploads,
 } from "@/lib/uploads";
 
 export const runtime = "nodejs";
@@ -119,15 +117,18 @@ export async function POST(request: Request) {
       );
     }
 
-    // Every photo must really be in the bucket (right type and size) before we save.
-    for (const f of files) {
-      if (!(await checkPendingUpload("order", f.path, f.grant))) {
-        return NextResponse.json(
-          { ok: false, error: `"${f.slot}" didn't upload. Please attach it again.` },
-          { status: 400 }
-        );
-      }
+    // Every photo must really be in the bucket (right type and size); they're moved to
+    // their final paths BEFORE anything is saved. If they were already moved, this is a
+    // resend of an order that went through (its reply was lost): say ok, save nothing.
+    const claim = await claimUploads("order", files);
+    if (claim.status === "missing") {
+      return NextResponse.json(
+        { ok: false, error: `"${files[claim.index].slot}" didn't upload. Please attach it again.` },
+        { status: 400 }
+      );
     }
+    if (claim.status === "duplicate") return NextResponse.json({ ok: true });
+    const paths = claim.paths;
 
     const existing = await prisma.client.findUnique({ where: { email }, select: { phone: true } });
     const client = await prisma.client.upsert({
@@ -146,18 +147,9 @@ export async function POST(request: Request) {
         message,
         sessionId,
         clientId: client.id,
-        storagePaths: [],
+        storagePaths: paths,
       },
     });
-
-    // Move the photos under the submission id (same layout as before direct uploads).
-    const paths: string[] = [];
-    for (const [i, { path }] of files.entries()) {
-      paths.push(await claimPendingUpload(path, `orders/${submission.id}/${i}.${pendingExt(path)}`));
-    }
-    if (paths.length) {
-      await prisma.submission.update({ where: { id: submission.id }, data: { storagePaths: paths } });
-    }
 
     // Push alert after the response is sent: a slow push service must not hold up the client.
     after(() =>
