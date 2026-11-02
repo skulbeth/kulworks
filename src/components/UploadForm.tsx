@@ -39,7 +39,7 @@ export default function UploadForm({
     files.forEach((f) => fd.append("files", f));
     setStatus("sending");
     try {
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const res = await fetch("/api/upload/", { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) setStatus("done");
       else {

@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
@@ -100,13 +100,16 @@ export async function POST(request: Request) {
     }
     await prisma.upload.update({ where: { id: upload.id }, data: { storagePaths: paths } });
 
-    await notify({
-      kind: "upload",
-      title: `New photo upload${name ? `: ${name}` : ""}`,
-      body: `${paths.length} photo(s)${note ? ` · ${note.slice(0, 120)}` : ""}`,
-      url: "/admin/uploads/",
-      dedupeKey: `upload:${upload.id}`,
-    });
+    // Push alert after the response is sent: a slow push service must not hold up the client.
+    after(() =>
+      notify({
+        kind: "upload",
+        title: `New photo upload${name ? `: ${name}` : ""}`,
+        body: `${paths.length} photo(s)${note ? ` · ${note.slice(0, 120)}` : ""}`,
+        url: "/admin/uploads/",
+        dedupeKey: `upload:${upload.id}`,
+      })
+    );
 
     // Alert Sam with signed links + an admin link. Non-blocking.
     try {

@@ -8,7 +8,12 @@ export const runtime = "nodejs";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/admin/";
+  // Only our own paths: must start with "/", never "//" or "/\\" (protocol-relative → other host).
+  const rawNext = searchParams.get("next") ?? "";
+  const next =
+    rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\") && !rawNext.includes("\\")
+      ? rawNext
+      : "/admin/";
 
   if (code) {
     const supabase = await createClient();

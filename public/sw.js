@@ -45,14 +45,60 @@ self.addEventListener("notificationclick", (event) => {
   event.waitUntil(
     (async () => {
       const tabs = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const mine = new Set((await self.clients.matchAll({ type: "window" })).map((c) => c.id));
       for (const c of tabs) {
         if (new URL(c.url).pathname.startsWith("/admin") && "focus" in c) {
-          await c.focus();
-          if ("navigate" in c) return c.navigate(url);
-          return;
+          try {
+            await c.focus();
+          } catch {}
+          // navigate() only works on a client this worker controls, and can reject
+          // (or resolve null) anyway; then just open the page in a window instead.
+          const controlled = mine.has(c.id) && "navigate" in c;
+          if (controlled) {
+            try {
+              const nav = await c.navigate(url);
+              if (nav) return;
+            } catch {}
+          }
+          return self.clients.openWindow(url);
         }
       }
       return self.clients.openWindow(url);
+    })()
+  );
+});
+
+// The browser rotated or expired this device's push subscription. Re-subscribe with the
+// same VAPID key and tell the server (cookies ride along), dropping the old endpoint.
+self.addEventListener("pushsubscriptionchange", (event) => {
+  event.waitUntil(
+    (async () => {
+      const old = event.oldSubscription;
+      let key = old && old.options && old.options.applicationServerKey;
+      if (!key) {
+        const res = await fetch("/api/push/", { credentials: "include" });
+        const { publicKey } = await res.json();
+        const pad = "=".repeat((4 - (publicKey.length % 4)) % 4);
+        const raw = atob((publicKey + pad).replace(/-/g, "+").replace(/_/g, "/"));
+        key = Uint8Array.from(raw, (ch) => ch.charCodeAt(0));
+      }
+      const sub =
+        event.newSubscription ||
+        (await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }));
+      await fetch("/api/push/", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription: sub.toJSON() }),
+      });
+      if (old && old.endpoint && old.endpoint !== sub.endpoint) {
+        await fetch("/api/push/", {
+          method: "DELETE",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: old.endpoint }),
+        }).catch(() => {});
+      }
     })()
   );
 });

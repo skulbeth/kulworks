@@ -45,6 +45,12 @@ export async function updateSession(request: NextRequest) {
   if (isAdmin && !isAuthPage && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login/";
+    url.search = "";
+    // Remember where they were headed so login can send them back (same-site admin paths only).
+    const dest = pathname + request.nextUrl.search;
+    if (pathname.startsWith("/admin/") && !pathname.startsWith("//") && !dest.includes("\\")) {
+      url.searchParams.set("next", dest);
+    }
     return NextResponse.redirect(url);
   }
 

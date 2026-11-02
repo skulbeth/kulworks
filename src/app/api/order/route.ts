@@ -1,7 +1,7 @@
 // Receives "Design your cards" builder orders. Validates the chosen template's fields,
 // uploads the attached photos to Supabase Storage, and creates a Submission (so card
 // orders land in the same admin inbox as quote requests, with the art attached).
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
@@ -134,14 +134,17 @@ export async function POST(request: Request) {
       await prisma.submission.update({ where: { id: submission.id }, data: { storagePaths: paths } });
     }
 
-    await notify({
-      kind: "lead",
-      title: `New order: ${name}`,
-      body: `${template.name}${paths.length ? ` · ${paths.length} photo(s)` : ""}`,
-      url: "/admin/submissions/",
-      clientId: client.id,
-      dedupeKey: `lead:${submission.id}`,
-    });
+    // Push alert after the response is sent: a slow push service must not hold up the client.
+    after(() =>
+      notify({
+        kind: "lead",
+        title: `New order: ${name}`,
+        body: `${template.name}${paths.length ? ` · ${paths.length} photo(s)` : ""}`,
+        url: "/admin/submissions/",
+        clientId: client.id,
+        dedupeKey: `lead:${submission.id}`,
+      })
+    );
 
     // Notify Sam.
     try {

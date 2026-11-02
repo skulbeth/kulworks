@@ -13,6 +13,22 @@ function b64ToBytes(b64: string): Uint8Array {
   return Uint8Array.from(raw, (c) => c.charCodeAt(0));
 }
 
+function sameKey(a: ArrayBuffer | null | undefined, b: Uint8Array): boolean {
+  if (!a) return false;
+  const x = new Uint8Array(a);
+  return x.length === b.length && x.every((v, i) => v === b[i]);
+}
+
+// Save this device's subscription on the server (upsert by endpoint, so re-sending is safe).
+async function saveSub(sub: PushSubscription) {
+  const standalone = window.matchMedia("(display-mode: standalone)").matches;
+  return fetch("/api/push/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ subscription: sub.toJSON(), label: standalone ? "Android app" : undefined }),
+  });
+}
+
 type State = "checking" | "unsupported" | "denied" | "off" | "on" | "working";
 
 export default function EnablePush({ vapidPublicKey }: { vapidPublicKey: string }) {
@@ -31,10 +47,27 @@ export default function EnablePush({ vapidPublicKey }: { vapidPublicKey: string 
         return;
       }
       const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/admin/" });
-      const sub = await reg.pushManager.getSubscription();
+      let sub = await reg.pushManager.getSubscription();
+      if (sub && Notification.permission === "granted") {
+        const key = b64ToBytes(vapidPublicKey);
+        // Subscribed under an older VAPID key: the server can't reach it. Start fresh.
+        if (!sameKey(sub.options.applicationServerKey, key)) {
+          await fetch("/api/push/", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          }).catch(() => {});
+          await sub.unsubscribe().catch(() => false);
+          sub = await reg.pushManager
+            .subscribe({ userVisibleOnly: true, applicationServerKey: key as BufferSource })
+            .catch(() => null);
+        }
+        // Re-send it every visit so a device the server pruned heals itself.
+        if (sub) await saveSub(sub).catch(() => {});
+      }
       setState(sub ? "on" : "off");
     })().catch(() => setState("unsupported"));
-  }, []);
+  }, [vapidPublicKey]);
 
   const turnOn = async () => {
     setErr(null);
@@ -47,15 +80,14 @@ export default function EnablePush({ vapidPublicKey }: { vapidPublicKey: string 
       }
       const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/admin/" });
       await navigator.serviceWorker.ready;
-      const sub =
-        (await reg.pushManager.getSubscription()) ??
-        (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(vapidPublicKey) as BufferSource }));
-      const standalone = window.matchMedia("(display-mode: standalone)").matches;
-      const res = await fetch("/api/push/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subscription: sub.toJSON(), label: standalone ? "Android app" : undefined }),
-      });
+      const key = b64ToBytes(vapidPublicKey);
+      let sub = await reg.pushManager.getSubscription();
+      if (sub && !sameKey(sub.options.applicationServerKey, key)) {
+        await sub.unsubscribe().catch(() => false);
+        sub = null;
+      }
+      sub ??= await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key as BufferSource });
+      const res = await saveSub(sub);
       if (!res.ok) throw new Error(`Server said ${res.status}`);
       setState("on");
       router.refresh();

@@ -5,6 +5,30 @@ import { createClient } from "@/lib/supabase/client";
 import ThemeToggle from "@/components/ThemeToggle";
 import { getMy2faStatus, sendEmail2faCode, verifyEmail2faCode } from "./_actions";
 
+// Where to land after sign-in: the ?next= the guard added, if it's one of our own admin
+// pages; anything else (other sites, //host, backslashes, the login page) → dashboard.
+function safeNext(): string {
+  const raw = new URLSearchParams(window.location.search).get("next");
+  if (!raw || !raw.startsWith("/admin/") || raw.startsWith("//") || raw.includes("\\")) return "/admin/";
+  try {
+    const u = new URL(raw, window.location.origin);
+    if (u.origin !== window.location.origin) return "/admin/";
+    if (u.pathname.startsWith("/admin/login")) return "/admin/";
+    return u.pathname + u.search + u.hash;
+  } catch {
+    return "/admin/";
+  }
+}
+
+// Leave the login page for the destination. Stamps "last activity" for the portal's idle
+// logout (IdleLogout reads the same key) so a fresh sign-in starts a full 30-minute window.
+function goNext() {
+  try {
+    localStorage.setItem("kw-admin-last-activity", String(Date.now()));
+  } catch {}
+  window.location.href = safeNext();
+}
+
 export default function AdminLoginPage() {
   const [mode, setMode] = useState<"login" | "forgot" | "2fa">("login");
   const [email, setEmail] = useState("");
@@ -20,6 +44,9 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  // Email-code step: who it went to and whether it's one sent earlier (reused, not re-sent).
+  const [codeTo, setCodeTo] = useState<string | null>(null);
+  const [codeReused, setCodeReused] = useState(false);
 
   const field =
     "w-full rounded-lg border border-border bg-surface2 px-4 py-3 text-foreground placeholder:text-muted/60 focus:border-blue focus:outline-none focus-visible:ring-2 focus-visible:ring-blue";
@@ -31,6 +58,14 @@ export default function AdminLoginPage() {
   useEffect(() => {
     (async () => {
       const supabase = createClient();
+      // Deactivated: the portal bounced them here. Drop this device's session (local only)
+      // and explain, instead of auto-routing back to /admin/ and looping.
+      if (new URLSearchParams(window.location.search).get("error") === "deactivated") {
+        await supabase.auth.signOut({ scope: "local" });
+        await fetch("/admin/logout/", { method: "POST" }).catch(() => {});
+        setError("This admin account has been deactivated. Ask the owner to reactivate it.");
+        return;
+      }
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
       await routeAfterPassword();
@@ -48,7 +83,7 @@ export default function AdminLoginPage() {
       }
       if (!status.enabled || status.verified) {
         // Hard navigation so the new session cookie is definitely picked up.
-        window.location.href = "/admin/";
+        goNext();
         return;
       }
       setHasTotp(status.hasTotp);
@@ -58,12 +93,12 @@ export default function AdminLoginPage() {
       if (status.hasTotp) {
         setMethod("choose"); // let them pick app vs email
       } else {
-        await chooseEmail(); // email is the only option → send right away
+        await chooseEmail(); // email is the only option → send (or reuse a live code) right away
       }
     } catch {
       // Password already succeeded; if the status check hiccups, don't get stuck on
-      // the spinner — go to the dashboard and let the server guard re-check.
-      window.location.href = "/admin/";
+      // the spinner — go on and let the server guard re-check.
+      goNext();
     }
   }
 
@@ -100,12 +135,21 @@ export default function AdminLoginPage() {
     setMethod("app");
   }
 
-  async function chooseEmail() {
+  // resend=false reuses a code that's still valid (e.g. the app reloaded while reading Gmail).
+  async function chooseEmail(resend = false) {
     setError(null);
     setBusy(true);
-    const r = await sendEmail2faCode();
+    const r = await sendEmail2faCode({ resend });
     setBusy(false);
-    if (!r.ok) return setError("Couldn't send the code. Please try again.");
+    if (!r.ok) {
+      return setError(
+        r.error === "rate"
+          ? "Too many codes sent. Wait 15 minutes, then try again."
+          : "Couldn't send the code. Please try again."
+      );
+    }
+    setCodeTo(r.to);
+    setCodeReused(r.reused);
     setCode("");
     setMethod("email");
   }
@@ -135,14 +179,14 @@ export default function AdminLoginPage() {
         setBusy(false);
         return setError(
           r.error === "too-many"
-            ? "Too many tries. Request a new code."
+            ? "Too many tries. Wait 15 minutes, then request a new code."
             : r.error === "expired"
             ? "That code expired. Request a new one."
             : "That code didn't match. Try again."
         );
       }
     }
-    window.location.href = "/admin/";
+    goNext();
   }
 
   async function handleForgot(e: React.FormEvent) {
@@ -183,7 +227,7 @@ export default function AdminLoginPage() {
                 📱 Use my authenticator app
               </button>
               <button
-                onClick={chooseEmail}
+                onClick={() => chooseEmail()}
                 disabled={busy}
                 className="w-full rounded-full border border-border px-6 py-3 font-semibold transition-all hover:border-blue hover:text-blue disabled:opacity-60"
               >
@@ -197,7 +241,9 @@ export default function AdminLoginPage() {
             <p className="mt-1 text-muted">
               {method === "app"
                 ? "Enter the 6-digit code from your authenticator app."
-                : "We emailed you a 6-digit code. Enter it below."}
+                : codeReused
+                ? `We already emailed a 6-digit code${codeTo ? ` to ${codeTo}` : ""}. It's still good: enter it below, or resend.`
+                : `We emailed a 6-digit code${codeTo ? ` to ${codeTo}` : ""}. Enter it below.`}
             </p>
             <form onSubmit={submitCode} className="mt-8 space-y-4">
               <input
@@ -216,7 +262,7 @@ export default function AdminLoginPage() {
             </form>
             <div className="mt-4 flex gap-4 text-sm">
               {method === "email" && (
-                <button onClick={chooseEmail} disabled={busy} className="font-semibold text-blue hover:underline">
+                <button onClick={() => chooseEmail(true)} disabled={busy} className="font-semibold text-blue hover:underline">
                   Resend code
                 </button>
               )}

@@ -1,8 +1,9 @@
 // Register / unregister this browser (or the Android app) for push notifications.
-// Logged-in admins only: a subscription is where shop alerts get delivered.
+// Full admins only (signed in, active, past 2FA): a subscription is where shop alerts get delivered.
 import { NextResponse } from "next/server";
-import { getSessionUser } from "@/lib/auth";
+import { requireApiProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { vapidKeys } from "@/lib/push";
 
 export const runtime = "nodejs";
 
@@ -17,11 +18,17 @@ function labelFor(ua: string, hint: unknown): string {
   return "Browser";
 }
 
+// The VAPID public key (public by design). The service worker needs it to re-subscribe
+// on pushsubscriptionchange when the browser doesn't hand over the old key.
+export async function GET() {
+  const { publicKey } = await vapidKeys();
+  return NextResponse.json({ publicKey });
+}
+
 export async function POST(request: Request) {
-  const user = await getSessionUser();
-  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
-  const profile = await prisma.profile.findUnique({ where: { id: user.id } });
-  if (!profile || profile.deactivatedAt) return NextResponse.json({ ok: false }, { status: 403 });
+  const me = await requireApiProfile();
+  if (!me) return NextResponse.json({ ok: false }, { status: 401 });
+  const { profile } = me;
 
   const body = (await request.json().catch(() => null)) as { subscription?: Sub; label?: string } | null;
   const s = body?.subscription;
@@ -41,8 +48,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const user = await getSessionUser();
-  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+  if (!(await requireApiProfile())) return NextResponse.json({ ok: false }, { status: 401 });
   const body = (await request.json().catch(() => null)) as { endpoint?: string } | null;
   if (body?.endpoint) await prisma.pushDevice.deleteMany({ where: { endpoint: body.endpoint } });
   return NextResponse.json({ ok: true });

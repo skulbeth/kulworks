@@ -15,13 +15,48 @@ export async function getSessionUser() {
 }
 
 // Has this session cleared its 2FA requirement?
-// Either the authenticator app was used (Supabase session is aal2) or a valid email-2FA cookie.
-async function twoFactorSatisfied(userId: string): Promise<boolean> {
+// Either a valid email-2FA cookie, or an authenticator-app (aal2) session we can trust (below).
+export async function twoFactorSatisfied(userId: string): Promise<boolean> {
   const jar = await cookies();
   if (verifySession(jar.get(TWOFA_COOKIE)?.value, userId, Date.now())) return true;
+  return trustedAal2();
+}
+
+// aal2 alone isn't proof: Supabase lets a password-only (aal1) session ENROLL its first TOTP
+// factor and verify it, which upgrades that same session to aal2. So an app code only counts
+// when the verified TOTP factor already existed BEFORE this session's first-factor sign-in
+// (i.e. it was set up earlier, from the portal, not minted just now by whoever holds the
+// password). A factor added during this session doesn't count until the next sign-in, and
+// the emailed code always works as the fallback, so nobody gets locked out.
+async function trustedAal2(): Promise<boolean> {
   const supabase = await createClient();
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  return aal?.currentLevel === "aal2";
+  if (aal?.currentLevel !== "aal2") return false;
+  const firstFactorTs = (aal.currentAuthenticationMethods ?? [])
+    .filter((m): m is { method: string; timestamp: number } => typeof m === "object" && m !== null)
+    .filter((m) => !/totp|mfa/i.test(m.method))
+    .map((m) => m.timestamp * 1000);
+  if (firstFactorTs.length === 0) return false;
+  const signedInAt = Math.min(...firstFactorTs);
+  const { data: factors } = await supabase.auth.mfa.listFactors();
+  return !!factors?.totp?.some(
+    (f) => f.status === "verified" && new Date(f.created_at).getTime() < signedInAt
+  );
+}
+
+// API-route version of requireProfile: same checks (signed in, profile exists, not
+// deactivated, 2FA cleared) but returns null instead of redirecting, so the caller can
+// answer 401 JSON. Never creates a profile.
+export async function requireApiProfile(): Promise<{
+  user: NonNullable<Awaited<ReturnType<typeof getSessionUser>>>;
+  profile: Profile;
+} | null> {
+  const user = await getSessionUser();
+  if (!user) return null;
+  const profile = await prisma.profile.findUnique({ where: { id: user.id } });
+  if (!profile || profile.deactivatedAt) return null;
+  if (profile.twoFactorEnabled && !(await twoFactorSatisfied(user.id))) return null;
+  return { user, profile };
 }
 
 // Returns the logged-in user + their Profile, creating the Profile on first login.

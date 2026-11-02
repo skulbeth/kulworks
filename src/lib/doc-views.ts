@@ -1,9 +1,22 @@
 // "Has the client opened it?" for quote/invoice and proof pages.
 //
 // Those pages fire the normal page-view beacon, and /api/track drops views from a
-// logged-in admin, so whatever is in PageView for a doc's path is the client (or
-// whoever they forwarded the link to).
+// logged-in admin or one of Sam's known visitor hashes, so whatever is in PageView
+// for a doc's path is the client (or whoever they forwarded the link to). Rows from
+// an owner hash are still filtered here, for views stored before the hash was known.
 import { prisma } from "@/lib/prisma";
+import { getOwnerHashes } from "@/lib/owner-visits";
+
+const TZ = "America/Chicago";
+
+/** Rows not from Sam's own devices. A null hash (unknown IP) counts as a client. */
+async function notOwner() {
+  const hashes = await getOwnerHashes().catch(() => [] as string[]);
+  return hashes.length ? { OR: [{ visitorHash: null }, { visitorHash: { notIn: hashes } }] } : {};
+}
+
+/** YYYY-MM-DD in Sam's time zone, for once-a-day dedupe keys. */
+const chicagoDay = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: TZ });
 
 export type DocViews = {
   count: number;
@@ -23,7 +36,7 @@ export async function docViews(paths: string[]): Promise<Map<string, DocViews>> 
   if (paths.length === 0) return out;
   const variants = paths.flatMap((p) => [p, p.replace(/\/$/, "")]);
   const rows = await prisma.pageView.findMany({
-    where: { path: { in: variants } },
+    where: { path: { in: variants }, ...(await notOwner()) },
     orderBy: { createdAt: "asc" },
     select: { path: true, createdAt: true, city: true, device: true },
   });
@@ -54,7 +67,7 @@ export async function announceDocView(path: string, city: string | null, device:
     const [, kind, token] = m;
     const p = kind === "invoice" ? invoicePath(token) : proofPath(token);
     const views = await prisma.pageView.findMany({
-      where: { path: { in: [p, p.replace(/\/$/, "")] } },
+      where: { path: { in: [p, p.replace(/\/$/, "")] }, ...(await notOwner()) },
       orderBy: { createdAt: "desc" },
       take: 2,
       select: { createdAt: true },
@@ -77,11 +90,11 @@ export async function announceDocView(path: string, city: string | null, device:
       await notify({
         kind: "doc_viewed",
         title: `${inv.client.name} ${again ? "came back to" : "opened"} ${inv.number}`,
-        body: `Their ${what}${where ? ` · ${where}` : ""}${again ? ` · last looked ${prior!.toLocaleDateString("en-US", { month: "short", day: "numeric" })}` : ""}`,
+        body: `Their ${what}${where ? ` · ${where}` : ""}${again ? ` · last looked ${prior!.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: TZ })}` : ""}`,
         url: projectUrl(inv.projectId),
         projectId: inv.projectId,
         clientId: inv.clientId,
-        dedupeKey: again ? `doc_viewed:again:${token}:${new Date().toISOString().slice(0, 10)}` : `doc_viewed:first:${token}`,
+        dedupeKey: again ? `doc_viewed:again:${token}:${chicagoDay(new Date())}` : `doc_viewed:first:${token}`,
       });
     } else {
       const proof = await prisma.proof.findUnique({
@@ -96,7 +109,7 @@ export async function announceDocView(path: string, city: string | null, device:
         url: `/admin/proofs/${proof.id}/`,
         projectId: proof.projectId,
         clientId: proof.project.clientId,
-        dedupeKey: again ? `proof_viewed:again:${token}:${new Date().toISOString().slice(0, 10)}` : `proof_viewed:first:${token}`,
+        dedupeKey: again ? `proof_viewed:again:${token}:${chicagoDay(new Date())}` : `proof_viewed:first:${token}`,
       });
     }
   } catch (e) {

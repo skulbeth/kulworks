@@ -9,6 +9,7 @@
 // asking to extend one only records the request and emails Sam.
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
@@ -30,9 +31,11 @@ export async function saveClientAddress(formData: FormData) {
 
   const inv = await prisma.invoice.findUnique({
     where: { token },
-    select: { id: true, clientId: true, deletedAt: true, projectId: true, number: true },
+    select: { id: true, clientId: true, deletedAt: true, projectId: true, number: true, status: true },
   });
-  if (!inv || inv.deletedAt) return;
+  if (!inv || inv.deletedAt || inv.status === "VOID") return;
+  // Each save pings Sam's phone, so a held-down Enter or a script can't flood it.
+  if (!(await rateLimit(`client-addr:${token}`, 5, 60 * 60_000))) return;
 
   const street = clean(formData, "street");
   const city = clean(formData, "city");
@@ -57,14 +60,17 @@ export async function saveClientAddress(formData: FormData) {
   });
 
   const parts = [street, city, state, postalCode, country].filter(Boolean).join(", ");
-  await notify({
-    kind: "address",
-    title: `Shipping details saved (${inv.number})`,
-    body: [parts, phone].filter(Boolean).join(" · "),
-    url: projectUrl(inv.projectId),
-    projectId: inv.projectId,
-    clientId: inv.clientId,
-  });
+  // After the response: a slow push service shouldn't hold up the client's page.
+  after(() =>
+    notify({
+      kind: "address",
+      title: `Shipping details saved (${inv.number})`,
+      body: [parts, phone].filter(Boolean).join(" · "),
+      url: projectUrl(inv.projectId),
+      projectId: inv.projectId,
+      clientId: inv.clientId,
+    })
+  );
   await prisma.activity.create({
     data: {
       type: "NOTE",
@@ -92,11 +98,21 @@ async function liveQuote(fd: FormData) {
 // "Looks good, let's do it." Once per quote; a second press changes nothing.
 export async function acceptQuote(formData: FormData) {
   const q = await liveQuote(formData);
-  if (!q || q.acceptedAt || quoteExpired(q.validUntil)) return;
+  if (!q || q.acceptedAt || q.status === "PAID" || quoteExpired(q.validUntil)) return;
+  // Once there's an invoice for it, the quote is past accepting.
+  const invoiced = await prisma.invoice.count({
+    where: { sourceQuoteId: q.id, deletedAt: null, status: { in: ["SENT", "PAID"] } },
+  });
+  if (invoiced > 0) return;
   const { total } = computeTotals(q.items, q.taxRate);
   const url = `${site.url}/invoice/${q.token}/`;
 
-  await prisma.invoice.update({ where: { id: q.id }, data: { acceptedAt: new Date() } });
+  // Claim it in one statement, so two quick presses send Sam one email, not two.
+  const claimed = await prisma.invoice.updateMany({
+    where: { id: q.id, acceptedAt: null },
+    data: { acceptedAt: new Date() },
+  });
+  if (claimed.count === 0) return;
   if (q.project.stage === "LEAD" || q.project.stage === "QUOTED") {
     await prisma.project.update({ where: { id: q.projectId }, data: { stage: "APPROVED" } });
   }
@@ -108,15 +124,17 @@ export async function acceptQuote(formData: FormData) {
       projectId: q.projectId,
     },
   });
-  await notify({
-    kind: "quote_accepted",
-    title: `Quote accepted: ${q.client.name}`,
-    body: `${q.number} · $${total.toFixed(2)} · ${q.project.title}`,
-    url: projectUrl(q.projectId),
-    projectId: q.projectId,
-    clientId: q.clientId,
-    dedupeKey: `quote_accepted:${q.id}`,
-  });
+  after(() =>
+    notify({
+      kind: "quote_accepted",
+      title: `Quote accepted: ${q.client.name}`,
+      body: `${q.number} · $${total.toFixed(2)} · ${q.project.title}`,
+      url: projectUrl(q.projectId),
+      projectId: q.projectId,
+      clientId: q.clientId,
+      dedupeKey: `quote_accepted:${q.id}`,
+    })
+  );
   await sendMail({
     to: NOTIFY_TO(),
     replyTo: q.client.email,
@@ -139,11 +157,16 @@ export async function acceptQuote(formData: FormData) {
 export async function requestQuoteExtension(formData: FormData) {
   const q = await liveQuote(formData);
   if (!q || !quoteExpired(q.validUntil)) return;
-  if (q.extendRequestedAt && Date.now() - q.extendRequestedAt.getTime() < 24 * 3600_000) return;
   const note = clean(formData, "note", 2000);
   const { total } = computeTotals(q.items, q.taxRate);
 
-  await prisma.invoice.update({ where: { id: q.id }, data: { extendRequestedAt: new Date() } });
+  // Claim the once-a-day slot in one statement, so a double tap can't send two.
+  const dayAgo = new Date(Date.now() - 24 * 3600_000);
+  const claimed = await prisma.invoice.updateMany({
+    where: { id: q.id, OR: [{ extendRequestedAt: null }, { extendRequestedAt: { lt: dayAgo } }] },
+    data: { extendRequestedAt: new Date() },
+  });
+  if (claimed.count === 0) return;
   await prisma.activity.create({
     data: {
       type: "NOTE",
@@ -152,14 +175,16 @@ export async function requestQuoteExtension(formData: FormData) {
       projectId: q.projectId,
     },
   });
-  await notify({
-    kind: "quote_extend",
-    title: `Extend quote? ${q.client.name}`,
-    body: `${q.number} · $${total.toFixed(2)}${note ? ` · "${note.slice(0, 120)}"` : ""}`,
-    url: projectUrl(q.projectId),
-    projectId: q.projectId,
-    clientId: q.clientId,
-  });
+  after(() =>
+    notify({
+      kind: "quote_extend",
+      title: `Extend quote? ${q.client.name}`,
+      body: `${q.number} · $${total.toFixed(2)}${note ? ` · "${note.slice(0, 120)}"` : ""}`,
+      url: projectUrl(q.projectId),
+      projectId: q.projectId,
+      clientId: q.clientId,
+    })
+  );
   await sendMail({
     to: NOTIFY_TO(),
     replyTo: q.client.email,
@@ -206,14 +231,17 @@ export async function sendClientMessage(formData: FormData) {
   await prisma.activity.create({
     data: { type: "EMAIL_RECEIVED", body: `Message from ${ctx.label} page:\n${body}`, clientId: ctx.clientId, projectId: ctx.projectId },
   });
-  await notify({
-    kind: "message",
-    title: `Message from ${ctx.clientName}`,
-    body: body.slice(0, 180),
-    url: projectUrl(ctx.projectId),
-    projectId: ctx.projectId,
-    clientId: ctx.clientId,
-  });
+  const c = ctx;
+  after(() =>
+    notify({
+      kind: "message",
+      title: `Message from ${c.clientName}`,
+      body: body.slice(0, 180),
+      url: projectUrl(c.projectId),
+      projectId: c.projectId,
+      clientId: c.clientId,
+    })
+  );
   await sendMail({
     to: NOTIFY_TO(),
     replyTo: ctx.clientEmail,

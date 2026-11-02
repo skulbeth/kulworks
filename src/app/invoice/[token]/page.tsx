@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { fmtMoney, fmtDate } from "@/lib/format";
+import { fmtMoney, fmtDate, fmtDay } from "@/lib/format";
 import {
   computeTotals,
   lineAmount,
@@ -10,6 +10,7 @@ import {
   fmtUnitPrice,
   quoteExpired,
   fmtValidDate,
+  isBalanceDoc,
 } from "@/lib/invoice";
 import { site, paymentConfig, paypalLink, venmoLink } from "@/data/site";
 import { saveClientAddress, acceptQuote, requestQuoteExtension } from "./actions";
@@ -65,7 +66,7 @@ export default async function InvoiceViewPage({
   // (the balance goes out as its own invoice later).
   const linkedDocs = linked.map((d) => {
     const sp = splitDeposit(computeTotals(d.items, d.taxRate).total, d.depositPct);
-    const kind = sp.hasSplit ? "Deposit" : d.notes?.startsWith("Balance for ") ? "Balance" : "Invoice";
+    const kind = sp.hasSplit ? "Deposit" : isBalanceDoc(d) ? "Balance" : "Invoice";
     return { ...d, total: sp.dueNow, kind };
   });
   const unpaid = linkedDocs.find((d) => d.status !== "PAID");
@@ -73,11 +74,15 @@ export default async function InvoiceViewPage({
   const awaitingBalance =
     linkedDocs.some((d) => d.kind === "Deposit") && !linkedDocs.some((d) => d.kind === "Balance");
   // Once an invoice exists for this quote, paying happens there, not off the quote.
-  const showPay = live && (isInvoice || hasSplit) && linkedDocs.length === 0;
+  // Drafts are Sam's previews: the numbers can still change, so nothing is payable yet.
+  const showPay = live && inv.status !== "DRAFT" && (isInvoice || hasSplit) && linkedDocs.length === 0;
   const isQuoteLive = !isInvoice && live && inv.status !== "DRAFT";
   const expired = isQuoteLive && linkedDocs.length === 0 && !inv.acceptedAt && quoteExpired(inv.validUntil);
   const canAccept = isQuoteLive && linkedDocs.length === 0 && !inv.acceptedAt && !expired;
-  const payAmount = isInvoice ? total : dueNow;
+  // A split document (quote or invoice) only ever collects its deposit; the balance
+  // is billed on its own invoice.
+  const payAmount = dueNow;
+  const depositOnly = hasSplit && inv.status === "PAID";
   const anyPay = pay.paypalMe || pay.venmoUser || pay.zelle;
   const note = `${site.name} ${inv.number}`;
   const addr = [inv.client.street, inv.client.city, inv.client.state, inv.client.postalCode, inv.client.country]
@@ -89,7 +94,7 @@ export default async function InvoiceViewPage({
 
   const badge =
     inv.status === "PAID"
-      ? { text: "Paid", cls: "bg-green-500/15 text-green-600" }
+      ? { text: depositOnly ? "Deposit paid" : "Paid", cls: "bg-green-500/15 text-green-600" }
       : inv.status === "VOID"
       ? { text: "Void", cls: "bg-red-500/15 text-red-600" }
       : null;
@@ -122,14 +127,14 @@ export default async function InvoiceViewPage({
         </div>
       ) : inv.acceptedAt && isQuoteLive ? (
         <div className={`${banner} border-green-500/40 bg-green-500/10`}>
-          <p className="font-bold text-green-600">You accepted this quote on {fmtDate(inv.acceptedAt)}.</p>
+          <p className="font-bold text-green-600">You accepted this quote on {fmtDay(inv.acceptedAt)}.</p>
           <p className="mt-0.5 text-muted">Thank you! I&apos;ll be in touch about next steps. Your invoice will show up right here.</p>
         </div>
       ) : expired ? (
         <div className={`${banner} border-gold/40 bg-gold/10`}>
           <p className="font-bold">This quote expired {fmtValidDate(inv.validUntil!)}.</p>
           {inv.extendRequestedAt ? (
-            <p className="mt-0.5 text-muted">Got it, you asked on {fmtDate(inv.extendRequestedAt)}. I&apos;ll take another look and get back to you.</p>
+            <p className="mt-0.5 text-muted">Got it, you asked on {fmtDay(inv.extendRequestedAt)}. I&apos;ll take another look and get back to you.</p>
           ) : (
             <form action={requestQuoteExtension} className="mt-2">
               <input type="hidden" name="token" value={inv.token} />
@@ -171,7 +176,7 @@ export default async function InvoiceViewPage({
             <p className="text-muted">{inv.client.email}</p>
           </div>
           <div className="text-right">
-            <p><span className="text-muted">Date: </span>{fmtDate(issued)}</p>
+            <p><span className="text-muted">Date: </span>{fmtDay(issued)}</p>
             {inv.dueDate && <p><span className="text-muted">Due: </span>{fmtDate(inv.dueDate)}</p>}
             {!isInvoice && inv.validUntil && (
               <p><span className="text-muted">Valid until: </span>{fmtValidDate(inv.validUntil)}</p>
@@ -315,9 +320,11 @@ export default async function InvoiceViewPage({
           </div>
         )}
 
-        {inv.status === "PAID" && (
+        {inv.status === "PAID" && linkedDocs.length === 0 && (
           <p className="mt-6 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-center text-sm font-semibold text-green-600">
-            Paid in full. Thank you!
+            {depositOnly
+              ? `Deposit of ${fmtMoney(dueNow)} received. Thank you! The ${fmtMoney(balance)} balance is billed when your order is ready.`
+              : "Paid in full. Thank you!"}
           </p>
         )}
         {/* Where it ships. Saves straight onto the client record, so the shop has

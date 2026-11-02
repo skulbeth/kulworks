@@ -13,7 +13,16 @@ import { fetchClientMessages } from "@/lib/gmail";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TWOFA_COOKIE, COOKIE_TTL_MS, signSession } from "@/lib/two-factor";
-import { computeTotals, docLabel, splitDeposit, defaultValidUntil, fmtValidDate } from "@/lib/invoice";
+import {
+  computeTotals,
+  docLabel,
+  splitDeposit,
+  defaultValidUntil,
+  fmtValidDate,
+  quoteExpired,
+  BALANCE_PREFIX,
+  keepBalanceMarker,
+} from "@/lib/invoice";
 import { site } from "@/data/site";
 
 const SITE_URL = "https://kulworks.com";
@@ -1173,7 +1182,8 @@ function lineItems(fd: FormData) {
     if (!description) continue;
     out.push({
       description,
-      quantity: Number(qtys[i]) || 1,
+      // A blank quantity means one; a typed 0 stays 0 rather than quietly billing one.
+      quantity: qtys[i]?.trim() && Number.isFinite(Number(qtys[i])) ? Number(qtys[i]) : 1,
       unitPrice: Number(prices[i]) || 0,
       position: out.length,
     });
@@ -1241,14 +1251,42 @@ export async function createBalanceInvoice(formData: FormData) {
     redirect(`/admin/projects/${src.projectId}/?error=no-balance`);
   }
 
-  // Raising it twice would double-bill, so refuse if one already exists.
+  // Raising it twice would double-bill, so refuse if one already exists. A quote and
+  // the invoice converted from it are one job, so check across both: otherwise the
+  // button on each would raise its own balance.
   const marker = `Balance for ${src.number}`;
+  const rootId = src.type === "QUOTE" ? src.id : src.sourceQuoteId;
   const existing = await prisma.invoice.findFirst({
-    where: { projectId: src.projectId, notes: { contains: marker }, deletedAt: null },
+    where: {
+      deletedAt: null,
+      status: { not: "VOID" },
+      ...(rootId
+        ? { sourceQuoteId: rootId, notes: { startsWith: BALANCE_PREFIX } }
+        : { projectId: src.projectId, notes: { contains: marker } }),
+    },
     select: { number: true },
   });
   if (existing) {
     redirect(`/admin/projects/${src.projectId}/?error=balance-exists`);
+  }
+
+  // The balance follows the deposit. Until a deposit is marked paid somewhere in the
+  // job (the quote itself, or the invoice made from it), billing the rest would ask
+  // the client for money out of order.
+  const depositPaid =
+    src.status === "PAID" ||
+    (rootId
+      ? (await prisma.invoice.count({
+          where: {
+            deletedAt: null,
+            status: "PAID",
+            depositPct: { not: null },
+            OR: [{ id: rootId }, { sourceQuoteId: rootId }],
+          },
+        })) > 0
+      : false);
+  if (!depositPaid) {
+    redirect(`/admin/projects/${src.projectId}/?error=deposit-unpaid`);
   }
 
   const number = await nextDocNumber("INVOICE");
@@ -1289,7 +1327,10 @@ export async function updateInvoiceDoc(formData: FormData) {
   const id = s(formData, "id");
   if (!id) return;
 
-  const inv = await prisma.invoice.findUnique({ where: { id }, select: { status: true, projectId: true, number: true } });
+  const inv = await prisma.invoice.findUnique({
+    where: { id },
+    select: { status: true, projectId: true, number: true, notes: true },
+  });
   if (!inv) return;
   if (inv.status !== "DRAFT") {
     redirect(`/admin/projects/${inv.projectId}/?error=not-draft`);
@@ -1305,7 +1346,7 @@ export async function updateInvoiceDoc(formData: FormData) {
       taxRate: num(formData, "taxRate") ?? 0,
       depositPct: num(formData, "depositPct"),
       dueDate: date(formData, "dueDate") ?? null,
-      notes: s(formData, "notes"),
+      notes: keepBalanceMarker(inv.notes, s(formData, "notes")),
       // Replace the lines wholesale; they are only meaningful as a set.
       items: { deleteMany: {}, create: items },
     },
@@ -1394,14 +1435,21 @@ export async function sendInvoiceDoc(formData: FormData) {
     where: { id },
     include: { client: true, items: true, project: true },
   });
-  if (!inv) return;
+  if (!inv || inv.status === "VOID") return;
 
   const { total } = computeTotals(inv.items, inv.taxRate);
   const { dueNow, balance, hasSplit } = splitDeposit(total, inv.depositPct);
   const url = `${SITE_URL}/invoice/${inv.token}/`;
   const isQuote = inv.type === "QUOTE";
-  // A quote's clock starts the first time it goes out; resending keeps the date.
-  const validUntil = isQuote ? inv.validUntil ?? defaultValidUntil() : null;
+  const isPaid = inv.status === "PAID";
+  // A quote's clock starts the first time it goes out; resending keeps the date,
+  // unless it has already run out. Resending an expired quote is a fresh offer, and
+  // an email promising "good through" a past date would land on an expired page.
+  const validUntil = isQuote
+    ? inv.validUntil && !quoteExpired(inv.validUntil)
+      ? inv.validUntil
+      : defaultValidUntil()
+    : null;
 
   // The shared Drive folder lives on the submission that started the project, so
   // the one email can carry artwork, money and the address ask together.
@@ -1424,7 +1472,7 @@ export async function sendInvoiceDoc(formData: FormData) {
     inv.dueDate ? `Due: ${inv.dueDate.toLocaleDateString("en-US")}` : "",
     validUntil ? `This quote is good through ${fmtValidDate(validUntil)}.` : "",
     "",
-    hasSplit || !isQuote ? "View and pay it here:" : "View it here:",
+    !isPaid && (hasSplit || !isQuote) ? "View and pay it here:" : "View it here:",
     url,
     "",
     "That same page has a short form for your shipping address, so we have everything we need to start.",
@@ -1447,7 +1495,7 @@ export async function sendInvoiceDoc(formData: FormData) {
     data: {
       status: inv.status === "PAID" ? "PAID" : "SENT",
       issuedAt: inv.issuedAt ?? new Date(),
-      ...(validUntil ? { validUntil } : {}),
+      ...(validUntil ? { validUntil, extendRequestedAt: null } : {}),
     },
   });
   await prisma.activity.create({
@@ -1473,11 +1521,23 @@ export async function markInvoicePaid(formData: FormData) {
   if (!inv) return;
 
   const { total: fullTotal } = computeTotals(inv.items, inv.taxRate);
+  const split = splitDeposit(fullTotal, inv.depositPct);
+  // A plain quote is an estimate with nothing to pay. A quote with a deposit is
+  // payable (the client can pay that deposit straight off the quote page).
+  if (inv.type === "QUOTE" && !split.hasSplit) return;
   // On a split, this document only collects the deposit; the balance is billed on
   // its own invoice. Recording the full total here would count the balance twice.
-  const total = splitDeposit(fullTotal, inv.depositPct).dueNow;
+  const total = split.dueNow;
   const method = s(formData, "method") ?? "OTHER";
-  await prisma.invoice.update({ where: { id }, data: { status: "PAID", paidAt: new Date() } });
+  // Flip the status only if it is still unpaid, in one statement: a double tap or a
+  // stale second tab then records one payment, not two.
+  const flipped = await prisma.invoice.updateMany({
+    where: { id, status: { notIn: ["PAID", "VOID"] } },
+    data: { status: "PAID", paidAt: new Date() },
+  });
+  if (flipped.count === 0) {
+    redirect(`/admin/projects/${inv.projectId}/?error=already-paid`);
+  }
   await prisma.payment.create({
     data: {
       projectId: inv.projectId,
@@ -1489,7 +1549,7 @@ export async function markInvoicePaid(formData: FormData) {
   await prisma.activity.create({
     data: {
       type: "PAYMENT",
-      body: `${inv.number} marked paid: $${total.toFixed(2)} (${method}).`,
+      body: `${inv.number} marked ${split.hasSplit ? "deposit " : ""}paid: $${total.toFixed(2)} (${method}).`,
       projectId: inv.projectId,
       clientId: inv.clientId,
       authorId: profile.id,
@@ -1519,7 +1579,26 @@ export async function convertQuoteToInvoice(formData: FormData) {
   const id = s(formData, "id");
   if (!id) return;
   const q = await prisma.invoice.findUnique({ where: { id }, include: { items: true } });
-  if (!q || q.type !== "QUOTE") return;
+  if (!q || q.type !== "QUOTE" || q.status === "VOID") return;
+  // A deposit already paid on the quote means the job is booked; what is left is the
+  // balance ("Invoice the balance"), not a second deposit invoice.
+  if (q.status === "PAID") {
+    redirect(`/admin/projects/${q.projectId}/?error=quote-deposit-paid`);
+  }
+  // One invoice per quote. A second click would bill the client twice.
+  const already = await prisma.invoice.findFirst({
+    where: {
+      sourceQuoteId: q.id,
+      deletedAt: null,
+      status: { not: "VOID" },
+      // A null note is "not a balance" too; NOT on its own would skip those rows.
+      OR: [{ notes: null }, { NOT: { notes: { startsWith: BALANCE_PREFIX } } }],
+    },
+    select: { number: true },
+  });
+  if (already) {
+    redirect(`/admin/projects/${q.projectId}/?error=already-converted`);
+  }
 
   const number = await nextDocNumber("INVOICE");
   await prisma.invoice.create({

@@ -14,6 +14,7 @@ import { visitorHash } from "@/lib/visitor";
 import { logError } from "@/lib/log-error";
 import { getSessionUser } from "@/lib/auth";
 import { announceDocView } from "@/lib/doc-views";
+import { getOwnerHashes } from "@/lib/owner-visits";
 import { maybeSweepInbox } from "@/lib/inbox-sweep";
 
 export const runtime = "nodejs";
@@ -106,12 +107,15 @@ export async function POST(request: Request) {
 
     // Client document pages: Sam checking a quote or proof from the admin must not
     // read as "the client opened it". Only these paths pay for the session lookup.
+    // A known owner hash covers him previewing a link while logged out.
+    const vh = visitorHash(clientIp(request));
     if (/^\/(invoice|proof)\//.test(path)) {
       try {
         if (await getSessionUser()) return ok();
       } catch {
         /* no session store available, count it */
       }
+      if (vh && (await getOwnerHashes().catch(() => [] as string[])).includes(vh)) return ok();
     }
 
     const from: Site | "unknown" = SITES.includes(site as Site) ? (site as Site) : "unknown";
@@ -141,7 +145,7 @@ export async function POST(request: Request) {
         city,
         device,
         sessionId: typeof sessionId === "string" ? sessionId.slice(0, 100) : null,
-        visitorHash: visitorHash(clientIp(request)),
+        visitorHash: vh,
       },
     });
     // A client opening their quote/invoice/proof pings Sam, after the beacon is answered.

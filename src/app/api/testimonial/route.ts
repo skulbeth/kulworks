@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
@@ -78,13 +78,16 @@ export async function POST(request: Request) {
       },
     });
 
-    await notify({
-      kind: "testimonial",
-      title: `New testimonial from ${displayName}`,
-      body: quote.slice(0, 160),
-      url: "/admin/testimonials/",
-      dedupeKey: `testimonial:${row.id}`,
-    });
+    // Push alert after the response is sent: a slow push service must not hold up the client.
+    after(() =>
+      notify({
+        kind: "testimonial",
+        title: `New testimonial from ${displayName}`,
+        body: quote.slice(0, 160),
+        url: "/admin/testimonials/",
+        dedupeKey: `testimonial:${row.id}`,
+      })
+    );
 
     // Best-effort nudge so it doesn't sit unseen. Never fails the submission.
     try {

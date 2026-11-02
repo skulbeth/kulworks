@@ -28,7 +28,7 @@ export default function OrderBuilder() {
     fd.set("templateId", template.id);
     setStatus("sending");
     try {
-      const res = await fetch("/api/order", { method: "POST", body: fd });
+      const res = await fetch("/api/order/", { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) setStatus("done");
       else {

@@ -11,9 +11,26 @@ export function fmtDate(d: Date | null | undefined): string {
   });
 }
 
+// The shop's clock. Server code runs in UTC, so a moment in time (a click, a view,
+// a log line) must say which day and hour it was in Texas, not in London.
+export const SHOP_TZ = "America/Chicago";
+
+// The Texas day of a moment in time. Not for date-only fields (due dates and the
+// like are stored as midnight and go through fmtDate).
+export function fmtDay(d: Date | null | undefined): string {
+  if (!d) return DASH;
+  return new Date(d).toLocaleDateString("en-US", {
+    timeZone: SHOP_TZ,
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function fmtDateTime(d: Date | null | undefined): string {
   if (!d) return DASH;
   return new Date(d).toLocaleString("en-US", {
+    timeZone: SHOP_TZ,
     year: "numeric",
     month: "short",
     day: "numeric",

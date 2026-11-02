@@ -64,3 +64,19 @@ export function quoteExpired(validUntil: Date | null | undefined, now = new Date
 export function fmtValidDate(d: Date): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 }
+
+// A balance invoice is marked by how its note starts ("Balance for Q-0003. ..."). The
+// quote page and the double-billing checks both read that marker, so it must survive
+// edits to the note.
+export const BALANCE_PREFIX = "Balance for ";
+
+export function isBalanceDoc(d: { notes: string | null }): boolean {
+  return !!d.notes?.startsWith(BALANCE_PREFIX);
+}
+
+// Keep a balance invoice's marker sentence when Sam rewrites its note on the draft.
+export function keepBalanceMarker(oldNotes: string | null, newNotes: string | null): string | null {
+  if (!oldNotes?.startsWith(BALANCE_PREFIX) || newNotes?.startsWith(BALANCE_PREFIX)) return newNotes;
+  const marker = oldNotes.split(".")[0] + ".";
+  return newNotes ? `${marker} ${newNotes}` : marker;
+}

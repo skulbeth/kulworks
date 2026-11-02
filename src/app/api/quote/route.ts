@@ -2,7 +2,7 @@
 // Saves the request to the DB: upserts a Client (deduped by email) and creates a
 // Submission linked to it, creates the shared Drive folder if they asked for one, then
 // emails Sam (new-request notice) and the customer (confirmation).
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
@@ -183,14 +183,17 @@ export async function POST(request: Request) {
       cardBacks ? `Card backs: ${cardBacksLabel(cardBacks)}` : null,
     ].filter(Boolean) as string[];
 
-    await notify({
-      kind: "lead",
-      title: `New quote request: ${name}`,
-      body: [projectType, message.slice(0, 140)].filter(Boolean).join(" · "),
-      url: "/admin/submissions/",
-      clientId: client.id,
-      dedupeKey: `lead:${submission.id}`,
-    });
+    // Push alert after the response is sent: a slow push service must not hold up the client.
+    after(() =>
+      notify({
+        kind: "lead",
+        title: `New quote request: ${name}`,
+        body: [projectType, message.slice(0, 140)].filter(Boolean).join(" · "),
+        url: "/admin/submissions/",
+        clientId: client.id,
+        dedupeKey: `lead:${submission.id}`,
+      })
+    );
 
     // Notify Sam of the new request. Reply-To is the customer, so hitting Reply in
     // the inbox goes straight to them. Non-blocking — never fail the save on email.

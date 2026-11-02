@@ -4,7 +4,8 @@
 // These intentionally do NOT call requireProfile — that would re-trigger the 2FA gate.
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, twoFactorSatisfied } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import {
@@ -12,20 +13,19 @@ import {
   COOKIE_TTL_MS,
   CODE_TTL_MS,
   signSession,
-  verifySession,
   newCode,
   hashCode,
 } from "@/lib/two-factor";
 
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 5; // wrong tries per code
+const WINDOW_MS = 15 * 60 * 1000;
+const MAX_SENDS = 5; // emailed codes per user per 15 min
+const MAX_VERIFIES = 10; // code checks per user per 15 min, across resends
 
-// Is this session already past its 2FA requirement? (authenticator app → aal2, or a valid cookie)
+// Is this session already past its 2FA requirement? Same rule the portal guard uses
+// (valid email-2FA cookie, or a trusted authenticator-app aal2 session).
 async function isVerified(userId: string) {
-  const supabase = await createClient();
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (aal?.currentLevel === "aal2") return true;
-  const jar = await cookies();
-  return verifySession(jar.get(TWOFA_COOKIE)?.value, userId, Date.now());
+  return twoFactorSatisfied(userId);
 }
 
 // What does the login page need to show after the password step?
@@ -51,10 +51,26 @@ export async function getMy2faStatus() {
   };
 }
 
-// Email the current user a fresh 6-digit code.
-export async function sendEmail2faCode() {
+// Email the current user a 6-digit code. Without `resend`, an unexpired code that was
+// already sent is reused (the login page re-mounting, e.g. Android reloading the app while
+// you read Gmail, must not void the code in your inbox). Sends are rate-limited, and code
+// checks are capped per user across resends (verifyEmail2faCode), so a fresh code can start
+// at zero tries without opening the door to unlimited guessing.
+export async function sendEmail2faCode(opts?: { resend?: boolean }) {
   const user = await getSessionUser();
-  if (!user?.email) return { ok: false as const };
+  if (!user?.email) return { ok: false as const, error: "not-signed-in" as const };
+
+  const live = await prisma.twoFactorCode.findFirst({
+    where: { userId: user.id, expiresAt: { gt: new Date() }, attempts: { lt: MAX_ATTEMPTS } },
+    orderBy: { createdAt: "desc" },
+  });
+  if (live && !opts?.resend) {
+    return { ok: true as const, reused: true, to: user.email, sentAt: live.createdAt.toISOString() };
+  }
+
+  if (!(await rateLimit(`2fa-send:${user.id}`, MAX_SENDS, WINDOW_MS))) {
+    return { ok: false as const, error: "rate" as const };
+  }
 
   const code = newCode();
   await prisma.twoFactorCode.deleteMany({ where: { userId: user.id } });
@@ -75,13 +91,16 @@ export async function sendEmail2faCode() {
       `and consider changing your password.`,
   });
 
-  return { ok: true as const };
+  return { ok: true as const, reused: false, to: user.email, sentAt: new Date().toISOString() };
 }
 
 // Verify a submitted email code; on success, set the signed 2FA cookie.
 export async function verifyEmail2faCode(code: string) {
   const user = await getSessionUser();
   if (!user) return { ok: false as const, error: "not-signed-in" };
+  if (!(await rateLimit(`2fa-verify:${user.id}`, MAX_VERIFIES, WINDOW_MS))) {
+    return { ok: false as const, error: "too-many" };
+  }
 
   const rec = await prisma.twoFactorCode.findFirst({
     where: { userId: user.id, expiresAt: { gt: new Date() } },

@@ -7,6 +7,7 @@
 // proof behind that token and that the link is still switched on. Nothing here
 // touches money, and Sam only hears about notes when the client presses "Send".
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
@@ -80,6 +81,10 @@ export async function setProofItemApproved(token: string, itemId: string, approv
   const item = await itemOf(proof.id, itemId);
   if (!item) return;
   await prisma.proofItem.update({ where: { id: item.id }, data: { approvedAt: approved ? new Date() : null } });
+  // Taking back one card's approval means the proof as a whole isn't approved anymore.
+  if (!approved && proof.approvedAt) {
+    await prisma.proof.update({ where: { id: proof.id }, data: { approvedAt: null } });
+  }
   revalidatePath(`/proof/${token}`);
 }
 
@@ -115,14 +120,17 @@ export async function sendProofNotes(token: string) {
     where: { id: { in: pending.map((c) => c.id) } },
     data: { notifiedAt: new Date() },
   });
-  await notify({
-    kind: "proof_notes",
-    title: `Proof notes: ${proof.title}`,
-    body: `${pending.length} new note(s). First: "${pending[0].body.slice(0, 120)}"`,
-    url: `/admin/proofs/${proof.id}/`,
-    projectId: proof.projectId,
-    clientId: proof.project.clientId,
-  });
+  // After the response: a slow push service shouldn't hold up the client's page.
+  after(() =>
+    notify({
+      kind: "proof_notes",
+      title: `Proof notes: ${proof.title}`,
+      body: `${pending.length} new note(s). First: "${pending[0].body.slice(0, 120)}"`,
+      url: `/admin/proofs/${proof.id}/`,
+      projectId: proof.projectId,
+      clientId: proof.project.clientId,
+    })
+  );
   await prisma.activity.create({
     data: {
       type: "EMAIL_RECEIVED",
@@ -142,17 +150,30 @@ export async function approveWholeProof(token: string) {
     where: { resolvedAt: null, fromClient: true, item: { proofId: proof.id } },
   });
   const now = new Date();
-  await prisma.proof.update({ where: { id: proof.id }, data: { approvedAt: now } });
-  await prisma.proofItem.updateMany({ where: { proofId: proof.id, approvedAt: null }, data: { approvedAt: now } });
-  await notify({
-    kind: "proof_approved",
-    title: `Proof APPROVED: ${proof.title}`,
-    body: open ? `Every card approved, ${open} note(s) still open.` : "Every card approved. Ready to print.",
-    url: `/admin/proofs/${proof.id}/`,
-    projectId: proof.projectId,
-    clientId: proof.project.clientId,
-    dedupeKey: `proof_approved:${proof.id}:${now.toISOString()}`,
+  // Claim it in one statement: pressing Approve again (or twice quickly) on a proof
+  // that's already approved changes nothing and doesn't email Sam again. New
+  // versions from Sam, or the client un-approving a card, clear approvedAt, so a
+  // real re-approval still gets through.
+  const claimed = await prisma.proof.updateMany({
+    where: { id: proof.id, approvedAt: null },
+    data: { approvedAt: now },
   });
+  await prisma.proofItem.updateMany({ where: { proofId: proof.id, approvedAt: null }, data: { approvedAt: now } });
+  if (claimed.count === 0) {
+    revalidatePath(`/proof/${token}`);
+    return { ok: true as const };
+  }
+  after(() =>
+    notify({
+      kind: "proof_approved",
+      title: `Proof APPROVED: ${proof.title}`,
+      body: open ? `Every card approved, ${open} note(s) still open.` : "Every card approved. Ready to print.",
+      url: `/admin/proofs/${proof.id}/`,
+      projectId: proof.projectId,
+      clientId: proof.project.clientId,
+      dedupeKey: `proof_approved:${proof.id}:${now.toISOString()}`,
+    })
+  );
   await sendMail({
     to: NOTIFY_TO(),
     subject: `Proof APPROVED: ${proof.title}`,

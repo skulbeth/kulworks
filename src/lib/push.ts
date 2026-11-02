@@ -69,9 +69,13 @@ export async function pushToAll(payload: PushPayload): Promise<number> {
           const status = (e as { statusCode?: number }).statusCode;
           // 404/410: the browser dropped the subscription (app uninstalled, permission
           // revoked). It will never work again, so forget it.
-          if (status === 404 || status === 410 || d.failCount >= 9) {
+          // Other 4xx (bad/mismatched VAPID key, malformed sub) are permanent too, but give
+          // them a few tries before pruning. 5xx / 429 / 408 / timeouts (no status) are the
+          // push service having a bad moment: never count those, the device is fine.
+          const permanent4xx = !!status && status >= 400 && status < 500 && status !== 408 && status !== 429;
+          if (status === 404 || status === 410 || (permanent4xx && d.failCount >= 4)) {
             await prisma.pushDevice.delete({ where: { id: d.id } }).catch(() => {});
-          } else {
+          } else if (permanent4xx) {
             await prisma.pushDevice.update({ where: { id: d.id }, data: { failCount: { increment: 1 } } }).catch(() => {});
           }
           console.error("[push] send failed", status, (e as Error).message);

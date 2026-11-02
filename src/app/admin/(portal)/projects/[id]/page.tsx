@@ -17,7 +17,7 @@ import {
   setQuoteValidUntil,
 } from "../../_actions";
 import InvoiceEditor from "../../_components/InvoiceEditor";
-import { computeTotals, docLabel, splitDeposit, quoteExpired, fmtValidDate } from "@/lib/invoice";
+import { computeTotals, docLabel, splitDeposit, quoteExpired, fmtValidDate, isBalanceDoc } from "@/lib/invoice";
 import { site } from "@/data/site";
 import { docViews, invoicePath, proofPath, type DocViews } from "@/lib/doc-views";
 import {
@@ -36,6 +36,7 @@ import ResultBanner from "../../_components/ResultBanner";
 import { createProof } from "../../_proof-actions";
 import { PROOF_SIZES, publicProofUrl, isProofItemUpdated } from "@/lib/proofs";
 import CopyButton from "../../_components/CopyButton";
+import SubmitButton from "@/components/SubmitButton";
 
 export const dynamic = "force-dynamic";
 
@@ -221,6 +222,14 @@ export default async function ProjectDetailPage({
               const { total } = computeTotals(inv.items, inv.taxRate);
               const paid = inv.status === "PAID";
               const voided = inv.status === "VOID";
+              const split = splitDeposit(total, inv.depositPct).hasSplit;
+              // A quote that already has its invoice (not counting a balance) is done
+              // converting; the actions refuse a second one anyway.
+              const converted =
+                inv.type === "QUOTE" &&
+                project.invoices.some(
+                  (d) => d.sourceQuoteId === inv.id && d.status !== "VOID" && !isBalanceDoc(d)
+                );
               return (
                 <li key={inv.id} className="rounded-lg border border-border bg-surface2 px-3 py-2">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -304,7 +313,7 @@ export default async function ProjectDetailPage({
                         </ConfirmButton>
                       </form>
 
-                      {splitDeposit(total, inv.depositPct).hasSplit && !voided && (
+                      {split && paid && (
                         <form action={createBalanceInvoice}>
                           <input type="hidden" name="id" value={inv.id} />
                           <ConfirmButton
@@ -332,7 +341,7 @@ export default async function ProjectDetailPage({
                         </form>
                       )}
 
-                      {inv.type === "QUOTE" && (
+                      {inv.type === "QUOTE" && !paid && !converted && (
                         <form action={convertQuoteToInvoice}>
                           <input type="hidden" name="id" value={inv.id} />
                           <button className="rounded-full border border-border px-3 py-1 text-xs font-semibold hover:border-blue hover:text-blue">
@@ -341,7 +350,7 @@ export default async function ProjectDetailPage({
                         </form>
                       )}
 
-                      {inv.type === "INVOICE" && !paid && (
+                      {!paid && (inv.type === "INVOICE" || (split && !converted)) && (
                         <form action={markInvoicePaid} className="flex items-center gap-1">
                           <input type="hidden" name="id" value={inv.id} />
                           <select
@@ -358,9 +367,12 @@ export default async function ProjectDetailPage({
                             <option value="BANK_TRANSFER">Bank</option>
                             <option value="OTHER">Other</option>
                           </select>
-                          <button className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-black hover:bg-primary-hover">
-                            Mark paid
-                          </button>
+                          <SubmitButton
+                            pendingText="Saving..."
+                            className="rounded-full bg-primary px-3 py-1 text-xs font-bold text-black hover:bg-primary-hover"
+                          >
+                            {split ? "Mark deposit paid" : "Mark paid"}
+                          </SubmitButton>
                         </form>
                       )}
 
