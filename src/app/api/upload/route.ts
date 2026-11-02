@@ -7,17 +7,17 @@ import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { logError } from "@/lib/log-error";
 import {
   uploadsEnabled,
-  putUploadImage,
   signedUploadUrl,
+  checkPendingUpload,
+  claimPendingUpload,
+  pendingExt,
   MAX_FILES,
-  MAX_FILE_BYTES,
-  ALLOWED_TYPES,
 } from "@/lib/uploads";
 
 export const runtime = "nodejs";
 
-function str(v: FormDataEntryValue | null): string | null {
-  const s = typeof v === "string" ? v.trim() : "";
+function str(v: unknown, max = 2000): string | null {
+  const s = typeof v === "string" ? v.trim().slice(0, max) : "";
   return s || null;
 }
 
@@ -38,17 +38,23 @@ export async function POST(request: Request) {
       );
     }
 
-    const form = await request.formData();
+    // JSON only: the photos themselves went browser -> storage via /api/upload-url/.
+    let body: Record<string, unknown>;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
+    }
 
     // Honeypot — bots fill hidden fields.
-    if (str(form.get("company"))) return NextResponse.json({ ok: true });
+    if (str(body.company)) return NextResponse.json({ ok: true });
 
-    const name = str(form.get("name"));
-    const contact = str(form.get("contact"));
-    const note = str(form.get("note"));
-    const files = form
-      .getAll("files")
-      .filter((f): f is File => f instanceof File && f.size > 0);
+    const name = str(body.name, 200);
+    const contact = str(body.contact, 320);
+    const note = str(body.note, 3000);
+    const files = (Array.isArray(body.photos) ? (body.photos as Record<string, unknown>[]) : [])
+      .map((p) => ({ path: str(p?.path, 300) ?? "", grant: str(p?.grant, 300) ?? "" }))
+      .filter((p) => p.path);
 
     if (!files.length) {
       return NextResponse.json({ ok: false, error: "Add at least one photo." }, { status: 400 });
@@ -59,16 +65,12 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    for (const f of files) {
-      if (f.size > MAX_FILE_BYTES) {
+    // Each path must be one /api/upload-url/ issued, and really be in the bucket
+    // (allowed type, under the size cap) before we attach it.
+    for (const [i, f] of files.entries()) {
+      if (!(await checkPendingUpload("upload", f.path, f.grant))) {
         return NextResponse.json(
-          { ok: false, error: "A photo is too large (15 MB max each)." },
-          { status: 400 }
-        );
-      }
-      if (f.type && !ALLOWED_TYPES.includes(f.type)) {
-        return NextResponse.json(
-          { ok: false, error: "Please upload images only." },
+          { ok: false, error: `Photo ${i + 1} didn't upload. Please add it again.` },
           { status: 400 }
         );
       }
@@ -79,24 +81,10 @@ export async function POST(request: Request) {
       data: { name, contact, note, storagePaths: [] },
     });
 
+    // Move each checked photo into the record's folder (same layout as before).
     const paths: string[] = [];
-    let i = 0;
-    for (const f of files) {
-      const ext =
-        (f.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) ||
-        "jpg";
-      const path = `${upload.id}/${i}.${ext}`;
-      const buf = Buffer.from(await f.arrayBuffer());
-      if (await putUploadImage(path, buf, f.type || "image/jpeg")) paths.push(path);
-      i++;
-    }
-
-    if (!paths.length) {
-      await prisma.upload.delete({ where: { id: upload.id } });
-      return NextResponse.json(
-        { ok: false, error: "Upload failed, please try again." },
-        { status: 500 }
-      );
+    for (const [i, { path }] of files.entries()) {
+      paths.push(await claimPendingUpload(path, `${upload.id}/${i}.${pendingExt(path)}`));
     }
     await prisma.upload.update({ where: { id: upload.id }, data: { storagePaths: paths } });
 

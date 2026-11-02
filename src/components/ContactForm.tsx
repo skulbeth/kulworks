@@ -43,6 +43,9 @@ function FormInner() {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+  // The server's own message for a 4xx (validation, rate limit); null = generic error.
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [dueDate, setDueDate] = useState("");
   const [delivery, setDelivery] = useState("");
   const [cardBacks, setCardBacks] = useState("");
@@ -104,6 +107,7 @@ function FormInner() {
     const fd = new FormData(form);
 
     setStatus("submitting");
+    setErrorMsg(null);
     try {
       const res = await fetch("/api/quote/", {
         method: "POST",
@@ -140,11 +144,23 @@ function FormInner() {
         setStatus("success");
         resetForm(form);
       } else {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(res.status < 500 && typeof data.error === "string" ? data.error : null);
         setStatus("error");
+        resetTurnstile();
       }
     } catch {
+      setErrorMsg(null);
       setStatus("error");
+      resetTurnstile();
     }
+  }
+
+  // Turnstile tokens are single-use and the server may have spent this one: remount the
+  // widget for a fresh token so the next try isn't rejected as "Verification failed".
+  function resetTurnstile() {
+    setTurnstileToken(null);
+    setTurnstileKey((k) => k + 1);
   }
 
   const field =
@@ -398,13 +414,17 @@ function FormInner() {
       </div>
 
       {status === "error" && (
-        <p className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-600">
-          Something went wrong sending your message. Please email{" "}
-          <a href={`mailto:${site.email}`} className="underline">{site.email}</a> instead.
+        <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-600">
+          {errorMsg ?? (
+            <>
+              Something went wrong sending your message. Please email{" "}
+              <a href={`mailto:${site.email}`} className="underline">{site.email}</a> instead.
+            </>
+          )}
         </p>
       )}
 
-      <TurnstileWidget onToken={setTurnstileToken} />
+      <TurnstileWidget key={turnstileKey} onToken={setTurnstileToken} />
 
       <button
         type="submit"

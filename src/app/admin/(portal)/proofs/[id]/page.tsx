@@ -17,8 +17,15 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminProofPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminProofPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string; sent?: string }>;
+}) {
   const { id } = await params;
+  const { error, sent } = await searchParams;
   const proof = await prisma.proof.findUnique({
     where: { id },
     include: {
@@ -99,6 +106,16 @@ export default async function AdminProofPage({ params }: { params: Promise<{ id:
             <span className="text-xs text-muted">
               {proof.clientNotifiedAt ? `Last emailed ${fmtDateTime(proof.clientNotifiedAt)}` : "Not emailed from here yet"}
             </span>
+            {error === "email" && (
+              <p role="alert" className="w-full text-xs font-semibold text-red-600">
+                The email to {client.email} didn&apos;t go out (see Team → System errors). Nothing was recorded; try again.
+              </p>
+            )}
+            {sent && !error && (
+              <p role="status" className="w-full text-xs font-semibold text-green-600">
+                Emailed {client.email}.
+              </p>
+            )}
           </form>
         )}
       </section>

@@ -56,14 +56,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  // Bot protection (Cloudflare Turnstile) — no-op until configured.
-  if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
-    return NextResponse.json(
-      { ok: false, error: "Verification failed. Please try again." },
-      { status: 400 }
-    );
-  }
-
   const name = str(body.name);
   const email = str(body.email).toLowerCase();
   const projectType = str(body.projectType).slice(0, MAX.projectType);
@@ -77,6 +69,8 @@ export async function POST(request: Request) {
   const dueRaw = str(body.dueDate);
   const dueISO = /^\d{4}-\d{2}-\d{2}$/.test(dueRaw) ? dueRaw : null;
   const dueDate = dueISO ? new Date(`${dueISO}T12:00:00Z`) : null; // noon UTC: same calendar day everywhere
+  // 2026-02-31 matches the regex and Date rolls it to March 3; round-trip to catch it.
+  const dueBad = !!dueDate && (Number.isNaN(dueDate.getTime()) || dueDate.toISOString().slice(0, 10) !== dueISO);
   const deliveryRaw = str(body.deliveryMethod);
   const deliveryMethod = DELIVERY_OPTIONS.some((o) => o.id === deliveryRaw) ? deliveryRaw : null;
   const ship =
@@ -103,7 +97,7 @@ export async function POST(request: Request) {
   if (!message || message.length > MAX.message) {
     return NextResponse.json({ ok: false, error: "Please include project details." }, { status: 400 });
   }
-  if (dueDate && Number.isNaN(dueDate.getTime())) {
+  if (dueBad) {
     return NextResponse.json({ ok: false, error: "Please pick a valid date." }, { status: 400 });
   }
   if (deliveryMethod === "ship" && !(ship.shipStreet && ship.shipCity && ship.shipState && ship.shipPostalCode)) {
@@ -114,17 +108,36 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Light anti-flood: same email within 60s → treat as duplicate; don't re-save/re-email.
+    // Light anti-flood: the SAME request (email + project type + message) within 60s is
+    // a double submit; don't re-save/re-email. A different request, or an order from the
+    // card builder (its own message), still goes through. Checked before Turnstile so a
+    // retry with a spent token still gets its ok.
     const recentDup = await prisma.submission.findFirst({
-      where: { email, createdAt: { gte: new Date(Date.now() - 60_000) } },
+      where: {
+        email,
+        projectType: projectType || null,
+        message,
+        createdAt: { gte: new Date(Date.now() - 60_000) },
+      },
     });
     if (recentDup) return NextResponse.json({ ok: true });
 
-    // Dedupe the person by email; keep a stable Client record they hang submissions off of.
+    // Bot protection (Cloudflare Turnstile) — no-op until configured. Checked after the
+    // field validation above, so a typo doesn't burn the single-use token.
+    if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
+      return NextResponse.json(
+        { ok: false, error: "Verification failed. Please try again." },
+        { status: 400 }
+      );
+    }
+
+    // Dedupe the person by email; keep a stable Client record they hang submissions off
+    // of. A phone fills an empty one; it never overwrites the number on file.
+    const existing = await prisma.client.findUnique({ where: { email }, select: { phone: true } });
     const client = await prisma.client.upsert({
       where: { email },
       create: { name, email, phone },
-      update: phone ? { phone } : {},
+      update: phone && !existing?.phone ? { phone } : {},
     });
 
     const submission = await prisma.submission.create({
@@ -163,7 +176,7 @@ export async function POST(request: Request) {
             data: { driveFolderUrl: folderUrl },
           });
         } else {
-          // createClientFolder only console.errors on failure; put it where the admin
+          // createClientFolder logs only a failed share itself; put every miss where the admin
           // error log can show it, so a missing folder is never silent again.
           await logError(new Error(`Drive folder not created for submission ${submission.id}`), "/api/quote drive folder");
         }

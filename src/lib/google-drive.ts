@@ -2,6 +2,7 @@
 // its link. No-op (returns null) unless GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN are set.
 // Uses the Drive REST API directly (no heavy googleapis dependency).
 import { googleConfigured, getGoogleAccessToken } from "@/lib/google-oauth";
+import { logError } from "@/lib/log-error";
 
 const PARENT = process.env.GOOGLE_DRIVE_PARENT_FOLDER_ID;
 
@@ -36,12 +37,25 @@ export async function createClientFolder(name: string): Promise<string | null> {
       console.error("[drive] folder create failed:", folder);
       return null;
     }
-    // Anyone with the link can add files (so the client can upload artwork).
-    await fetch(`https://www.googleapis.com/drive/v3/files/${folder.id}/permissions`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ role: "writer", type: "anyone" }),
-    });
+    // Anyone with the link can add files (so the client can upload artwork). Without
+    // this the link opens "access denied" for them, so one retry, then no link at all
+    // (callers treat null as "not created" and Sam makes it from the admin).
+    let shared = false;
+    for (let attempt = 0; attempt < 2 && !shared; attempt++) {
+      const permRes = await fetch(`https://www.googleapis.com/drive/v3/files/${folder.id}/permissions`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ role: "writer", type: "anyone" }),
+      });
+      shared = permRes.ok;
+      if (!shared) {
+        await logError(
+          new Error(`Drive share failed (${permRes.status}) for folder ${folder.id}: ${(await permRes.text()).slice(0, 300)}`),
+          "drive createClientFolder"
+        );
+      }
+    }
+    if (!shared) return null;
     return folder.webViewLink ?? `https://drive.google.com/drive/folders/${folder.id}`;
   } catch (e) {
     console.error("[drive] createClientFolder failed:", e);

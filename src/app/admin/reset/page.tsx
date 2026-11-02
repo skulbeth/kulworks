@@ -29,6 +29,11 @@ export default function ResetPasswordPage() {
       setStatus("error");
       return;
     }
+    // Fresh idle clock (IdleLogout), so an old stamp in this browser doesn't sign him
+    // out the moment the new password is saved.
+    try {
+      localStorage.setItem("kw-admin-last-activity", String(Date.now()));
+    } catch {}
     router.push("/admin/");
     router.refresh();
   }

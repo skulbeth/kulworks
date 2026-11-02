@@ -74,30 +74,101 @@ const REMINDER_LEAD_DAYS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 async function syncAutoReminder(projectId: string, title: string, dueDate: Date | null) {
-  // Clear any existing auto-reminder for this project (and its calendar event), then
-  // recreate if there's a due date.
-  const existing = await prisma.activity.findMany({
+  // Update the project's auto-reminder IN PLACE (never delete + recreate), so a reminder
+  // Sam marked Done stays done across saves/restores. It only reopens when the due date
+  // actually moves. Duplicates (from older code) are archived; one row is kept.
+  const autos = await prisma.activity.findMany({
     where: { projectId, type: "REMINDER", body: { startsWith: AUTO_TAG } },
-    select: { calendarEventId: true },
+    select: { id: true, body: true, remindAt: true, done: true, deletedAt: true, calendarEventId: true },
+    orderBy: { createdAt: "desc" },
   });
-  await Promise.all(existing.map((a) => deleteEvent(a.calendarEventId)));
-  await prisma.activity.deleteMany({
-    where: { projectId, type: "REMINDER", body: { startsWith: AUTO_TAG } },
-  });
+  // Prefer a live row over an archived one; newest first otherwise.
+  autos.sort((a, b) => Number(!!a.deletedAt) - Number(!!b.deletedAt));
+  const [keep, ...extras] = dueDate ? autos : [];
+  const now = new Date();
+
+  // No due date (or duplicate rows): take them off the calendar and archive them.
+  // remindAt is cleared so a due date added later always counts as a change and reopens
+  // it. The event id is only dropped once Google confirms the delete.
+  for (const a of dueDate ? extras : autos) {
+    const deleted = await deleteEvent(a.calendarEventId);
+    await prisma.activity.update({
+      where: { id: a.id },
+      data: {
+        deletedAt: a.deletedAt ?? now,
+        remindAt: null,
+        ...(deleted ? { calendarEventId: null } : {}),
+      },
+    });
+  }
   if (!dueDate) return;
+
   const body = `${AUTO_TAG} "${title}" is due ${dueDate.toLocaleDateString("en-US")}`;
   const remindAt = new Date(dueDate.getTime() - REMINDER_LEAD_DAYS * DAY_MS);
-  const activity = await prisma.activity.create({
-    data: { type: "REMINDER", body, remindAt, projectId },
-  });
+
+  if (!keep) {
+    const activity = await prisma.activity.create({
+      data: { type: "REMINDER", body, remindAt, projectId },
+    });
+    const calendarEventId = await syncReminderEvent({
+      activityId: activity.id,
+      body,
+      remindAt,
+      done: false,
+      calendarEventId: null,
+    });
+    if (calendarEventId) {
+      await prisma.activity.update({ where: { id: activity.id }, data: { calendarEventId } });
+    }
+    return;
+  }
+
+  const dateChanged = keep.remindAt?.getTime() !== remindAt.getTime();
+  const closed = keep.done || !!keep.deletedAt;
+  // Done/archived and the date hasn't moved -> stays closed (the title may still update).
+  const reopen = closed && dateChanged;
+  const open = !closed || reopen;
+  if (keep.body !== body || dateChanged) {
+    await prisma.activity.update({
+      where: { id: keep.id },
+      data: { body, remindAt, ...(reopen ? { done: false, deletedAt: null } : {}) },
+    });
+  }
+  // Only touch the calendar when something it shows changed (or a closed reminder still
+  // has an event that an earlier delete failed to remove).
+  const needsCalendar = open
+    ? keep.body !== body || dateChanged || !keep.calendarEventId
+    : !!keep.calendarEventId;
+  if (!needsCalendar) return;
   const calendarEventId = await syncReminderEvent({
+    activityId: keep.id,
     body,
     remindAt,
-    done: false,
-    calendarEventId: null,
+    done: !open,
+    calendarEventId: keep.calendarEventId,
   });
-  if (calendarEventId) {
-    await prisma.activity.update({ where: { id: activity.id }, data: { calendarEventId } });
+  if (calendarEventId !== keep.calendarEventId) {
+    await prisma.activity.update({ where: { id: keep.id }, data: { calendarEventId } });
+  }
+}
+
+// Re-push one reminder to the calendar (after a restore) and persist the event id.
+async function resyncReminder(r: {
+  id: string;
+  body: string;
+  remindAt: Date | null;
+  done: boolean;
+  calendarEventId: string | null;
+}) {
+  const calendarEventId = await syncReminderEvent({
+    activityId: r.id,
+    body: r.body,
+    remindAt: r.remindAt,
+    done: r.done,
+    calendarEventId: r.calendarEventId,
+  });
+  if (calendarEventId !== r.calendarEventId) {
+    await prisma.activity.update({ where: { id: r.id }, data: { calendarEventId } });
   }
 }
 
@@ -161,6 +232,7 @@ export async function convertSubmissionToProject(formData: FormData) {
   // A due date that came in on the form goes on the calendar now, same as an edit would.
   if (project.dueDate) {
     const { dueEventId, deliveryEventId } = await syncProjectEvents({
+      projectId: project.id,
       title: project.title,
       dueDate: project.dueDate,
       deliveryDate: null,
@@ -246,6 +318,7 @@ export async function updateProject(formData: FormData) {
   // Push the due + delivery dates to the Kulworks calendar (best-effort), persisting the
   // event ids so later edits update the same events.
   const { dueEventId, deliveryEventId } = await syncProjectEvents({
+    projectId: id,
     title,
     dueDate,
     deliveryDate,
@@ -563,8 +636,12 @@ export async function completeReminder(formData: FormData) {
     where: { id },
     select: { calendarEventId: true },
   });
-  await deleteEvent(existing?.calendarEventId);
-  await prisma.activity.update({ where: { id }, data: { done: true, calendarEventId: null } });
+  // Keep the event id if Google didn't confirm the delete, so a later sync can retry.
+  const deleted = await deleteEvent(existing?.calendarEventId);
+  await prisma.activity.update({
+    where: { id },
+    data: { done: true, ...(deleted ? { calendarEventId: null } : {}) },
+  });
   revalidateAdmin();
 }
 
@@ -586,10 +663,10 @@ export async function deleteActivity(formData: FormData) {
     where: { id },
     select: { calendarEventId: true },
   });
-  await deleteEvent(existing?.calendarEventId);
+  const deleted = await deleteEvent(existing?.calendarEventId);
   await prisma.activity.update({
     where: { id },
-    data: { deletedAt: new Date(), calendarEventId: null },
+    data: { deletedAt: new Date(), ...(deleted ? { calendarEventId: null } : {}) },
   });
   revalidateAdmin();
 }
@@ -606,24 +683,33 @@ export async function deleteProject(formData: FormData) {
   });
   const reminders = await prisma.activity.findMany({
     where: { projectId: id, calendarEventId: { not: null } },
-    select: { calendarEventId: true },
+    select: { id: true, calendarEventId: true },
   });
-  await Promise.all([
+  // Only ids Google confirmed gone are cleared; the rest are kept for a later retry.
+  const [dueGone, deliveryGone, ...remindersGone] = await Promise.all([
     deleteEvent(proj?.dueEventId),
     deleteEvent(proj?.deliveryEventId),
     ...reminders.map((r) => deleteEvent(r.calendarEventId)),
   ]);
+  const clearedReminderIds = reminders.filter((_, i) => remindersGone[i]).map((r) => r.id);
   // Archive the project + its payments & activities; unlink submissions so they can
   // be re-converted. Nothing is hard-deleted.
   await prisma.payment.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
-  await prisma.activity.updateMany({
-    where: { projectId: id },
-    data: { deletedAt: now, calendarEventId: null },
-  });
+  await prisma.activity.updateMany({ where: { projectId: id }, data: { deletedAt: now } });
+  if (clearedReminderIds.length) {
+    await prisma.activity.updateMany({
+      where: { id: { in: clearedReminderIds } },
+      data: { calendarEventId: null },
+    });
+  }
   await prisma.submission.updateMany({ where: { projectId: id }, data: { projectId: null } });
   await prisma.project.update({
     where: { id },
-    data: { deletedAt: now, dueEventId: null, deliveryEventId: null },
+    data: {
+      deletedAt: now,
+      ...(dueGone ? { dueEventId: null } : {}),
+      ...(deliveryGone ? { deliveryEventId: null } : {}),
+    },
   });
   await logAudit(profile.email, "archive.project", id);
   revalidateAdmin();
@@ -651,18 +737,26 @@ export async function restoreProject(formData: FormData) {
   // Re-push the project's calendar events (removed on archive), then rebuild the auto-reminder.
   const proj = await prisma.project.findUnique({
     where: { id },
-    select: { title: true, dueDate: true, deliveryDate: true },
+    select: { title: true, dueDate: true, deliveryDate: true, dueEventId: true, deliveryEventId: true },
   });
   if (proj) {
+    // Pass any ids the archive couldn't delete, so they're updated rather than duplicated.
     const { dueEventId, deliveryEventId } = await syncProjectEvents({
+      projectId: id,
       title: proj.title,
       dueDate: proj.dueDate,
       deliveryDate: proj.deliveryDate,
-      dueEventId: null,
-      deliveryEventId: null,
+      dueEventId: proj.dueEventId,
+      deliveryEventId: proj.deliveryEventId,
     });
     await prisma.project.update({ where: { id }, data: { dueEventId, deliveryEventId } });
     await syncAutoReminder(id, proj.title, proj.dueDate);
+    // Manual reminders came off the calendar on archive; put the open ones back.
+    const reminders = await prisma.activity.findMany({
+      where: { projectId: id, type: "REMINDER", body: { not: { startsWith: AUTO_TAG } } },
+      select: { id: true, body: true, remindAt: true, done: true, calendarEventId: true },
+    });
+    for (const r of reminders) await resyncReminder(r);
   }
 
   await logAudit(profile.email, "restore.project", id);
@@ -673,7 +767,12 @@ export async function restoreActivity(formData: FormData) {
   const { profile } = await requireProfile();
   const id = s(formData, "id");
   if (!id) return;
-  await prisma.activity.update({ where: { id }, data: { deletedAt: null } });
+  const r = await prisma.activity.update({
+    where: { id },
+    data: { deletedAt: null },
+    select: { id: true, type: true, body: true, remindAt: true, done: true, calendarEventId: true },
+  });
+  if (r.type === "REMINDER") await resyncReminder(r);
   await logAudit(profile.email, "restore.activity", id);
   revalidateAdmin();
 }
@@ -1525,6 +1624,19 @@ export async function markInvoicePaid(formData: FormData) {
   // A plain quote is an estimate with nothing to pay. A quote with a deposit is
   // payable (the client can pay that deposit straight off the quote page).
   if (inv.type === "QUOTE" && !split.hasSplit) return;
+  // Once a quote has its invoice, the deposit is collected there. Checked here too (not
+  // just by hiding the button) so a stale tab can't record the same deposit twice.
+  if (inv.type === "QUOTE") {
+    const converted = await prisma.invoice.count({
+      where: {
+        sourceQuoteId: inv.id,
+        deletedAt: null,
+        status: { not: "VOID" },
+        OR: [{ notes: null }, { NOT: { notes: { startsWith: BALANCE_PREFIX } } }],
+      },
+    });
+    if (converted > 0) redirect(`/admin/projects/${inv.projectId}/?error=already-converted`);
+  }
   // On a split, this document only collects the deposit; the balance is billed on
   // its own invoice. Recording the full total here would count the balance twice.
   const total = split.dueNow;

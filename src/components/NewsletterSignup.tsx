@@ -8,6 +8,13 @@ export default function NewsletterSignup() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileKey, setTurnstileKey] = useState(0);
+
+  // Single-use token, possibly spent by the failed request: remount for a fresh one.
+  function resetTurnstile() {
+    setTurnstileToken(null);
+    setTurnstileKey((k) => k + 1);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,10 +38,12 @@ export default function NewsletterSignup() {
         const data = await res.json().catch(() => ({}));
         setStatus("error");
         setError(data.error ?? "Something went wrong.");
+        resetTurnstile();
       }
     } catch {
       setStatus("error");
       setError("Something went wrong.");
+      resetTurnstile();
     }
   }
 
@@ -73,7 +82,7 @@ export default function NewsletterSignup() {
           {status === "submitting" ? "…" : "Subscribe"}
         </button>
       </div>
-      <TurnstileWidget onToken={setTurnstileToken} size="compact" />
+      <TurnstileWidget key={turnstileKey} onToken={setTurnstileToken} size="compact" />
       {error && <p className="text-xs text-red-600">{error}</p>}
     </form>
   );

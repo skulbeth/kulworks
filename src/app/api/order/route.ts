@@ -1,19 +1,22 @@
 // Receives "Design your cards" builder orders. Validates the chosen template's fields,
-// uploads the attached photos to Supabase Storage, and creates a Submission (so card
-// orders land in the same admin inbox as quote requests, with the art attached).
+// claims the photos the browser already uploaded to Supabase Storage (via
+// /api/upload-url/), and creates a Submission (so card orders land in the same admin
+// inbox as quote requests, with the art attached).
 import { NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
 import { site } from "@/data/site";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { verifyTurnstile } from "@/lib/turnstile";
 import { logError } from "@/lib/log-error";
 import { getCardTemplate } from "@/data/cardTemplates";
 import {
-  putUploadImage,
   signedUploadUrl,
-  MAX_FILE_BYTES,
-  ALLOWED_TYPES,
+  grantValid,
+  checkPendingUpload,
+  claimPendingUpload,
+  pendingExt,
 } from "@/lib/uploads";
 
 export const runtime = "nodejs";
@@ -67,32 +70,22 @@ export async function POST(request: Request) {
       if (val) fieldLines.push(`${f.label}: ${val}`);
     }
 
-    // Photos — one file per slot (keyed img_<slotKey>).
-    const files: { slot: string; file: File }[] = [];
+    // Photos — already in storage; one { path, grant } per slot (img_/grant_<slotKey>).
+    const files: { slot: string; path: string; grant: string }[] = [];
     for (const slot of template.imageSlots) {
-      const f = form.get(`img_${slot.key}`);
-      if (f instanceof File && f.size > 0) {
-        if (f.size > MAX_FILE_BYTES)
-          return NextResponse.json({ ok: false, error: `"${slot.label}" is too large (15 MB max).` }, { status: 400 });
-        if (f.type && !ALLOWED_TYPES.includes(f.type))
-          return NextResponse.json({ ok: false, error: `"${slot.label}" must be an image.` }, { status: 400 });
-        files.push({ slot: slot.label, file: f });
+      const path = str(form.get(`img_${slot.key}`), 300);
+      const grant = str(form.get(`grant_${slot.key}`), 300);
+      if (path) {
+        if (!grantValid("order", path, grant))
+          return NextResponse.json(
+            { ok: false, error: `"${slot.label}" didn't upload. Please attach it again.` },
+            { status: 400 }
+          );
+        files.push({ slot: slot.label, path, grant });
       } else if (slot.required) {
         return NextResponse.json({ ok: false, error: `Please attach "${slot.label}".` }, { status: 400 });
       }
     }
-
-    // Anti-flood: same email within 60s → treat as duplicate.
-    const dup = await prisma.submission.findFirst({
-      where: { email, createdAt: { gte: new Date(Date.now() - 60_000) } },
-    });
-    if (dup) return NextResponse.json({ ok: true });
-
-    const client = await prisma.client.upsert({
-      where: { email },
-      create: { name, email, phone },
-      update: phone ? { phone } : {},
-    });
 
     // Build a readable message for the submissions inbox.
     const message = [
@@ -104,6 +97,45 @@ export async function POST(request: Request) {
     ]
       .filter((l) => l !== null)
       .join("\n");
+
+    // Anti-flood: the SAME order (email + design + every detail) within 60s is a double
+    // submit; say ok, save nothing. A different order, or a quote, still goes through.
+    const dup = await prisma.submission.findFirst({
+      where: {
+        email,
+        projectType: template.name,
+        message,
+        createdAt: { gte: new Date(Date.now() - 60_000) },
+      },
+    });
+    if (dup) return NextResponse.json({ ok: true });
+
+    // Bot protection. Photo grants are only issued after /api/upload-url/ passed
+    // Turnstile (and that spent the token), so an order with photos is already verified.
+    if (!files.length && !(await verifyTurnstile(str(form.get("turnstileToken"), 4000), clientIp(request)))) {
+      return NextResponse.json(
+        { ok: false, error: "Verification failed. Please try again." },
+        { status: 400 }
+      );
+    }
+
+    // Every photo must really be in the bucket (right type and size) before we save.
+    for (const f of files) {
+      if (!(await checkPendingUpload("order", f.path, f.grant))) {
+        return NextResponse.json(
+          { ok: false, error: `"${f.slot}" didn't upload. Please attach it again.` },
+          { status: 400 }
+        );
+      }
+    }
+
+    const existing = await prisma.client.findUnique({ where: { email }, select: { phone: true } });
+    const client = await prisma.client.upsert({
+      where: { email },
+      create: { name, email, phone },
+      // Fill a missing phone, never overwrite the one on file.
+      update: phone && !existing?.phone ? { phone } : {},
+    });
 
     const submission = await prisma.submission.create({
       data: {
@@ -118,17 +150,10 @@ export async function POST(request: Request) {
       },
     });
 
-    // Upload photos under the submission id.
+    // Move the photos under the submission id (same layout as before direct uploads).
     const paths: string[] = [];
-    let i = 0;
-    for (const { file } of files) {
-      const ext =
-        (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 5) ||
-        "jpg";
-      const path = `orders/${submission.id}/${i}.${ext}`;
-      const buf = Buffer.from(await file.arrayBuffer());
-      if (await putUploadImage(path, buf, file.type || "image/jpeg")) paths.push(path);
-      i++;
+    for (const [i, { path }] of files.entries()) {
+      paths.push(await claimPendingUpload(path, `orders/${submission.id}/${i}.${pendingExt(path)}`));
     }
     if (paths.length) {
       await prisma.submission.update({ where: { id: submission.id }, data: { storagePaths: paths } });
@@ -181,7 +206,7 @@ export async function POST(request: Request) {
         text: [
           `Hi ${name},`,
           "",
-          `Thanks for your ${template.name} order! We've got your details and photos and will`,
+          `Thanks for your ${template.name} order! We've got your details${paths.length ? " and photos" : ""} and will`,
           "reach out with next steps, a proof, and a quote.",
           "",
           "Kulworks",

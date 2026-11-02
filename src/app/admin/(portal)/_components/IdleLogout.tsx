@@ -39,7 +39,9 @@ export default function IdleLogout() {
       await supabase.auth.signOut({ scope: "local" });
       // Also hit the logout route so the email-2FA cookie is cleared server-side.
       await fetch("/admin/logout/", { method: "POST" }).catch(() => {});
-      router.push("/admin/login/");
+      // Come back to this same page after signing in again.
+      const here = window.location.pathname + window.location.search;
+      router.push(`/admin/login/?next=${encodeURIComponent(here)}`);
       router.refresh();
     };
 

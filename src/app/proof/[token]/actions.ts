@@ -80,12 +80,44 @@ export async function setProofItemApproved(token: string, itemId: string, approv
   if (!proof) return;
   const item = await itemOf(proof.id, itemId);
   if (!item) return;
-  await prisma.proofItem.update({ where: { id: item.id }, data: { approvedAt: approved ? new Date() : null } });
-  // Taking back one card's approval means the proof as a whole isn't approved anymore.
-  if (!approved && proof.approvedAt) {
-    await prisma.proof.update({ where: { id: proof.id }, data: { approvedAt: null } });
+  const now = new Date();
+  await prisma.proofItem.update({ where: { id: item.id }, data: { approvedAt: approved ? now : null } });
+  if (!approved) {
+    // Taking back one card's approval means the proof as a whole isn't approved anymore.
+    if (proof.approvedAt) await prisma.proof.update({ where: { id: proof.id }, data: { approvedAt: null } });
+  } else if ((await prisma.proofItem.count({ where: { proofId: proof.id, approvedAt: null } })) === 0) {
+    // That was the last card: the proof is approved, same as pressing Approve all.
+    await claimApproval(proof, now);
   }
   revalidatePath(`/proof/${token}`);
+}
+
+type LiveProof = NonNullable<Awaited<ReturnType<typeof liveProof>>>;
+
+// sendMail reports failure as {error} rather than throwing, and {skipped} when there's
+// no API key. Skipped counts as sent only outside production (local dev has no key).
+function mailSent(r: Awaited<ReturnType<typeof sendMail>>): boolean {
+  if ("error" in r && r.error) return false;
+  if ("skipped" in r && r.skipped) return process.env.NODE_ENV !== "production";
+  return true;
+}
+
+/** The client's notes Sam hasn't been sent yet, and the email lines listing them by card. */
+async function unsentNotes(proofId: string) {
+  const pending = await prisma.proofComment.findMany({
+    where: { notifiedAt: null, fromClient: true, item: { proofId } },
+    include: { item: true },
+    orderBy: [{ item: { position: "asc" } }, { createdAt: "asc" }],
+  });
+  const lines: string[] = [];
+  let last = "";
+  for (const c of pending) {
+    const head = `${itemLabel(c.item.key)} (${c.side})`;
+    if (head !== last) lines.push("", head);
+    last = head;
+    lines.push(`- ${c.body}`);
+  }
+  return { pending, lines };
 }
 
 /** Emails Sam every note he hasn't been sent yet, grouped by card. */
@@ -95,27 +127,21 @@ export async function sendProofNotes(token: string) {
   if (!(await rateLimit(`proof-send:${proof.id}`, 10, 60 * 60_000)))
     return { ok: false as const, error: "Your notes were already sent. Try again in a little while." };
 
-  const pending = await prisma.proofComment.findMany({
-    where: { notifiedAt: null, fromClient: true, item: { proofId: proof.id } },
-    include: { item: true },
-    orderBy: [{ item: { position: "asc" } }, { createdAt: "asc" }],
-  });
+  const { pending, lines } = await unsentNotes(proof.id);
   if (!pending.length) return { ok: false as const, error: "There are no new notes to send." };
 
-  const lines: string[] = [];
-  let last = "";
-  for (const c of pending) {
-    const head = `${itemLabel(c.item.key)} (${c.side})`;
-    if (head !== last) lines.push("", head);
-    last = head;
-    lines.push(`- ${c.body}`);
-  }
   const adminUrl = `${site.url.replace(/\/+$/, "")}/admin/proofs/${proof.id}/`;
-  await sendMail({
+  const r = await sendMail({
     to: NOTIFY_TO(),
     subject: `Proof notes: ${proof.title} (${pending.length})`,
     text: [`${pending.length} new note(s) on "${proof.title}".`, ...lines, "", `Review them: ${adminUrl}`].join("\n"),
   });
+  // Not sent → leave them unsent (and still deletable) so Send can be pressed again.
+  if (!mailSent(r))
+    return {
+      ok: false as const,
+      error: "Your notes are saved, but they couldn't be sent just now. Please press Send again in a minute.",
+    };
   await prisma.proofComment.updateMany({
     where: { id: { in: pending.map((c) => c.id) } },
     data: { notifiedAt: new Date() },
@@ -143,26 +169,24 @@ export async function sendProofNotes(token: string) {
   return { ok: true as const, count: pending.length };
 }
 
-export async function approveWholeProof(token: string) {
-  const proof = await liveProof(token);
-  if (!proof) return { ok: false as const, error: "This review link is no longer active." };
-  const open = await prisma.proofComment.count({
-    where: { resolvedAt: null, fromClient: true, item: { proofId: proof.id } },
-  });
-  const now = new Date();
-  // Claim it in one statement: pressing Approve again (or twice quickly) on a proof
-  // that's already approved changes nothing and doesn't email Sam again. New
-  // versions from Sam, or the client un-approving a card, clear approvedAt, so a
-  // real re-approval still gets through.
+/**
+ * The proof became approved (Approve all, or the last card approved one at a time).
+ * Claims it in one statement: approving again (or twice quickly) on a proof that's
+ * already approved changes nothing and doesn't email Sam again. New versions from Sam,
+ * or the client un-approving a card, clear approvedAt, so a real re-approval still
+ * gets through. Any notes the client never pressed Send on ride along in the email.
+ */
+async function claimApproval(proof: LiveProof, now: Date): Promise<boolean> {
   const claimed = await prisma.proof.updateMany({
     where: { id: proof.id, approvedAt: null },
     data: { approvedAt: now },
   });
-  await prisma.proofItem.updateMany({ where: { proofId: proof.id, approvedAt: null }, data: { approvedAt: now } });
-  if (claimed.count === 0) {
-    revalidatePath(`/proof/${token}`);
-    return { ok: true as const };
-  }
+  if (claimed.count === 0) return false;
+
+  const open = await prisma.proofComment.count({
+    where: { resolvedAt: null, fromClient: true, item: { proofId: proof.id } },
+  });
+  const { pending, lines } = await unsentNotes(proof.id);
   after(() =>
     notify({
       kind: "proof_approved",
@@ -174,16 +198,24 @@ export async function approveWholeProof(token: string) {
       dedupeKey: `proof_approved:${proof.id}:${now.toISOString()}`,
     })
   );
-  await sendMail({
+  const r = await sendMail({
     to: NOTIFY_TO(),
     subject: `Proof APPROVED: ${proof.title}`,
     text: [
       `The client approved every card in "${proof.title}".`,
       open ? `Heads up: ${open} note(s) are still open on it.` : "No open notes.",
+      ...(pending.length ? ["", `${pending.length} note(s) they hadn't sent yet:`, ...lines] : []),
       "",
       `Review page: ${publicProofUrl(site.url, proof.token)}`,
     ].join("\n"),
   });
+  // Notes count as sent only if that email went out; otherwise Send still works.
+  if (pending.length && mailSent(r)) {
+    await prisma.proofComment.updateMany({
+      where: { id: { in: pending.map((c) => c.id) } },
+      data: { notifiedAt: new Date() },
+    });
+  }
   await prisma.activity.create({
     data: {
       type: "STATUS_CHANGE",
@@ -192,6 +224,15 @@ export async function approveWholeProof(token: string) {
       clientId: proof.project.clientId,
     },
   });
+  return true;
+}
+
+export async function approveWholeProof(token: string) {
+  const proof = await liveProof(token);
+  if (!proof) return { ok: false as const, error: "This review link is no longer active." };
+  const now = new Date();
+  await prisma.proofItem.updateMany({ where: { proofId: proof.id, approvedAt: null }, data: { approvedAt: now } });
+  await claimApproval(proof, now);
   revalidatePath(`/proof/${token}`);
   return { ok: true as const };
 }

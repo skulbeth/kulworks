@@ -88,7 +88,7 @@ export default async function ProofPage({
       <section className="mx-auto max-w-2xl px-5 pb-12">
         {quote && (
           <p className="mt-2 text-sm">
-            <a href={`/invoice/${quote.token}/`} className="font-semibold text-blue hover:underline">
+            <a href={`/invoice/${quote.token}/`} className="inline-block py-2 font-semibold text-blue hover:underline">
               View your quote ({quote.number}) and payments
             </a>
           </p>

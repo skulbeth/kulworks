@@ -1,6 +1,6 @@
 // A tapped notification lands here: mark it read, then go where it points.
 import { NextResponse } from "next/server";
-import { requireApiProfile } from "@/lib/auth";
+import { getSessionUser, requireApiProfile } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -11,7 +11,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   // Full admin (past 2FA) only; otherwise sign in and come straight back here.
   if (!(await requireApiProfile())) {
     const login = new URL("/admin/login/", base);
-    login.searchParams.set("next", `/admin/notifications/open/${encodeURIComponent(id)}/`);
+    // Signed in but deactivated (or no admin profile): coming back here would only bounce
+    // to login again, forever. Say so instead.
+    const user = await getSessionUser();
+    const profile = user ? await prisma.profile.findUnique({ where: { id: user.id } }) : null;
+    if (user && (!profile || profile.deactivatedAt)) {
+      login.searchParams.set("error", "deactivated");
+    } else {
+      login.searchParams.set("next", `/admin/notifications/open/${encodeURIComponent(id)}/`);
+    }
     return NextResponse.redirect(login);
   }
   const n = await prisma.notification.findUnique({ where: { id } }).catch(() => null);

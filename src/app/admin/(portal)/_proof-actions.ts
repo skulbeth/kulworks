@@ -252,7 +252,11 @@ export async function notifyProofClient(formData: FormData) {
     text,
     replyTo: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
   });
-  if ("error" in r && r.error) return;
+  // sendMail returns {error} instead of throwing, and {skipped} with no API key (fine
+  // in local dev, a failure in production). Either way: say so, record nothing.
+  const failed =
+    ("error" in r && !!r.error) || ("skipped" in r && r.skipped && process.env.NODE_ENV === "production");
+  if (failed) redirect(`/admin/proofs/${proof.id}/?error=email`);
   await prisma.proof.update({ where: { id: proof.id }, data: { clientNotifiedAt: new Date() } });
   await prisma.activity.create({
     data: {
@@ -266,4 +270,5 @@ export async function notifyProofClient(formData: FormData) {
     },
   });
   refresh(proof.id, proof.projectId);
+  redirect(`/admin/proofs/${proof.id}/?sent=1`);
 }

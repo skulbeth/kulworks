@@ -5,7 +5,8 @@
 // print-resolution files never leave this computer.
 //
 // Fronts and backs pair up by file name, the way Dextrous exports them:
-// 05.png + 05_back.png (also "05-back", "05 back"). Re-uploading a name replaces it,
+// 05.png + 05_back.png (also "05-back", "05 back"; "Flashback" is a front), or
+// fronts/05.png + backs/05.png when a folder is picked. Re-uploading a name replaces it,
 // unless the file is identical to the one already up: then it's skipped, so a whole
 // export can be dropped back in and only the edited cards change.
 import { useRef, useState } from "react";
@@ -19,18 +20,42 @@ type Picked = UploadEntry & { file: File; position: number; hash?: string };
 
 const BATCH = 8;
 
-function parse(files: File[]): Picked[] {
-  const picked: Omit<Picked, "position">[] = [];
+// "05_back" / "05-back" / "05 back" (a separator is required, so "Flashback" stays a front).
+const BACK_SUFFIX = /^(.+?)[\s_-]+back$/i;
+
+// Side from the folder the file sits in, when a folder was picked: the nearest
+// folder named back/backs or front/fronts wins.
+function folderSide(file: File): "front" | "back" | null {
+  const dirs = (file.webkitRelativePath || "").split("/").slice(0, -1).reverse();
+  for (const d of dirs) {
+    const n = d.trim().toLowerCase();
+    if (n === "back" || n === "backs") return "back";
+    if (n === "front" || n === "fronts") return "front";
+  }
+  return null;
+}
+
+function parse(files: File[]): { picked: Picked[]; dupes: number } {
+  // One file per card side: two files that land on the same side of the same card
+  // (05.png + 05.jpg, or fronts/05.png + 05.png) would fight over one storage slot.
+  const bySlot = new Map<string, Omit<Picked, "position">>();
+  let dupes = 0;
   for (const file of files) {
     if (!file.type.startsWith("image/")) continue;
-    const base = file.name.replace(/\.[^.]+$/, "");
-    const m = base.match(/^(.*?)[\s_-]*back$/i);
-    picked.push(m && m[1] ? { file, key: m[1].trim(), side: "back" } : { file, key: base.trim(), side: "front" });
+    const base = file.name.replace(/\.[^.]+$/, "").trim();
+    const m = base.match(BACK_SUFFIX);
+    const side = folderSide(file) ?? (m ? "back" : "front");
+    const key = (side === "back" && m ? m[1] : base).trim();
+    if (!key) continue;
+    const slot = `${side}:${key}`; // side has no colon, so this is unambiguous
+    if (bySlot.has(slot)) dupes++;
+    bySlot.set(slot, { file, key, side });
   }
+  const picked = [...bySlot.values()];
   const keys = [...new Set(picked.map((p) => p.key))].sort((a, b) =>
     a.localeCompare(b, undefined, { numeric: true })
   );
-  return picked.map((p) => ({ ...p, position: keys.indexOf(p.key) }));
+  return { picked: picked.map((p) => ({ ...p, position: keys.indexOf(p.key) })), dupes };
 }
 
 async function preview(file: File, widthIn: number): Promise<Blob> {
@@ -82,7 +107,7 @@ export default function ProofUploader({ proofId, widthIn }: { proofId: string; w
   const [busy, setBusy] = useState(false);
 
   const run = async (files: File[]) => {
-    const picked = parse(files);
+    const { picked, dupes } = parse(files);
     if (!picked.length) return setStatus("No images in that selection.");
     setBusy(true);
     const supa = createClient();
@@ -101,7 +126,9 @@ export default function ProofUploader({ proofId, widthIn }: { proofId: string; w
         same += unchanged.length;
         const landed = [];
         for (const p of batch) {
-          const slot = slots.find((s) => s.key === p.key && s.side === p.side);
+          // Take the slot out as it's used, so no two files can share one.
+          const at = slots.findIndex((s) => s.key === p.key && s.side === p.side);
+          const slot = at >= 0 ? slots.splice(at, 1)[0] : undefined;
           if (!slot) {
             if (!unchanged.some((u) => u.key === p.key && u.side === p.side)) failed++;
             continue;
@@ -125,7 +152,16 @@ export default function ProofUploader({ proofId, widthIn }: { proofId: string; w
         `Uploaded ${done} image${done === 1 ? "" : "s"}` +
           (same ? `, ${same} unchanged (skipped)` : "") +
           (failed ? `, ${failed} failed` : "") +
+          (dupes ? `, ${dupes} duplicate name${dupes === 1 ? "" : "s"} ignored (last one used)` : "") +
           "."
+      );
+    } catch (e) {
+      // A server action that throws (session expired, network) would otherwise leave the
+      // last "Checking…" message up forever.
+      console.error(e);
+      setStatus(
+        `Upload stopped: ${e instanceof Error ? e.message : "something went wrong"}. ` +
+          `${done} uploaded before it stopped. Reload the page and try again.`
       );
     } finally {
       setBusy(false);
@@ -139,7 +175,8 @@ export default function ProofUploader({ proofId, widthIn }: { proofId: string; w
     <div className="rounded-lg border border-dashed border-border bg-surface2 p-4">
       <p className="text-sm font-semibold">Add or replace cards</p>
       <p className="mt-1 text-xs text-muted">
-        Pick the exported PNGs (fronts and backs together). 05.png and 05_back.png become one card. They&apos;re
+        Pick the exported PNGs (fronts and backs together). 05.png and 05_back.png (or 05-back, 05 back) become
+        one card, and so do fronts/05.png and backs/05.png in a picked folder. They&apos;re
         shrunk to {PREVIEW_DPI} dpi and watermarked on this computer before upload. You can drop the whole export
         in again after edits: files that haven&apos;t changed are skipped and keep their approval.
       </p>

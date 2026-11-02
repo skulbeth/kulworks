@@ -72,7 +72,7 @@ export async function pushToAll(payload: PushPayload): Promise<number> {
           // Other 4xx (bad/mismatched VAPID key, malformed sub) are permanent too, but give
           // them a few tries before pruning. 5xx / 429 / 408 / timeouts (no status) are the
           // push service having a bad moment: never count those, the device is fine.
-          const permanent4xx = !!status && status >= 400 && status < 500 && status !== 408 && status !== 429;
+          const permanent4xx = !!status && status >= 400 && status < 500 && status !== 408 && status !== 413 && status !== 429; // 413 = our payload, not the device
           if (status === 404 || status === 410 || (permanent4xx && d.failCount >= 4)) {
             await prisma.pushDevice.delete({ where: { id: d.id } }).catch(() => {});
           } else if (permanent4xx) {

@@ -31,14 +31,15 @@ export async function POST(request: Request) {
   // Honeypot — bots fill this hidden field.
   if (str(body.company_website)) return NextResponse.json({ ok: true });
 
-  // Bot protection (Cloudflare Turnstile) — no-op until configured.
-  if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
-    return NextResponse.json({ ok: false, error: "Verification failed." }, { status: 400 });
-  }
-
   const email = str(body.email).toLowerCase();
   if (!isEmail(email)) {
     return NextResponse.json({ ok: false, error: "Please enter a valid email." }, { status: 400 });
+  }
+
+  // Bot protection (Cloudflare Turnstile) — no-op until configured. After the email
+  // check, so a typo doesn't burn the single-use token.
+  if (!(await verifyTurnstile(str(body.turnstileToken), clientIp(request)))) {
+    return NextResponse.json({ ok: false, error: "Verification failed. Please try again." }, { status: 400 });
   }
 
   try {

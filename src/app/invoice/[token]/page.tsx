@@ -11,6 +11,7 @@ import {
   quoteExpired,
   fmtValidDate,
   isBalanceDoc,
+  BALANCE_PREFIX,
 } from "@/lib/invoice";
 import { site, paymentConfig, paypalLink, venmoLink } from "@/data/site";
 import { saveClientAddress, acceptQuote, requestQuoteExtension } from "./actions";
@@ -83,6 +84,21 @@ export default async function InvoiceViewPage({
   // is billed on its own invoice.
   const payAmount = dueNow;
   const depositOnly = hasSplit && inv.status === "PAID";
+  // A paid deposit invoice points on to its balance invoice once that has gone out.
+  const balanceDoc =
+    depositOnly && isInvoice
+      ? await prisma.invoice.findFirst({
+          where: {
+            deletedAt: null,
+            status: { in: ["SENT", "PAID"] },
+            notes: { startsWith: BALANCE_PREFIX },
+            ...(inv.sourceQuoteId
+              ? { sourceQuoteId: inv.sourceQuoteId }
+              : { projectId: inv.projectId, notes: { startsWith: `${BALANCE_PREFIX}${inv.number}.` } }),
+          },
+          select: { token: true, number: true, status: true },
+        })
+      : null;
   const anyPay = pay.paypalMe || pay.venmoUser || pay.zelle;
   const note = `${site.name} ${inv.number}`;
   const addr = [inv.client.street, inv.client.city, inv.client.state, inv.client.postalCode, inv.client.country]
@@ -112,7 +128,7 @@ export default async function InvoiceViewPage({
           <p className="font-bold">{unpaid.kind === "Deposit" ? "Your deposit invoice is ready" : "Your invoice is ready"}: {fmtMoney(unpaid.total)}</p>
           <p className="mt-0.5 text-muted">{unpaid.kind} {unpaid.number}. Pay it online in a minute.</p>
           <a href={`/invoice/${unpaid.token}/`}
-            className="mt-3 inline-block rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
+            className="min-h-11 mt-3 inline-flex items-center rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
             View and pay
           </a>
         </div>
@@ -141,7 +157,7 @@ export default async function InvoiceViewPage({
               <p className="text-muted">Still interested? Ask and I&apos;ll see if this quote can be extended.</p>
               <textarea name="note" rows={2} maxLength={2000} placeholder="Anything changed? (optional)"
                 className={`${fieldCls} mt-2`} />
-              <SubmitButton pendingText="Sending..." className="mt-2 rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
+              <SubmitButton pendingText="Sending..." className="min-h-11 mt-2 rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
                 Ask about extending this quote
               </SubmitButton>
             </form>
@@ -218,6 +234,19 @@ export default async function InvoiceViewPage({
           <div className="flex justify-between border-t border-border pt-1 text-base font-bold">
             <span>Total</span><span className="tabular-nums">{fmtMoney(total)}</span>
           </div>
+          {/* The split, in the part that prints: the pay section with it is hidden on paper. */}
+          {hasSplit && (
+            <>
+              <div className="flex justify-between">
+                <span className="text-muted">{depositOnly ? "Deposit paid" : `Deposit due now (${inv.depositPct}%)`}</span>
+                <span className="tabular-nums">{fmtMoney(dueNow)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted">Balance on completion</span>
+                <span className="tabular-nums">{fmtMoney(balance)}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {inv.notes && (
@@ -227,7 +256,7 @@ export default async function InvoiceViewPage({
         {canAccept && (
           <form action={acceptQuote} className="mt-6 border-t border-border pt-5 print:hidden">
             <input type="hidden" name="token" value={inv.token} />
-            <SubmitButton pendingText="Sending..." className="block w-full rounded-full bg-primary px-6 py-3 text-center font-bold text-black hover:bg-primary-hover">
+            <SubmitButton pendingText="Sending..." className="min-h-11 block w-full rounded-full bg-primary px-6 py-3 text-center font-bold text-black hover:bg-primary-hover">
               Looks good, let&apos;s do it
             </SubmitButton>
             <p className="mt-2 text-center text-xs text-muted">
@@ -249,7 +278,7 @@ export default async function InvoiceViewPage({
                   {d.status === "PAID" ? (
                     <span className="rounded-full bg-green-500/15 px-2.5 py-0.5 text-xs font-bold text-green-600">Paid</span>
                   ) : (
-                    <a href={`/invoice/${d.token}/`} className="ml-auto rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover print:hidden">
+                    <a href={`/invoice/${d.token}/`} className="min-h-11 ml-auto inline-flex items-center rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover print:hidden">
                       Pay now
                     </a>
                   )}
@@ -265,7 +294,7 @@ export default async function InvoiceViewPage({
             <ul className="space-y-2 text-sm">
               {proofs.map((pf) => (
                 <li key={pf.token} className="flex flex-wrap items-center gap-2">
-                  <a href={`/proof/${pf.token}/`} className="font-semibold text-blue hover:underline">{pf.title}</a>
+                  <a href={`/proof/${pf.token}/`} className="inline-block py-2 font-semibold text-blue hover:underline">{pf.title}</a>
                   {pf.approvedAt ? (
                     <span className="rounded-full bg-green-500/15 px-2.5 py-0.5 text-xs font-bold text-green-600">Approved</span>
                   ) : (
@@ -323,8 +352,15 @@ export default async function InvoiceViewPage({
         {inv.status === "PAID" && linkedDocs.length === 0 && (
           <p className="mt-6 rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-center text-sm font-semibold text-green-600">
             {depositOnly
-              ? `Deposit of ${fmtMoney(dueNow)} received. Thank you! The ${fmtMoney(balance)} balance is billed when your order is ready.`
+              ? balanceDoc
+                ? `Deposit of ${fmtMoney(dueNow)} received. Thank you!`
+                : `Deposit of ${fmtMoney(dueNow)} received. Thank you! The ${fmtMoney(balance)} balance is billed when your order is ready.`
               : "Paid in full. Thank you!"}
+            {balanceDoc && (
+              <a href={`/invoice/${balanceDoc.token}/`} className="mt-1 block text-blue hover:underline">
+                {balanceDoc.status === "PAID" ? `Balance ${balanceDoc.number}: paid` : `Pay the balance (${balanceDoc.number})`}
+              </a>
+            )}
           </p>
         )}
         {/* Where it ships. Saves straight onto the client record, so the shop has
@@ -352,7 +388,7 @@ export default async function InvoiceViewPage({
               <input name="phone" defaultValue={inv.client.phone ?? ""} placeholder="Phone (for delivery)"
                 className={`${fieldCls} sm:col-span-2`} autoComplete="tel" />
             </div>
-            <SubmitButton pendingText="Saving..." className="mt-3 rounded-full bg-primary px-6 py-2.5 font-bold text-black hover:bg-primary-hover">
+            <SubmitButton pendingText="Saving..." className="min-h-11 mt-3 rounded-full bg-primary px-6 py-2.5 font-bold text-black hover:bg-primary-hover">
               Save my details
             </SubmitButton>
           </form>

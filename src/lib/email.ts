@@ -6,6 +6,8 @@ const apiKey = process.env.RESEND_API_KEY;
 const FROM = process.env.RESEND_FROM || "Kulworks <onboarding@resend.dev>";
 const resend = apiKey ? new Resend(apiKey) : null;
 
+// Never throws: a failed send returns { error } and is recorded with logError (callers'
+// try/catch blocks never saw these, so failures used to vanish into the console).
 export async function sendMail(opts: {
   to: string | string[];
   subject: string;
@@ -16,18 +18,31 @@ export async function sendMail(opts: {
     console.warn("[email] RESEND_API_KEY not set, skipping:", opts.subject);
     return { skipped: true as const };
   }
-  const { data, error } = await resend.emails.send({
-    from: FROM,
-    to: opts.to,
-    subject: opts.subject,
-    text: opts.text,
-    replyTo: opts.replyTo,
-  });
-  if (error) {
-    console.error("[email] send failed:", error);
-    return { error };
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM,
+      to: opts.to,
+      subject: opts.subject,
+      text: opts.text,
+      replyTo: opts.replyTo,
+    });
+    if (error) {
+      await logMailFailure(error.message || String(error.name), opts.subject);
+      return { error };
+    }
+    return { id: data?.id };
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e);
+    await logMailFailure(message, opts.subject);
+    return { error: { message, name: "send_threw" } };
   }
-  return { id: data?.id };
+}
+
+// log-error imports this file (its alert is an email), so load it lazily. Its own alert
+// is throttled to one per 15 min, so a failing alert can't loop.
+async function logMailFailure(message: string, subject: string) {
+  const { logError } = await import("@/lib/log-error");
+  await logError(new Error(`Email send failed: ${message} (subject: ${subject.slice(0, 120)})`), "sendMail");
 }
 
 // Adds an email to the Resend Audience (newsletter list). Returns the contact id.

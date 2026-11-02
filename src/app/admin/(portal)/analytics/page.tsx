@@ -1,9 +1,9 @@
 import { headers } from "next/headers";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { fmtDateTime, toDateInput } from "@/lib/format";
+import { fmtDateTime, SHOP_TZ } from "@/lib/format";
 import { ipFromHeaders, visitorHash } from "@/lib/visitor";
-import { rememberOwnerHash } from "@/lib/owner-visits";
+import { getOwnerHashes, rememberOwnerHash } from "@/lib/owner-visits";
 
 export const dynamic = "force-dynamic";
 
@@ -48,12 +48,17 @@ export default async function AnalyticsPage({
   const myHash = visitorHash(ipFromHeaders(await headers()));
   // Hide the admin's own visits by DEFAULT; ?showme=1 reveals them.
   const showMe = sp.showme === "1";
-  const excludeMe = !showMe && !!myHash;
   // Remember this admin's hash so background jobs (weekly stats email) can exclude it too.
   if (myHash) await rememberOwnerHash(myHash);
-  // Keep rows with no visitorHash (real visitors can lack one); only drop MY hash.
+  // Every hash the admin has been seen under (phone, desktop, changing IPs), same list
+  // the weekly stats email excludes, not just this device's.
+  const ownerHashes = await getOwnerHashes();
+  if (myHash && !ownerHashes.includes(myHash)) ownerHashes.push(myHash);
+  const ownerSet = new Set(ownerHashes);
+  const excludeMe = !showMe && ownerHashes.length > 0;
+  // Keep rows with no visitorHash (real visitors can lack one); only drop the owner's hashes.
   const notMe = excludeMe
-    ? { OR: [{ visitorHash: { not: myHash } }, { visitorHash: null }] }
+    ? { OR: [{ visitorHash: { notIn: ownerHashes } }, { visitorHash: null }] }
     : {};
   const baseWhere = { ...inRange, ...notMe };
 
@@ -95,8 +100,8 @@ export default async function AnalyticsPage({
       where: { ...baseWhere, sessionId: { not: null } },
       _count: { sessionId: true },
     }),
-    myHash
-      ? prisma.pageView.count({ where: { ...inRange, visitorHash: myHash } })
+    ownerHashes.length
+      ? prisma.pageView.count({ where: { ...inRange, visitorHash: { in: ownerHashes } } })
       : Promise.resolve(0),
     siteTab.key === "all"
       ? prisma.pageView.groupBy({
@@ -166,7 +171,7 @@ export default async function AnalyticsPage({
 
   const uniqueVisitors = visitorGroups.length;
   const uniqueExcludingYou =
-    uniqueVisitors - (myHash && !excludeMe && visitorGroups.some((g) => g.visitorHash === myHash) ? 1 : 0);
+    uniqueVisitors - (excludeMe ? 0 : visitorGroups.filter((g) => g.visitorHash && ownerSet.has(g.visitorHash)).length);
   const sessions = sessionGroups.length;
   const multiPageSessions = sessionGroups.filter((g) => (g._count.sessionId ?? 0) > 1).length;
   const pagesPerSession = sessions ? rangeViews / sessions : 0;
@@ -194,28 +199,32 @@ export default async function AnalyticsPage({
   const sessionsChange = hasPrev ? pctChange(sessions, prevSessions) : null;
   const visitorsChange = hasPrev ? pctChange(uniqueVisitors, prevUnique) : null;
 
-  // Trend: hourly for 24h, otherwise daily.
+  // Trend: hourly for 24h, otherwise daily. Days and hour labels are the shop's
+  // (Central) clock, not the server's UTC one.
   const hourly = range === "24h";
   const buckets: { key: string; label: string; count: number }[] = [];
   if (hourly) {
     for (let i = 23; i >= 0; i--) {
       const d = new Date(now.getTime() - i * HOUR);
-      buckets.push({ key: hourKey(d), label: `${d.getHours()}`, count: 0 });
+      buckets.push({ key: hourKey(d), label: shopHourFmt.format(d), count: 0 });
     }
   } else {
     const spanDays = rangeMs ? Math.min(Math.ceil(rangeMs / DAY), 45) : 30;
+    // Step back whole calendar days from today in Chicago (noon UTC anchors, so a DST
+    // change can't skip or repeat a day).
+    const [y, m, dd] = shopDayKey(now).split("-").map(Number);
     for (let i = spanDays - 1; i >= 0; i--) {
-      const d = new Date(now.getTime() - i * DAY);
+      const d = new Date(Date.UTC(y, m - 1, dd - i, 12));
       buckets.push({
-        key: toDateInput(d),
-        label: d.toLocaleDateString("en-US", { month: "numeric", day: "numeric" }),
+        key: d.toISOString().slice(0, 10),
+        label: `${d.getUTCMonth() + 1}/${d.getUTCDate()}`,
         count: 0,
       });
     }
   }
   const bMap = new Map(buckets.map((b) => [b.key, b]));
   for (const v of trendRows) {
-    const b = bMap.get(hourly ? hourKey(v.createdAt) : toDateInput(v.createdAt));
+    const b = bMap.get(hourly ? hourKey(v.createdAt) : shopDayKey(v.createdAt));
     if (b) b.count++;
   }
   const maxBucket = Math.max(1, ...buckets.map((b) => b.count));
@@ -223,7 +232,7 @@ export default async function AnalyticsPage({
 
   // When people visit: by day of week, in San Antonio (Central) time.
   const dow = [0, 0, 0, 0, 0, 0, 0]; // Sun..Sat
-  const dowFmt = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "America/Chicago" });
+  const dowFmt = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: SHOP_TZ });
   const DOW_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   for (const v of trendRows) {
     const idx = DOW_LABELS.indexOf(dowFmt.format(v.createdAt));
@@ -267,7 +276,7 @@ export default async function AnalyticsPage({
         </div>
         <div className="flex flex-wrap items-center gap-3">
           {/* Hide-my-visits toggle */}
-          {myHash && (
+          {ownerHashes.length > 0 && (
             <Link
               href={hrefWith(range, !showMe)}
               className={`rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${
@@ -502,7 +511,7 @@ export default async function AnalyticsPage({
                 </tr>
               ) : (
                 recent.map((v) => {
-                  const isYou = myHash && v.visitorHash === myHash;
+                  const isYou = !!v.visitorHash && ownerSet.has(v.visitorHash);
                   return (
                     <tr key={v.id} className={`border-t border-border ${isYou ? "bg-blue/5" : ""}`}>
                       <td className="whitespace-nowrap px-3 py-2">{fmtDateTime(v.createdAt)}</td>
@@ -535,8 +544,23 @@ export default async function AnalyticsPage({
   );
 }
 
+// Hour buckets are absolute (Central is a whole-hour offset from UTC, so an hour is the
+// same hour in both); only the label is Central time.
 function hourKey(d: Date): string {
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}`;
+  return String(Math.floor(d.getTime() / HOUR));
+}
+
+const shopHourFmt = new Intl.DateTimeFormat("en-US", { hour: "numeric", hourCycle: "h23", timeZone: SHOP_TZ });
+const shopDayFmt = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: SHOP_TZ,
+});
+
+// "YYYY-MM-DD" of the Chicago calendar day a moment falls on.
+function shopDayKey(d: Date): string {
+  return shopDayFmt.format(d);
 }
 
 function rangeLabel(r: RangeKey): string {

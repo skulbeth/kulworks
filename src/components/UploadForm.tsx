@@ -1,8 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { photoType, putToSignedUrl, requestUploadSlots } from "@/lib/direct-upload";
 
-/** Public trade-show photo uploader. Native photo picker + a few optional fields. */
+// A picked photo, and once it's in storage, its { path, grant }.
+type Item = {
+  file: File;
+  preview: string;
+  up?: { path: string; grant: string };
+  progress?: number;
+  error?: string;
+};
+
+/** Public trade-show photo uploader. Native photo picker + a few optional fields.
+ *  Photos go browser -> storage directly (see lib/direct-upload); the form post is text. */
 export default function UploadForm({
   maxFiles,
   maxSizeMb,
@@ -10,41 +21,111 @@ export default function UploadForm({
   maxFiles: number;
   maxSizeMb: number;
 }) {
-  const [files, setFiles] = useState<File[]>([]);
-  const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
+  const uid = useId();
+  const [items, setItems] = useState<Item[]>([]);
+  const [status, setStatus] = useState<"idle" | "uploading" | "sending" | "done" | "error">("idle");
   const [error, setError] = useState("");
 
   const input =
     "w-full rounded-xl border border-border bg-surface px-4 py-3 text-base focus:border-blue focus:outline-none";
+  const label = "mb-1 block text-sm font-semibold";
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const picked = Array.from(e.target.files ?? []);
-    setFiles((prev) => [...prev, ...picked].slice(0, maxFiles));
+    const picked = Array.from(e.target.files ?? []).map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setItems((prev) => [...prev, ...picked].slice(0, maxFiles));
     e.target.value = "";
+  }
+
+  function patchItem(file: File, patch: Partial<Item>) {
+    setItems((prev) => prev.map((it) => (it.file === file ? { ...it, ...patch } : it)));
   }
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
-    if (!files.length) {
+    if (!items.length) {
       setError("Add at least one photo.");
       return;
     }
-    if (files.some((f) => f.size > maxSizeMb * 1024 * 1024)) {
+    if (items.some((it) => !photoType(it.file))) {
+      setError("Please pick images only (JPG, PNG, WebP, GIF or HEIC).");
+      return;
+    }
+    if (items.some((it) => it.file.size > maxSizeMb * 1024 * 1024)) {
       setError(`Each photo must be under ${maxSizeMb} MB.`);
       return;
     }
     const fd = new FormData(e.currentTarget);
-    fd.delete("files");
-    files.forEach((f) => fd.append("files", f));
+
+    // 1) Photos straight to storage (skipping any that made it on an earlier try).
+    const ups = new Map<File, { path: string; grant: string }>();
+    items.forEach((it) => it.up && ups.set(it.file, it.up));
+    const todo = items.filter((it) => !it.up);
+    if (todo.length) {
+      setStatus("uploading");
+      const got = await requestUploadSlots({
+        kind: "upload",
+        files: todo.map((it) => ({ type: photoType(it.file), size: it.file.size })),
+        company: fd.get("company"), // honeypot
+      });
+      if ("error" in got) {
+        setStatus("error");
+        setError(got.error);
+        return;
+      }
+      const results = await Promise.all(
+        todo.map(async (it, i) => {
+          const slot = got.slots[i];
+          if (!slot) return false;
+          patchItem(it.file, { progress: 0, error: undefined });
+          const ok = await putToSignedUrl(slot.signedUrl, it.file, photoType(it.file), (pct) =>
+            patchItem(it.file, { progress: pct })
+          );
+          if (ok) {
+            ups.set(it.file, { path: slot.path, grant: slot.grant });
+            patchItem(it.file, { up: ups.get(it.file), progress: 100 });
+          } else {
+            patchItem(it.file, { progress: undefined, error: "Didn't upload" });
+          }
+          return ok;
+        })
+      );
+      const failed = todo.flatMap((it, i) => (results[i] ? [] : [items.indexOf(it) + 1]));
+      if (failed.length) {
+        setStatus("error");
+        setError(
+          `Photo ${failed.join(" and ")} didn't upload, so nothing was sent yet. Check your connection and press send again.`
+        );
+        return;
+      }
+    }
+
+    // 2) The details + where the photos landed.
     setStatus("sending");
     try {
-      const res = await fetch("/api/upload/", { method: "POST", body: fd });
+      const res = await fetch("/api/upload/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: fd.get("name"),
+          contact: fd.get("contact"),
+          note: fd.get("note"),
+          company: fd.get("company"),
+          photos: items.map((it) => ups.get(it.file)),
+        }),
+      });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.ok) setStatus("done");
       else {
         setStatus("error");
         setError(data.error || "Upload failed. Please try again.");
+        // The server couldn't find a photo: forget the uploads so the next try re-sends them.
+        if (typeof data.error === "string" && data.error.includes("didn't upload")) {
+          setItems((prev) => prev.map((it) => ({ ...it, up: undefined, progress: undefined })));
+        }
       }
     } catch {
       setStatus("error");
@@ -57,12 +138,12 @@ export default function UploadForm({
       <div className="rounded-2xl border border-green-500/40 bg-green-500/10 p-6 text-center">
         <h2 className="text-xl font-bold text-green-600">Got it. Thanks!</h2>
         <p className="mt-2 text-muted">
-          Your photo{files.length > 1 ? "s" : ""} landed with Kulworks. We&apos;ll take it from here.
+          Your photo{items.length > 1 ? "s" : ""} landed with Kulworks. We&apos;ll take it from here.
         </p>
         <button
           type="button"
           onClick={() => {
-            setFiles([]);
+            setItems([]);
             setStatus("idle");
           }}
           className="mt-5 rounded-full border border-border px-5 py-2 font-semibold hover:border-blue hover:text-blue"
@@ -86,25 +167,39 @@ export default function UploadForm({
       />
 
       <div>
-        <label className="mb-1 block text-sm font-semibold">Photos (up to {maxFiles})</label>
-        <input type="file" accept="image/*" multiple onChange={onPick} className={input} />
+        <label htmlFor={`${uid}-files`} className={label}>
+          Photos (up to {maxFiles})
+        </label>
+        <input id={`${uid}-files`} type="file" accept="image/*" multiple onChange={onPick} className={input} />
       </div>
 
-      {files.length > 0 && (
+      {items.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
-          {files.map((f, i) => (
-            <div key={i} className="relative">
+          {items.map((it, i) => (
+            <div key={it.preview} className="relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={URL.createObjectURL(f)}
+                src={it.preview}
                 alt={`Selected ${i + 1}`}
                 className="h-24 w-full rounded-lg border border-border object-cover"
               />
+              <div className="mt-1 text-xs" aria-live="polite">
+                {it.error ? (
+                  <span className="font-semibold text-red-600">{it.error}</span>
+                ) : it.up ? (
+                  <span className="font-semibold text-green-600">Uploaded</span>
+                ) : it.progress !== undefined ? (
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-border">
+                    <div className="h-full bg-blue" style={{ width: `${it.progress}%` }} />
+                  </div>
+                ) : null}
+              </div>
               <button
                 type="button"
-                onClick={() => setFiles(files.filter((_, idx) => idx !== i))}
+                onClick={() => setItems(items.filter((_, idx) => idx !== i))}
+                disabled={status === "uploading" || status === "sending"}
                 className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-black/80 text-sm font-bold text-white"
-                aria-label="Remove photo"
+                aria-label={`Remove photo ${i + 1}`}
               >
                 ✕
               </button>
@@ -113,27 +208,47 @@ export default function UploadForm({
         </div>
       )}
 
-      <input name="name" placeholder="Your name (optional)" className={input} autoComplete="name" />
-      <input
-        name="contact"
-        placeholder="Email or phone, so we can reach you (optional)"
-        className={input}
-      />
-      <textarea
-        name="note"
-        rows={3}
-        placeholder="What would you like made? (optional)"
-        className={input}
-      />
+      <div>
+        <label htmlFor={`${uid}-name`} className={label}>
+          Your name (optional)
+        </label>
+        <input id={`${uid}-name`} name="name" className={input} autoComplete="name" />
+      </div>
+      <div>
+        <label htmlFor={`${uid}-contact`} className={label}>
+          Email or phone (optional)
+        </label>
+        {/* Takes either, so a plain text box: no email-only keyboard or validation. */}
+        <input
+          id={`${uid}-contact`}
+          name="contact"
+          type="text"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="So we can reach you"
+          className={input}
+        />
+      </div>
+      <div>
+        <label htmlFor={`${uid}-note`} className={label}>
+          What would you like made? (optional)
+        </label>
+        <textarea id={`${uid}-note`} name="note" rows={3} className={input} />
+      </div>
 
-      {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+      {error && (
+        <p role="alert" className="text-sm font-semibold text-red-600">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"
-        disabled={status === "sending"}
+        disabled={status === "uploading" || status === "sending"}
         className="w-full rounded-full bg-primary px-6 py-4 text-lg font-bold text-black hover:bg-primary-hover disabled:opacity-60"
       >
-        {status === "sending" ? "Sending…" : "Send to Kulworks"}
+        {status === "uploading" ? "Uploading photos…" : status === "sending" ? "Sending…" : "Send to Kulworks"}
       </button>
     </form>
   );

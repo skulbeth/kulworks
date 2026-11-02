@@ -4,7 +4,7 @@
 // These intentionally do NOT call requireProfile — that would re-trigger the 2FA gate.
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionUser, twoFactorSatisfied } from "@/lib/auth";
+import { getSessionUser, twoFactorSatisfied, hasTrustedTotp } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
@@ -39,9 +39,9 @@ export async function getMy2faStatus() {
     return { authed: true as const, enabled: false, hasTotp: false, verified: true };
   }
 
-  const supabase = await createClient();
-  const { data: factors } = await supabase.auth.mfa.listFactors();
-  const hasTotp = !!factors?.totp?.some((f) => f.status === "verified");
+  // Only an app set up before this sign-in can clear 2FA (lib/auth.ts), so only then is
+  // it offered. An app added later works from the next sign-in on.
+  const hasTotp = await hasTrustedTotp();
 
   return {
     authed: true as const,
@@ -82,7 +82,7 @@ export async function sendEmail2faCode(opts?: { resend?: boolean }) {
     },
   });
 
-  await sendMail({
+  const sent = await sendMail({
     to: user.email,
     subject: `Your Kulworks admin code: ${code}`,
     text:
@@ -90,6 +90,11 @@ export async function sendEmail2faCode(opts?: { resend?: boolean }) {
       `It expires in 10 minutes. If you didn't try to sign in, you can ignore this email ` +
       `and consider changing your password.`,
   });
+  // A code that never arrived must not be "reused" on the next reload as if it had.
+  if ("error" in sent) {
+    await prisma.twoFactorCode.deleteMany({ where: { userId: user.id } });
+    return { ok: false as const, error: "send" as const };
+  }
 
   return { ok: true as const, reused: false, to: user.email, sentAt: new Date().toISOString() };
 }

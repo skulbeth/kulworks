@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { fmtDate, fmtDateTime } from "@/lib/format";
+import { fmtDate, fmtDateTime, SHOP_TZ } from "@/lib/format";
 import { completeReminder } from "./_actions";
 
 export const dynamic = "force-dynamic";
@@ -47,6 +47,16 @@ export default async function DashboardPage() {
       }),
     ]);
 
+  // Reminder dates are date-only (stored as UTC midnight), so compare calendar days:
+  // the reminder's own date vs. today in Texas. Comparing instants made a reminder for
+  // tomorrow show Overdue from 7pm the evening before.
+  const todayKey = new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: SHOP_TZ,
+  }).format(now);
+  const dayKey = (d: Date) => new Date(d).toISOString().slice(0, 10);
   const daysAgo = (d: Date) => Math.max(0, Math.floor((now.getTime() - new Date(d).getTime()) / DAY));
 
   return (
@@ -102,7 +112,8 @@ export default async function DashboardPage() {
         ) : (
           <ul className="space-y-2">
             {reminders.map((r) => {
-              const overdue = r.remindAt ? new Date(r.remindAt) < now : false;
+              const overdue = r.remindAt ? dayKey(r.remindAt) < todayKey : false;
+              const dueToday = r.remindAt ? dayKey(r.remindAt) === todayKey : false;
               const href = r.projectId
                 ? `/admin/projects/${r.projectId}/`
                 : r.clientId
@@ -120,7 +131,7 @@ export default async function DashboardPage() {
                       overdue ? "bg-red-500/15 text-red-600" : "bg-gold/15 text-gold"
                     }`}
                   >
-                    {overdue ? "Overdue" : "Reminder"}
+                    {overdue ? "Overdue" : dueToday ? "Today" : "Reminder"}
                   </span>
                   <span className="min-w-0 flex-1">
                     {href ? (

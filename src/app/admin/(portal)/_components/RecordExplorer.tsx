@@ -24,8 +24,23 @@ const toneClasses: Record<NonNullable<ExplorerItem["badgeTone"]>, string> = {
   red: "bg-red-500/15 text-red-600",
 };
 
+// A grid cell as a spreadsheet value. Money shows as "$1,234.50" in the grid; the
+// export gets the plain number so Excel/Sheets can sum it. "-" is the grid's
+// placeholder for empty, so it exports as an empty cell.
+const MONEY = /^(-)?\$([\d,]+(?:\.\d+)?)$/;
+function csvValue(v: string): string {
+  const t = (v ?? "").trim();
+  if (t === "-") return "";
+  const m = t.match(MONEY);
+  if (m) return `${m[1] ?? ""}${m[2].replace(/,/g, "")}`;
+  // Formula injection: a cell starting with = + - @ (or tab/CR) is run as a formula
+  // when the file is opened, so quote it into plain text. Plain numbers are safe.
+  if (/^[=+\-@\t\r]/.test(v ?? "") && !/^-?\d+(\.\d+)?$/.test(t)) return `'${v}`;
+  return v ?? "";
+}
+
 function toCsv(columns: ExplorerColumn[], items: ExplorerItem[]): string {
-  const esc = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
+  const esc = (v: string) => `"${csvValue(v).replace(/"/g, '""')}"`;
   const header = columns.map((c) => esc(c.label)).join(",");
   const lines = items.map((it) =>
     columns.map((c) => esc(it.cells[c.key] ?? "")).join(",")
@@ -60,13 +75,16 @@ export default function RecordExplorer({
 
   function exportCsv() {
     const csv = toCsv(columns, filtered);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    // BOM so Excel reads it as UTF-8 (names with accents, "×", "·").
+    const blob = new Blob(["\uFEFF", csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `${filename}.csv`;
     a.click();
-    URL.revokeObjectURL(url);
+    // Revoking right away can cancel the download on some browsers (mobile Safari);
+    // give it time to start.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
   }
 
   const toggle = (id: string) => setOpenId((cur) => (cur === id ? null : id));

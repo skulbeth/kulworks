@@ -141,7 +141,7 @@ export default function ProofViewer({
           <button
             type="button"
             onClick={() => setShowCal(true)}
-            className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue"
+            className="min-h-11 rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue"
           >
             {calibrated ? "Adjust real size" : "Set real size"}
           </button>
@@ -149,7 +149,7 @@ export default function ProofViewer({
             type="button"
             disabled={pending || unsent === 0}
             onClick={send}
-            className="rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue disabled:opacity-40"
+            className="min-h-11 rounded-full border border-border px-4 py-2 text-sm font-semibold hover:border-blue hover:text-blue disabled:opacity-40"
           >
             Send my notes{unsent ? ` (${unsent})` : ""}
           </button>
@@ -157,7 +157,7 @@ export default function ProofViewer({
             type="button"
             disabled={pending}
             onClick={approveAll}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover disabled:opacity-40"
+            className="min-h-11 rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover disabled:opacity-40"
           >
             Approve all
           </button>
@@ -178,7 +178,7 @@ export default function ProofViewer({
           <button
             type="button"
             onClick={() => setOnlyUpdated((v) => !v)}
-            className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover"
+            className="min-h-11 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover"
           >
             {onlyUpdated ? "Show all cards" : "Show only updated"}
           </button>
@@ -409,23 +409,23 @@ function CardViewer({
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3" data-backdrop="1">
         <div className="flex w-full flex-wrap items-center justify-between gap-2 text-white">
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => move(-1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Previous card">←</button>
+            <button type="button" onClick={() => move(-1)} className="min-h-11 rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Previous card">←</button>
             {/* Position, not the file key: the key is an export index ("26") that
                 rarely matches the number printed on the card ("22"). */}
             <span className="text-sm font-semibold">Card {index + 1} of {count}</span>
             {item.updated && <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-black">Updated</span>}
-            <button type="button" onClick={() => move(1)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Next card">→</button>
+            <button type="button" onClick={() => move(1)} className="min-h-11 rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Next card">→</button>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {item.front && item.back && (
-              <button type="button" onClick={() => setSide((s) => (s === "front" ? "back" : "front"))} className="rounded-full bg-white px-4 py-1.5 text-sm font-bold text-black">
+              <button type="button" onClick={() => setSide((s) => (s === "front" ? "back" : "front"))} className="min-h-11 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-black">
                 Flip to {side === "front" ? "back" : "front"}
               </button>
             )}
-            <button type="button" onClick={() => setFit((f) => !f)} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20">
+            <button type="button" onClick={() => setFit((f) => !f)} className="min-h-11 rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20">
               {fit ? "Real size" : "Fit to screen"}
             </button>
-            <button type="button" onClick={close} className="rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Close">✕</button>
+            <button type="button" onClick={close} className="min-h-11 rounded-full bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20" aria-label="Close">✕</button>
           </div>
         </div>
 
@@ -441,7 +441,7 @@ function CardViewer({
           {!calibrated && !fit && (
             <>
               {" · "}
-              <button type="button" onClick={onCalibrate} className="underline">set real size</button>
+              <button type="button" onClick={onCalibrate} className="inline-block py-2 underline">set real size</button>
             </>
           )}
         </p>
@@ -502,12 +502,12 @@ function CardViewer({
               type="button"
               disabled={pending || !draft.trim()}
               onClick={() => save()}
-              className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover disabled:opacity-40"
+              className="min-h-11 rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover disabled:opacity-40"
             >
               Add note
             </button>
             {pin && (
-              <button type="button" onClick={() => setPin(null)} className="text-xs text-muted hover:underline">
+              <button type="button" onClick={() => setPin(null)} className="py-2 text-xs text-muted hover:underline">
                 Clear the mark
               </button>
             )}
@@ -517,7 +517,7 @@ function CardViewer({
             <div className="mt-3 rounded-lg border border-primary bg-primary/10 p-3" role="alert">
               <p className="font-semibold">You have a note you haven&apos;t added yet. Add it before you go?</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                <button type="button" disabled={pending} onClick={() => save(leaving)} className="rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover disabled:opacity-40">
+                <button type="button" disabled={pending} onClick={() => save(leaving)} className="min-h-11 rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover disabled:opacity-40">
                   Add note
                 </button>
                 <button
@@ -529,7 +529,7 @@ function CardViewer({
                     setLeaving(null);
                     go();
                   }}
-                  className="rounded-full border border-border px-4 py-1.5 text-xs font-semibold"
+                  className="min-h-11 rounded-full border border-border px-4 py-1.5 text-xs font-semibold"
                 >
                   Discard it
                 </button>
@@ -625,14 +625,14 @@ function Calibrator({ ppi, onSave, onClose }: { ppi: number; onSave: (v: number)
           aria-label="Screen size adjustment"
         />
         <div className="mt-4 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-full border border-border px-4 py-2 text-sm font-semibold">Cancel</button>
+          <button type="button" onClick={onClose} className="min-h-11 rounded-full border border-border px-4 py-2 text-sm font-semibold">Cancel</button>
           <button
             type="button"
             onClick={() => {
               onSave(Math.min(v, maxV));
               onClose();
             }}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"
+            className="min-h-11 rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"
           >
             Save
           </button>

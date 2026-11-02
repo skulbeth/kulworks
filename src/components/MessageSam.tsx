@@ -36,7 +36,7 @@ export default function MessageSam({
           {status === "empty" && <p className="mt-1 text-sm text-red-600">Type a message first.</p>}
           <SubmitButton
             pendingText="Sending..."
-            className="mt-2 rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"
+            className="min-h-11 mt-2 rounded-full bg-primary px-5 py-2 text-sm font-bold text-black hover:bg-primary-hover"
           >
             Send message
           </SubmitButton>

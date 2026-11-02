@@ -128,10 +128,21 @@ const sameMoney = (a: number, b: number) => Math.abs(a - b) < 0.005;
  * them. `amountOk` is false only for a memo match whose amount doesn't fit.
  */
 export async function matchReceipt(r: Receipt) {
-  const open = await prisma.invoice.findMany({
+  const sent = await prisma.invoice.findMany({
     where: { deletedAt: null, status: "SENT", OR: [{ type: "INVOICE" }, { type: "QUOTE", depositPct: { gt: 0 } }] },
     include: { items: true, client: true },
   });
+  // A quote that already has its invoice is paid through that invoice. Counting both
+  // would make every receipt on a converted job "matches Q-x or INV-y".
+  const converted = new Set(
+    (
+      await prisma.invoice.findMany({
+        where: { deletedAt: null, status: { not: "VOID" }, sourceQuoteId: { in: sent.map((i) => i.id) } },
+        select: { sourceQuoteId: true },
+      })
+    ).map((c) => c.sourceQuoteId)
+  );
+  const open = sent.filter((i) => !(i.type === "QUOTE" && converted.has(i.id)));
   // Payments are recorded per project, not per doc.
   const sums = await prisma.payment.groupBy({
     by: ["projectId"],
@@ -280,8 +291,16 @@ export async function maybeSweepInbox(force = false): Promise<{ ran: boolean; ch
     const todo = ids.filter((id) => !seen.has(id)).reverse().slice(0, FETCH_MAX);
     for (const id of todo) {
       if (Date.now() - now > RUN_BUDGET_MS) break;
-      const m = await fetchMsg(token, id);
-      await handleMessage(m);
+      // One bad message (a Gmail hiccup, a notify error) is logged and skipped for this
+      // run, so it can't block everything behind it. It stays unseen and is retried next
+      // run (until it ages out of the 3-day window).
+      try {
+        const m = await fetchMsg(token, id);
+        await handleMessage(m);
+      } catch (e) {
+        console.error("[inbox-sweep] message", id, e);
+        continue;
+      }
       done.unshift(id);
       // Save as we go: a timeout mid-run must not replay (or forever redo) the lot.
       if (done.length % 10 === 0) await saveSeen();

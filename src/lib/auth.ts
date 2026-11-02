@@ -32,7 +32,17 @@ async function trustedAal2(): Promise<boolean> {
   const supabase = await createClient();
   const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
   if (aal?.currentLevel !== "aal2") return false;
-  const firstFactorTs = (aal.currentAuthenticationMethods ?? [])
+  return hasTrustedTotp();
+}
+
+// Is there an authenticator app this session may use? Only one set up before this
+// session's password sign-in (see above). The login page offers the app option only
+// when this is true; offering it otherwise would accept the code and then bounce him
+// straight back to login, with no message, forever.
+export async function hasTrustedTotp(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const firstFactorTs = (aal?.currentAuthenticationMethods ?? [])
     .filter((m): m is { method: string; timestamp: number } => typeof m === "object" && m !== null)
     .filter((m) => !/totp|mfa/i.test(m.method))
     .map((m) => m.timestamp * 1000);
