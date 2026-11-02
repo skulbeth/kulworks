@@ -18,6 +18,7 @@ import {
 import InvoiceEditor from "../../_components/InvoiceEditor";
 import { computeTotals, docLabel, splitDeposit } from "@/lib/invoice";
 import { site } from "@/data/site";
+import { docViews, invoicePath, proofPath, type DocViews } from "@/lib/doc-views";
 import {
   TextField,
   TextArea,
@@ -84,6 +85,12 @@ export default async function ProjectDetailPage({
     },
   });
   if (!project) notFound();
+
+  // When the client opened each quote/invoice and proof page (admin views excluded).
+  const views = await docViews([
+    ...project.invoices.map((i) => invoicePath(i.token)),
+    ...project.proofs.map((p) => proofPath(p.token)),
+  ]);
 
   // Shared artwork folder, if the submission that started this project made one.
   const driveFolderUrl = project.submissions[0]?.driveFolderUrl ?? null;
@@ -249,6 +256,7 @@ export default async function ProjectDetailPage({
                       View →
                     </a>
                   </div>
+                  {inv.status !== "DRAFT" && <ViewedLine v={views.get(invoicePath(inv.token))} />}
 
                   {!voided && (
                     <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
@@ -388,6 +396,9 @@ export default async function ProjectDetailPage({
                     {pf.approvedAt ? " · APPROVED" : ""}
                   </span>
                   <CopyButton text={url} label="Copy link" />
+                  <div className="w-full">
+                    <ViewedLine v={views.get(proofPath(pf.token))} />
+                  </div>
                 </li>
               );
             })}
@@ -507,5 +518,18 @@ export default async function ProjectDetailPage({
         </ConfirmButton>
       </form>
     </div>
+  );
+}
+
+// "Viewed Nov 2, 3:14 PM · Colorado Springs · mobile (x3)" or "Not opened yet".
+function ViewedLine({ v }: { v: DocViews | undefined }) {
+  if (!v) return <p className="mt-1 text-xs text-muted">Not opened yet</p>;
+  const where = [v.city, v.device].filter(Boolean).join(" · ");
+  return (
+    <p className="mt-1 text-xs font-semibold text-green-600">
+      Viewed {fmtDateTime(v.last)}
+      {where ? ` · ${where}` : ""}
+      {v.count > 1 ? ` (x${v.count}, first ${fmtDateTime(v.first)})` : ""}
+    </p>
   );
 }

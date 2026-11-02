@@ -21,7 +21,15 @@ export default function SiteFrame({
   const bare =
     (pathname?.startsWith("/admin") ?? false) || (pathname?.startsWith("/invoice") ?? false);
 
-  if (bare) return <>{children}</>;
+  // Quote/invoice pages still log a view (not /admin): it's how Sam sees a client opened one.
+  if (bare) {
+    return (
+      <>
+        {pathname?.startsWith("/invoice") && <PageTracker />}
+        {children}
+      </>
+    );
+  }
 
   return (
     <>

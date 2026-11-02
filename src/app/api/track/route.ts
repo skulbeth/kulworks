@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 import { visitorHash } from "@/lib/visitor";
 import { logError } from "@/lib/log-error";
+import { getSessionUser } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -99,6 +100,16 @@ export async function POST(request: Request) {
 
     if (typeof path !== "string" || !path) {
       return NextResponse.json({ ok: false }, { status: 400, headers: cors });
+    }
+
+    // Client document pages: Sam checking a quote or proof from the admin must not
+    // read as "the client opened it". Only these paths pay for the session lookup.
+    if (/^\/(invoice|proof)\//.test(path)) {
+      try {
+        if (await getSessionUser()) return ok();
+      } catch {
+        /* no session store available, count it */
+      }
     }
 
     const from: Site | "unknown" = SITES.includes(site as Site) ? (site as Site) : "unknown";
