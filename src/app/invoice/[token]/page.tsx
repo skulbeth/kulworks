@@ -14,6 +14,7 @@ import {
 import { site, paymentConfig, paypalLink, venmoLink } from "@/data/site";
 import { saveClientAddress, acceptQuote, requestQuoteExtension } from "./actions";
 import PrintButton from "./PrintButton";
+import SubmitButton from "./SubmitButton";
 
 export const dynamic = "force-dynamic";
 // Private document — never index it.
@@ -56,8 +57,17 @@ export default async function InvoiceViewPage({
   // Without one, a quote stays an estimate and only invoices can be paid.
   const { dueNow, balance, hasSplit } = splitDeposit(total, inv.depositPct);
   const live = inv.status !== "PAID" && inv.status !== "VOID";
-  const linkedDocs = linked.map((d) => ({ ...d, total: computeTotals(d.items, d.taxRate).total }));
+  // What each linked invoice actually collects: a split invoice is only its deposit
+  // (the balance goes out as its own invoice later).
+  const linkedDocs = linked.map((d) => {
+    const sp = splitDeposit(computeTotals(d.items, d.taxRate).total, d.depositPct);
+    const kind = sp.hasSplit ? "Deposit" : d.notes?.startsWith("Balance for ") ? "Balance" : "Invoice";
+    return { ...d, total: sp.dueNow, kind };
+  });
   const unpaid = linkedDocs.find((d) => d.status !== "PAID");
+  // Deposit in, balance not billed yet: not "paid in full".
+  const awaitingBalance =
+    linkedDocs.some((d) => d.kind === "Deposit") && !linkedDocs.some((d) => d.kind === "Balance");
   // Once an invoice exists for this quote, paying happens there, not off the quote.
   const showPay = live && (isInvoice || hasSplit) && linkedDocs.length === 0;
   const isQuoteLive = !isInvoice && live && inv.status !== "DRAFT";
@@ -90,16 +100,21 @@ export default async function InvoiceViewPage({
       {/* Where things stand, newest first: an invoice to pay beats "you accepted". */}
       {unpaid ? (
         <div className={`${banner} border-blue/40 bg-blue/10`}>
-          <p className="font-bold">Your invoice is ready: {fmtMoney(unpaid.total)}</p>
-          <p className="mt-0.5 text-muted">{unpaid.number}. Pay it online in a minute.</p>
+          <p className="font-bold">{unpaid.kind === "Deposit" ? "Your deposit invoice is ready" : "Your invoice is ready"}: {fmtMoney(unpaid.total)}</p>
+          <p className="mt-0.5 text-muted">{unpaid.kind} {unpaid.number}. Pay it online in a minute.</p>
           <a href={`/invoice/${unpaid.token}/`}
             className="mt-3 inline-block rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
             View and pay
           </a>
         </div>
       ) : linkedDocs.length > 0 ? (
-        <div className={`${banner} border-green-500/40 bg-green-500/10 font-semibold text-green-600`}>
-          Paid in full. Thank you!
+        <div className={`${banner} border-green-500/40 bg-green-500/10`}>
+          <p className="font-bold text-green-600">
+            {awaitingBalance ? "Deposit received. Thank you!" : "Paid in full. Thank you!"}
+          </p>
+          {awaitingBalance && (
+            <p className="mt-0.5 text-muted">The balance invoice will show up right here when your order is ready.</p>
+          )}
         </div>
       ) : inv.acceptedAt && isQuoteLive ? (
         <div className={`${banner} border-green-500/40 bg-green-500/10`}>
@@ -117,9 +132,9 @@ export default async function InvoiceViewPage({
               <p className="text-muted">Still interested? Ask and I&apos;ll see if this quote can be extended.</p>
               <textarea name="note" rows={2} maxLength={2000} placeholder="Anything changed? (optional)"
                 className={`${fieldCls} mt-2`} />
-              <button className="mt-2 rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
+              <SubmitButton pendingText="Sending..." className="mt-2 rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
                 Ask about extending this quote
-              </button>
+              </SubmitButton>
             </form>
           )}
         </div>
@@ -203,9 +218,9 @@ export default async function InvoiceViewPage({
         {canAccept && (
           <form action={acceptQuote} className="mt-6 border-t border-border pt-5 print:hidden">
             <input type="hidden" name="token" value={inv.token} />
-            <button className="block w-full rounded-full bg-primary px-6 py-3 text-center font-bold text-black hover:bg-primary-hover">
+            <SubmitButton pendingText="Sending..." className="block w-full rounded-full bg-primary px-6 py-3 text-center font-bold text-black hover:bg-primary-hover">
               Looks good, let&apos;s do it
-            </button>
+            </SubmitButton>
             <p className="mt-2 text-center text-xs text-muted">
               This just lets me know you&apos;re ready. Nothing is charged, and payment only comes after you approve your sample.
             </p>
@@ -219,6 +234,7 @@ export default async function InvoiceViewPage({
             <ul className="space-y-2 text-sm">
               {linkedDocs.map((d) => (
                 <li key={d.id} className="flex flex-wrap items-center gap-2">
+                  <span className="text-muted">{d.kind}</span>
                   <span className="font-semibold">{d.number}</span>
                   <span className="tabular-nums">{fmtMoney(d.total)}</span>
                   {d.status === "PAID" ? (
@@ -325,9 +341,9 @@ export default async function InvoiceViewPage({
               <input name="phone" defaultValue={inv.client.phone ?? ""} placeholder="Phone (for delivery)"
                 className={`${fieldCls} sm:col-span-2`} autoComplete="tel" />
             </div>
-            <button className="mt-3 rounded-full bg-primary px-6 py-2.5 font-bold text-black hover:bg-primary-hover">
+            <SubmitButton pendingText="Saving..." className="mt-3 rounded-full bg-primary px-6 py-2.5 font-bold text-black hover:bg-primary-hover">
               Save my details
-            </button>
+            </SubmitButton>
           </form>
         )}
 

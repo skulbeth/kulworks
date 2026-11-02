@@ -1472,7 +1472,10 @@ export async function markInvoicePaid(formData: FormData) {
   const inv = await prisma.invoice.findUnique({ where: { id }, include: { items: true } });
   if (!inv) return;
 
-  const { total } = computeTotals(inv.items, inv.taxRate);
+  const { total: fullTotal } = computeTotals(inv.items, inv.taxRate);
+  // On a split, this document only collects the deposit; the balance is billed on
+  // its own invoice. Recording the full total here would count the balance twice.
+  const total = splitDeposit(fullTotal, inv.depositPct).dueNow;
   const method = s(formData, "method") ?? "OTHER";
   await prisma.invoice.update({ where: { id }, data: { status: "PAID", paidAt: new Date() } });
   await prisma.payment.create({
