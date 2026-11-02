@@ -5,9 +5,15 @@
 // These are reachable without a login, so the unguessable invoice token IS the
 // credential: the same thing that lets someone read the document lets them fill
 // in the shipping address on it. Nothing here exposes anything a holder of the
-// link cannot already see, and nothing here touches money or status.
+// link cannot already see, and nothing here touches money. Accepting a quote or
+// asking to extend one only records the request and emails Sam.
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { sendMail } from "@/lib/email";
+import { computeTotals, quoteExpired, fmtValidDate } from "@/lib/invoice";
+import { site } from "@/data/site";
+
+const NOTIFY_TO = () => process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com";
 
 function clean(fd: FormData, k: string, max = 120): string | null {
   const v = fd.get(k);
@@ -58,5 +64,87 @@ export async function saveClientAddress(formData: FormData) {
   });
 
   revalidatePath(`/invoice/${token}`);
+  revalidatePath("/admin", "layout");
+}
+
+async function liveQuote(fd: FormData) {
+  const token = clean(fd, "token", 200);
+  if (!token) return null;
+  const q = await prisma.invoice.findUnique({
+    where: { token },
+    include: { client: true, project: true, items: true },
+  });
+  if (!q || q.deletedAt || q.type !== "QUOTE" || q.status === "VOID" || q.status === "DRAFT") return null;
+  return q;
+}
+
+// "Looks good, let's do it." Once per quote; a second press changes nothing.
+export async function acceptQuote(formData: FormData) {
+  const q = await liveQuote(formData);
+  if (!q || q.acceptedAt || quoteExpired(q.validUntil)) return;
+  const { total } = computeTotals(q.items, q.taxRate);
+  const url = `${site.url}/invoice/${q.token}/`;
+
+  await prisma.invoice.update({ where: { id: q.id }, data: { acceptedAt: new Date() } });
+  if (q.project.stage === "LEAD" || q.project.stage === "QUOTED") {
+    await prisma.project.update({ where: { id: q.projectId }, data: { stage: "APPROVED" } });
+  }
+  await prisma.activity.create({
+    data: {
+      type: "STATUS_CHANGE",
+      body: `Client accepted ${q.number} ($${total.toFixed(2)}) from the quote page.`,
+      clientId: q.clientId,
+      projectId: q.projectId,
+    },
+  });
+  await sendMail({
+    to: NOTIFY_TO(),
+    replyTo: q.client.email,
+    subject: `Quote ACCEPTED: ${q.number} ${q.client.name} $${total.toFixed(2)}`,
+    text: [
+      `${q.client.name} (${q.client.email}) pressed "Looks good" on ${q.number} for "${q.project.title}".`,
+      `Total: $${total.toFixed(2)}`,
+      "",
+      `Quote page: ${url}`,
+      "Reply to this email to answer them directly.",
+    ].join("\n"),
+  });
+
+  revalidatePath(`/invoice/${q.token}`);
+  revalidatePath("/admin", "layout");
+}
+
+// Expired quote: "can you take another look?" Records it and emails Sam; he
+// extends it from the admin. Once a day at most, so a refresh can't spam him.
+export async function requestQuoteExtension(formData: FormData) {
+  const q = await liveQuote(formData);
+  if (!q || !quoteExpired(q.validUntil)) return;
+  if (q.extendRequestedAt && Date.now() - q.extendRequestedAt.getTime() < 24 * 3600_000) return;
+  const note = clean(formData, "note", 2000);
+  const { total } = computeTotals(q.items, q.taxRate);
+
+  await prisma.invoice.update({ where: { id: q.id }, data: { extendRequestedAt: new Date() } });
+  await prisma.activity.create({
+    data: {
+      type: "NOTE",
+      body: `Client asked to extend expired ${q.number}${note ? `: "${note}"` : "."}`,
+      clientId: q.clientId,
+      projectId: q.projectId,
+    },
+  });
+  await sendMail({
+    to: NOTIFY_TO(),
+    replyTo: q.client.email,
+    subject: `Extend quote? ${q.number} ${q.client.name}`,
+    text: [
+      `${q.client.name} (${q.client.email}) wants to revisit ${q.number} for "${q.project.title}" ($${total.toFixed(2)}).`,
+      q.validUntil ? `It expired after ${fmtValidDate(q.validUntil)}.` : "",
+      note ? `\nTheir note:\n${note}\n` : "",
+      `Extend it from the project page in the admin, then let them know.`,
+      `Quote page: ${site.url}/invoice/${q.token}/`,
+    ].filter(Boolean).join("\n"),
+  });
+
+  revalidatePath(`/invoice/${q.token}`);
   revalidatePath("/admin", "layout");
 }

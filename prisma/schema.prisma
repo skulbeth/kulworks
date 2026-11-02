@@ -362,12 +362,21 @@ model Invoice {
   dueDate    DateTime?
   issuedAt   DateTime? // when it was sent
   paidAt     DateTime?
+  // Quotes only: past this date the client page says the quote expired and offers
+  // "ask to extend" instead of the accept button. Set when the quote is first sent.
+  validUntil        DateTime?
+  acceptedAt        DateTime? // client pressed "Looks good, let's do it" on the quote page
+  extendRequestedAt DateTime? // client asked for an expired quote to be extended
+  // Invoices made from a quote (convert, or the balance half of a split) point back
+  // to it, so the quote link stays the client's one page for the whole job.
+  sourceQuoteId     String?
   deletedAt  DateTime? // soft delete — archived, never hard-deleted
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   items      InvoiceItem[]
 
   @@index([projectId])
+  @@index([sourceQuoteId])
   @@index([clientId])
   @@index([status])
   @@index([createdAt])

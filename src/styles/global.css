@@ -179,3 +179,23 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Printing / "Save as PDF" (the quote + invoice pages): always the light palette on
+   white paper, whatever theme the client is browsing in. */
+@media print {
+  :root,
+  :root[data-theme="dark"] {
+    --color-background: #ffffff;
+    --color-surface: #ffffff;
+    --color-surface-2: #ffffff;
+    --color-border: #cfcac0;
+    --color-foreground: #141a2b;
+    --color-muted: #4c5468;
+    --color-blue: #0f5aa8;
+  }
+  html,
+  body {
+    background: #ffffff !important;
+    color: #141a2b;
+  }
+}

@@ -41,3 +41,26 @@ export function fmtUnitPrice(n: number): string {
   }
   return `$${n.toFixed(6).replace(/0+$/, "").replace(/\.$/, "")}`;
 }
+
+/** How long a quote holds once it is sent. Sam can extend any quote from the admin. */
+export const QUOTE_VALID_DAYS = 7;
+
+// Quote dates are stored as UTC midnight of the calendar day (what fmtDate shows),
+// and a quote stays good through the end of that day in Texas.
+const SHOP_UTC_OFFSET_H = 6;
+
+/** The calendar day QUOTE_VALID_DAYS from today (shop time), as UTC midnight. */
+export function defaultValidUntil(now = new Date()): Date {
+  const shop = new Date(now.getTime() - SHOP_UTC_OFFSET_H * 3600_000);
+  return new Date(Date.UTC(shop.getUTCFullYear(), shop.getUTCMonth(), shop.getUTCDate() + QUOTE_VALID_DAYS));
+}
+
+export function quoteExpired(validUntil: Date | null | undefined, now = new Date()): boolean {
+  if (!validUntil) return false;
+  return now.getTime() > validUntil.getTime() + (24 + SHOP_UTC_OFFSET_H) * 3600_000;
+}
+
+/** Valid-until dates are calendar days; format them in UTC so the day never shifts. */
+export function fmtValidDate(d: Date): string {
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+}

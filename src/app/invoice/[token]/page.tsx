@@ -2,9 +2,18 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { fmtMoney, fmtDate } from "@/lib/format";
-import { computeTotals, lineAmount, docLabel, splitDeposit, fmtUnitPrice } from "@/lib/invoice";
+import {
+  computeTotals,
+  lineAmount,
+  docLabel,
+  splitDeposit,
+  fmtUnitPrice,
+  quoteExpired,
+  fmtValidDate,
+} from "@/lib/invoice";
 import { site, paymentConfig, paypalLink, venmoLink } from "@/data/site";
-import { saveClientAddress } from "./actions";
+import { saveClientAddress, acceptQuote, requestQuoteExtension } from "./actions";
+import PrintButton from "./PrintButton";
 
 export const dynamic = "force-dynamic";
 // Private document — never index it.
@@ -22,6 +31,23 @@ export default async function InvoiceViewPage({
   });
   if (!inv || inv.deletedAt) notFound();
 
+  // The quote link is the client's one page for the job: once an invoice made from
+  // it goes out (convert, or each half of a split), it shows up here to pay, and
+  // the project's proofs are linked too. Drafts stay hidden until Sam sends them.
+  const linked =
+    inv.type === "QUOTE"
+      ? await prisma.invoice.findMany({
+          where: { sourceQuoteId: inv.id, deletedAt: null, status: { in: ["SENT", "PAID"] } },
+          include: { items: true },
+          orderBy: { createdAt: "asc" },
+        })
+      : [];
+  const proofs = await prisma.proof.findMany({
+    where: { projectId: inv.projectId, active: true },
+    orderBy: { createdAt: "asc" },
+    select: { token: true, title: true, approvedAt: true },
+  });
+
   const { subtotal, serviceCharge, total } = computeTotals(inv.items, inv.taxRate);
   const isInvoice = inv.type === "INVOICE";
   const label = docLabel(inv.type);
@@ -30,7 +56,13 @@ export default async function InvoiceViewPage({
   // Without one, a quote stays an estimate and only invoices can be paid.
   const { dueNow, balance, hasSplit } = splitDeposit(total, inv.depositPct);
   const live = inv.status !== "PAID" && inv.status !== "VOID";
-  const showPay = live && (isInvoice || hasSplit);
+  const linkedDocs = linked.map((d) => ({ ...d, total: computeTotals(d.items, d.taxRate).total }));
+  const unpaid = linkedDocs.find((d) => d.status !== "PAID");
+  // Once an invoice exists for this quote, paying happens there, not off the quote.
+  const showPay = live && (isInvoice || hasSplit) && linkedDocs.length === 0;
+  const isQuoteLive = !isInvoice && live && inv.status !== "DRAFT";
+  const expired = isQuoteLive && linkedDocs.length === 0 && !inv.acceptedAt && quoteExpired(inv.validUntil);
+  const canAccept = isQuoteLive && linkedDocs.length === 0 && !inv.acceptedAt && !expired;
   const payAmount = isInvoice ? total : dueNow;
   const anyPay = pay.paypalMe || pay.venmoUser || pay.zelle;
   const note = `${site.name} ${inv.number}`;
@@ -51,9 +83,49 @@ export default async function InvoiceViewPage({
   const payBtn =
     "block w-full rounded-full px-6 py-3 text-center font-bold transition-all";
 
+  const banner = "mb-4 rounded-2xl border px-5 py-4 text-sm print:hidden";
+
   return (
-    <main className="mx-auto max-w-2xl px-5 py-10">
-      <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
+    <main className="mx-auto max-w-2xl px-5 py-10 print:max-w-none print:p-0">
+      {/* Where things stand, newest first: an invoice to pay beats "you accepted". */}
+      {unpaid ? (
+        <div className={`${banner} border-blue/40 bg-blue/10`}>
+          <p className="font-bold">Your invoice is ready: {fmtMoney(unpaid.total)}</p>
+          <p className="mt-0.5 text-muted">{unpaid.number}. Pay it online in a minute.</p>
+          <a href={`/invoice/${unpaid.token}/`}
+            className="mt-3 inline-block rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
+            View and pay
+          </a>
+        </div>
+      ) : linkedDocs.length > 0 ? (
+        <div className={`${banner} border-green-500/40 bg-green-500/10 font-semibold text-green-600`}>
+          Paid in full. Thank you!
+        </div>
+      ) : inv.acceptedAt && isQuoteLive ? (
+        <div className={`${banner} border-green-500/40 bg-green-500/10`}>
+          <p className="font-bold text-green-600">You accepted this quote on {fmtDate(inv.acceptedAt)}.</p>
+          <p className="mt-0.5 text-muted">Thank you! I&apos;ll be in touch about next steps. Your invoice will show up right here.</p>
+        </div>
+      ) : expired ? (
+        <div className={`${banner} border-gold/40 bg-gold/10`}>
+          <p className="font-bold">This quote expired {fmtValidDate(inv.validUntil!)}.</p>
+          {inv.extendRequestedAt ? (
+            <p className="mt-0.5 text-muted">Got it, you asked on {fmtDate(inv.extendRequestedAt)}. I&apos;ll take another look and get back to you.</p>
+          ) : (
+            <form action={requestQuoteExtension} className="mt-2">
+              <input type="hidden" name="token" value={inv.token} />
+              <p className="text-muted">Still interested? Ask and I&apos;ll see if this quote can be extended.</p>
+              <textarea name="note" rows={2} maxLength={2000} placeholder="Anything changed? (optional)"
+                className={`${fieldCls} mt-2`} />
+              <button className="mt-2 rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover">
+                Ask about extending this quote
+              </button>
+            </form>
+          )}
+        </div>
+      ) : null}
+
+      <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 print:rounded-none print:border-0 print:p-0">
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -82,6 +154,9 @@ export default async function InvoiceViewPage({
           <div className="text-right">
             <p><span className="text-muted">Date: </span>{fmtDate(issued)}</p>
             {inv.dueDate && <p><span className="text-muted">Due: </span>{fmtDate(inv.dueDate)}</p>}
+            {!isInvoice && inv.validUntil && (
+              <p><span className="text-muted">Valid until: </span>{fmtValidDate(inv.validUntil)}</p>
+            )}
             <p className="text-muted">Re: {inv.project.title}</p>
           </div>
         </div>
@@ -125,9 +200,61 @@ export default async function InvoiceViewPage({
           <p className="mt-6 whitespace-pre-wrap border-t border-border pt-4 text-sm text-muted">{inv.notes}</p>
         )}
 
+        {canAccept && (
+          <form action={acceptQuote} className="mt-6 border-t border-border pt-5 print:hidden">
+            <input type="hidden" name="token" value={inv.token} />
+            <button className="block w-full rounded-full bg-primary px-6 py-3 text-center font-bold text-black hover:bg-primary-hover">
+              Looks good, let&apos;s do it
+            </button>
+            <p className="mt-2 text-center text-xs text-muted">
+              This just lets me know you&apos;re ready. Nothing is charged, and payment only comes after you approve your sample.
+            </p>
+          </form>
+        )}
+
+        {/* Invoices raised from this quote (one, or deposit + balance on a split). */}
+        {linkedDocs.length > 0 && (
+          <div className="mt-6 border-t border-border pt-5">
+            <p className="mb-2 font-bold">Payments</p>
+            <ul className="space-y-2 text-sm">
+              {linkedDocs.map((d) => (
+                <li key={d.id} className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">{d.number}</span>
+                  <span className="tabular-nums">{fmtMoney(d.total)}</span>
+                  {d.status === "PAID" ? (
+                    <span className="rounded-full bg-green-500/15 px-2.5 py-0.5 text-xs font-bold text-green-600">Paid</span>
+                  ) : (
+                    <a href={`/invoice/${d.token}/`} className="ml-auto rounded-full bg-primary px-4 py-1.5 text-xs font-bold text-black hover:bg-primary-hover print:hidden">
+                      Pay now
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {proofs.length > 0 && (
+          <div className="mt-6 border-t border-border pt-5 print:hidden">
+            <p className="mb-2 font-bold">Your proofs</p>
+            <ul className="space-y-2 text-sm">
+              {proofs.map((pf) => (
+                <li key={pf.token} className="flex flex-wrap items-center gap-2">
+                  <a href={`/proof/${pf.token}/`} className="font-semibold text-blue hover:underline">{pf.title}</a>
+                  {pf.approvedAt ? (
+                    <span className="rounded-full bg-green-500/15 px-2.5 py-0.5 text-xs font-bold text-green-600">Approved</span>
+                  ) : (
+                    <span className="text-xs text-muted">Review and approve</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Pay options (invoices only, when unpaid) */}
         {showPay && (
-          <div className="mt-6 border-t border-border pt-5">
+          <div className="mt-6 border-t border-border pt-5 print:hidden">
             <p className="mb-1 font-bold">
               {hasSplit ? `Pay the ${inv.depositPct}% deposit to book this` : "Pay this invoice"}
             </p>
@@ -176,7 +303,7 @@ export default async function InvoiceViewPage({
         {/* Where it ships. Saves straight onto the client record, so the shop has
             the address without a round of emails asking for it. */}
         {live && (
-          <form action={saveClientAddress} className="mt-6 border-t border-border pt-5">
+          <form action={saveClientAddress} className="mt-6 border-t border-border pt-5 print:hidden">
             <input type="hidden" name="token" value={inv.token} />
             <p className="font-bold">Where should this ship?</p>
             <p className="mb-3 text-sm text-muted">
@@ -205,8 +332,11 @@ export default async function InvoiceViewPage({
         )}
 
         {!isInvoice && !hasSplit && (
-          <p className="mt-6 text-xs text-muted">This is an estimate, not a bill. Reply to {site.email} to proceed.</p>
+          <p className="mt-6 text-xs text-muted">This is an estimate, not a bill. Questions? Reply to {site.email}.</p>
         )}
+      </div>
+      <div className="mt-4 flex justify-center">
+        <PrintButton />
       </div>
       <p className="mt-4 text-center text-xs text-muted">{site.name} · {site.url.replace("https://", "")}</p>
     </main>

@@ -13,7 +13,7 @@ import { fetchClientMessages } from "@/lib/gmail";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TWOFA_COOKIE, COOKIE_TTL_MS, signSession } from "@/lib/two-factor";
-import { computeTotals, docLabel, splitDeposit } from "@/lib/invoice";
+import { computeTotals, docLabel, splitDeposit, defaultValidUntil, fmtValidDate } from "@/lib/invoice";
 import { site } from "@/data/site";
 
 const SITE_URL = "https://kulworks.com";
@@ -1261,6 +1261,7 @@ export async function createBalanceInvoice(formData: FormData) {
       clientId: src.clientId,
       taxRate: 0,
       depositPct: null,
+      sourceQuoteId: src.type === "QUOTE" ? src.id : src.sourceQuoteId,
       notes: `${marker}. Deposit of ${src.depositPct}% was billed on ${src.number}; this is the remainder.`,
       items: {
         create: [
@@ -1399,6 +1400,8 @@ export async function sendInvoiceDoc(formData: FormData) {
   const { dueNow, balance, hasSplit } = splitDeposit(total, inv.depositPct);
   const url = `${SITE_URL}/invoice/${inv.token}/`;
   const isQuote = inv.type === "QUOTE";
+  // A quote's clock starts the first time it goes out; resending keeps the date.
+  const validUntil = isQuote ? inv.validUntil ?? defaultValidUntil() : null;
 
   // The shared Drive folder lives on the submission that started the project, so
   // the one email can carry artwork, money and the address ask together.
@@ -1419,6 +1422,7 @@ export async function sendInvoiceDoc(formData: FormData) {
     `Total: $${total.toFixed(2)}`,
     hasSplit ? `To book it: $${dueNow.toFixed(2)} now, $${balance.toFixed(2)} on completion.` : "",
     inv.dueDate ? `Due: ${inv.dueDate.toLocaleDateString("en-US")}` : "",
+    validUntil ? `This quote is good through ${fmtValidDate(validUntil)}.` : "",
     "",
     hasSplit || !isQuote ? "View and pay it here:" : "View it here:",
     url,
@@ -1440,7 +1444,11 @@ export async function sendInvoiceDoc(formData: FormData) {
   });
   await prisma.invoice.update({
     where: { id },
-    data: { status: inv.status === "PAID" ? "PAID" : "SENT", issuedAt: inv.issuedAt ?? new Date() },
+    data: {
+      status: inv.status === "PAID" ? "PAID" : "SENT",
+      issuedAt: inv.issuedAt ?? new Date(),
+      ...(validUntil ? { validUntil } : {}),
+    },
   });
   await prisma.activity.create({
     data: {
@@ -1520,6 +1528,7 @@ export async function convertQuoteToInvoice(formData: FormData) {
       clientId: q.clientId,
       taxRate: q.taxRate,
       depositPct: q.depositPct, // keep the split; converting shouldn't quietly bill in full
+      sourceQuoteId: q.id, // so the quote page can show this invoice once it is sent
       dueDate: q.dueDate ?? undefined,
       notes: q.notes,
       items: {
@@ -1535,6 +1544,31 @@ export async function convertQuoteToInvoice(formData: FormData) {
   await logAudit(profile.email, "invoice.convert", `${q.number} → ${number}`);
   revalidateAdmin();
   redirect(`/admin/projects/${q.projectId}/?done=doc-converted`);
+}
+
+// Set (or extend) how long a quote holds. Allowed on sent quotes too: extending
+// one is the whole point, and it changes no numbers the client agreed to.
+export async function setQuoteValidUntil(formData: FormData) {
+  const { profile } = await requireProfile();
+  const id = s(formData, "id");
+  const v = s(formData, "validUntil");
+  if (!id || !v || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+  const q = await prisma.invoice.findUnique({ where: { id }, select: { type: true, projectId: true, clientId: true, number: true } });
+  if (!q || q.type !== "QUOTE") return;
+  const validUntil = new Date(`${v}T00:00:00Z`);
+  await prisma.invoice.update({ where: { id }, data: { validUntil, extendRequestedAt: null } });
+  await prisma.activity.create({
+    data: {
+      type: "NOTE",
+      body: `${q.number} now good through ${fmtValidDate(validUntil)}.`,
+      projectId: q.projectId,
+      clientId: q.clientId,
+      authorId: profile.id,
+    },
+  });
+  await logAudit(profile.email, "quote.valid_until", `${q.number} → ${v}`);
+  revalidateAdmin();
+  redirect(`/admin/projects/${q.projectId}/?done=doc-updated`);
 }
 
 // ── Newsletter: compose + send a broadcast to the Resend Audience ──

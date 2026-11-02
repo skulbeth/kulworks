@@ -14,9 +14,10 @@ import {
   voidInvoiceDoc,
   convertQuoteToInvoice,
   createBalanceInvoice,
+  setQuoteValidUntil,
 } from "../../_actions";
 import InvoiceEditor from "../../_components/InvoiceEditor";
-import { computeTotals, docLabel, splitDeposit } from "@/lib/invoice";
+import { computeTotals, docLabel, splitDeposit, quoteExpired, fmtValidDate } from "@/lib/invoice";
 import { site } from "@/data/site";
 import { docViews, invoicePath, proofPath, type DocViews } from "@/lib/doc-views";
 import {
@@ -257,6 +258,7 @@ export default async function ProjectDetailPage({
                     </a>
                   </div>
                   {inv.status !== "DRAFT" && <ViewedLine v={views.get(invoicePath(inv.token))} />}
+                  {inv.type === "QUOTE" && !voided && <QuoteLine inv={inv} />}
 
                   {!voided && (
                     <div className="mt-2 flex flex-wrap items-center gap-2 border-t border-border pt-2">
@@ -311,6 +313,22 @@ export default async function ProjectDetailPage({
                           >
                             Invoice the balance
                           </ConfirmButton>
+                        </form>
+                      )}
+
+                      {inv.type === "QUOTE" && inv.status !== "DRAFT" && (
+                        <form action={setQuoteValidUntil} className="flex items-center gap-1">
+                          <input type="hidden" name="id" value={inv.id} />
+                          <input
+                            type="date"
+                            name="validUntil"
+                            required
+                            defaultValue={inv.validUntil ? inv.validUntil.toISOString().slice(0, 10) : ""}
+                            className="rounded-lg border border-border bg-surface px-2 py-0.5 text-xs"
+                          />
+                          <button className="rounded-full border border-border px-3 py-1 text-xs font-semibold hover:border-blue hover:text-blue">
+                            {inv.validUntil ? "Extend" : "Set expiry"}
+                          </button>
                         </form>
                       )}
 
@@ -518,6 +536,29 @@ export default async function ProjectDetailPage({
         </ConfirmButton>
       </form>
     </div>
+  );
+}
+
+// "Accepted Nov 2" / "Good through Nov 8" / "EXPIRED Nov 8 · asked to extend Nov 10".
+function QuoteLine({
+  inv,
+}: {
+  inv: { status: string; validUntil: Date | null; acceptedAt: Date | null; extendRequestedAt: Date | null };
+}) {
+  if (inv.acceptedAt) {
+    return <p className="mt-1 text-xs font-semibold text-green-600">Client accepted {fmtDateTime(inv.acceptedAt)}</p>;
+  }
+  if (!inv.validUntil) {
+    return inv.status === "DRAFT" ? null : <p className="mt-1 text-xs text-muted">No expiry set</p>;
+  }
+  if (!quoteExpired(inv.validUntil)) {
+    return <p className="mt-1 text-xs text-muted">Good through {fmtValidDate(inv.validUntil)}</p>;
+  }
+  return (
+    <p className="mt-1 text-xs font-semibold text-gold">
+      Expired {fmtValidDate(inv.validUntil)}
+      {inv.extendRequestedAt ? ` · client asked to extend ${fmtDateTime(inv.extendRequestedAt)}` : ""}
+    </p>
   );
 }
 
