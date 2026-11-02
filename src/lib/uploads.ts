@@ -1,6 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export const UPLOAD_BUCKET = "uploads";
 export const MAX_FILES = 5;
@@ -97,12 +98,40 @@ function claimedPath(path: string): string {
 
 export type ClaimResult =
   | { status: "ok"; paths: string[] }
-  | { status: "duplicate" } // every file was already claimed: a resend of a saved form
-  | { status: "missing"; index: number }; // this file isn't in storage (or the grant is bad)
+  | { status: "duplicate" } // already saved (a resend), or a racing submit is saving it
+  | { status: "missing"; index: number } // this file isn't in storage (or the grant is bad)
+  | { status: "retry" }; // storage hiccup moving a file; nothing saved, try again
+
+type Db = Prisma.TransactionClient;
+
+/** Is a saved record already holding this claimed file? */
+async function claimedBySavedRecord(db: Db, kind: UploadKind, path: string): Promise<boolean> {
+  const where = { storagePaths: { has: path } };
+  return kind === "order"
+    ? !!(await db.submission.findFirst({ where, select: { id: true } }))
+    : !!(await db.upload.findFirst({ where, select: { id: true } }));
+}
+
+/** Run claim + save as one locked unit per set of photos: a second submit of the same
+ *  photos waits here until the first has saved (or failed), then sees the result. Without
+ *  it, a submit landing between the first one's move and its save would save again. */
+export async function withUploadLock<T>(
+  files: { path: string }[],
+  fn: (tx: Db) => Promise<T>
+): Promise<T> {
+  return prisma.$transaction(
+    async (tx) => {
+      if (files[0]) await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${files[0].path}))`;
+      return fn(tx);
+    },
+    { maxWait: 10_000, timeout: 30_000 }
+  );
+}
 
 /** Check every file first, then move them all to their final paths. Call BEFORE saving
  *  the record, so a resend or a racing double submit never saves a second one. */
 export async function claimUploads(
+  db: Db,
   kind: UploadKind,
   files: { path: string; grant: string }[]
 ): Promise<ClaimResult> {
@@ -113,29 +142,31 @@ export async function claimUploads(
     else if (await exists(claimedPath(f.path))) fresh.push(false);
     else return { status: "missing", index: i };
   }
-  if (files.length && fresh.every((x) => !x)) return { status: "duplicate" };
+  const dests = files.map((f) => claimedPath(f.path));
+  // Everything already moved: a resend. It's only a duplicate if the first try's record
+  // was saved; if saving failed (database hiccup), save it now with the moved files.
+  if (files.length && fresh.every((x) => !x)) {
+    return (await claimedBySavedRecord(db, kind, dests[0])) ? { status: "duplicate" } : { status: "ok", paths: dests };
+  }
 
   const supa = createAdminClient();
-  const paths: string[] = [];
-  let lostRace = false;
   for (const [i, f] of files.entries()) {
-    const dest = claimedPath(f.path);
-    if (fresh[i]) {
-      const { error } = await supa.storage.from(UPLOAD_BUCKET).move(f.path, dest);
-      if (error) {
-        // Another request moved it a moment ago (double submit), or storage hiccuped.
-        if (await exists(dest)) lostRace = true;
-        else if (await exists(f.path)) {
-          console.error("[uploads] move failed, keeping pending path:", error.message);
-          paths.push(f.path);
-          continue;
-        } else return { status: "missing", index: i };
-      }
+    if (!fresh[i]) continue;
+    const { error } = await supa.storage.from(UPLOAD_BUCKET).move(f.path, dests[i]);
+    if (!error) continue;
+    if (await exists(dests[i])) {
+      // Another request moved it a moment ago. Whoever moved the FIRST file owns the
+      // claim: losing that one means the other request saves the record.
+      if (i === 0) return { status: "duplicate" };
+      continue;
     }
-    paths.push(dest);
+    if (await exists(f.path)) {
+      console.error("[uploads] move failed:", error.message);
+      return { status: "retry" };
+    }
+    return { status: "missing", index: i };
   }
-  if (lostRace) return { status: "duplicate" };
-  return { status: "ok", paths };
+  return { status: "ok", paths: dests };
 }
 
 /** Delete pending/ files nobody claimed (form abandoned after the photos went up).

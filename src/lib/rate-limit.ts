@@ -32,11 +32,14 @@ export async function rateLimit(rawKey: string, limit: number, windowMs: number)
   const key = hashKey(rawKey);
   try {
     await prisma.rateLimit.deleteMany({ where: { key, createdAt: { lt: since } } });
-    const count = await prisma.rateLimit.count({ where: { key, createdAt: { gte: since } } });
-    if (count >= limit) return false;
+    // Record this hit FIRST, then count: a burst of parallel requests each sees the
+    // others, instead of all counting the same "under the limit" total.
     await prisma.rateLimit.create({ data: { key } });
-    return true;
+    const count = await prisma.rateLimit.count({ where: { key, createdAt: { gte: since } } });
+    return count <= limit;
   } catch {
-    return true; // fail open
+    // Public forms fail open (a limiter hiccup must not block real people); sign-in
+    // codes fail closed, so overloading the database can't buy unlimited guesses.
+    return !rawKey.startsWith("2fa-");
   }
 }

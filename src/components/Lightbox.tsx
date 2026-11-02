@@ -52,10 +52,7 @@ export default function Lightbox({
     setMounted(true);
     // Keyboard focus moves into the dialog, stays there, and goes back where it came from.
     const opener = document.activeElement as HTMLElement | null;
-    const raf = requestAnimationFrame(() => {
-      setShown(true);
-      closeBtn.current?.focus();
-    });
+    const raf = requestAnimationFrame(() => setShown(true));
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Tab" && dialog.current) {
         const els = dialog.current.querySelectorAll<HTMLElement>("button, a[href]");
@@ -87,6 +84,11 @@ export default function Lightbox({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Once the portal is on the page (not before: the button doesn't exist yet).
+  useEffect(() => {
+    if (mounted) closeBtn.current?.focus();
+  }, [mounted]);
 
   if (!mounted) return null;
 

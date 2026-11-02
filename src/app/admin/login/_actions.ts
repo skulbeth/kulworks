@@ -4,7 +4,7 @@
 // These intentionally do NOT call requireProfile — that would re-trigger the 2FA gate.
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { getSessionUser, twoFactorSatisfied, hasTrustedTotp } from "@/lib/auth";
+import { getSessionUser, twoFactorSatisfied, hasTrustedTotp, currentSessionId } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
 import { prisma } from "@/lib/prisma";
 import { sendMail } from "@/lib/email";
@@ -59,6 +59,12 @@ export async function getMy2faStatus() {
 export async function sendEmail2faCode(opts?: { resend?: boolean }) {
   const user = await getSessionUser();
   if (!user?.email) return { ok: false as const, error: "not-signed-in" as const };
+  // Only team members who need a code get one: a stranger's Supabase signup must not be
+  // able to make Kulworks send mail.
+  const profile = await prisma.profile.findUnique({ where: { id: user.id } });
+  if (!profile || profile.deactivatedAt || !profile.twoFactorEnabled) {
+    return { ok: false as const, error: "not-signed-in" as const };
+  }
 
   const live = await prisma.twoFactorCode.findFirst({
     where: { userId: user.id, expiresAt: { gt: new Date() }, attempts: { lt: MAX_ATTEMPTS } },
@@ -113,23 +119,25 @@ export async function verifyEmail2faCode(code: string) {
   });
   if (!rec) return { ok: false as const, error: "expired" };
 
-  if (rec.attempts >= MAX_ATTEMPTS) {
-    await prisma.twoFactorCode.delete({ where: { id: rec.id } });
+  // Claim this try in one statement before comparing, so a burst of parallel guesses
+  // can't all slip in under the cap.
+  const claimed = await prisma.twoFactorCode.updateMany({
+    where: { id: rec.id, attempts: { lt: MAX_ATTEMPTS } },
+    data: { attempts: { increment: 1 } },
+  });
+  if (claimed.count === 0) {
+    await prisma.twoFactorCode.deleteMany({ where: { id: rec.id } });
     return { ok: false as const, error: "too-many" };
   }
 
-  if (hashCode(code) !== rec.codeHash) {
-    await prisma.twoFactorCode.update({
-      where: { id: rec.id },
-      data: { attempts: { increment: 1 } },
-    });
-    return { ok: false as const, error: "bad" };
-  }
+  if (hashCode(code) !== rec.codeHash) return { ok: false as const, error: "bad" };
 
   // Correct: burn all codes for this user and mark the session verified.
   await prisma.twoFactorCode.deleteMany({ where: { userId: user.id } });
+  const sid = await currentSessionId();
+  if (!sid) return { ok: false as const, error: "not-signed-in" };
   const jar = await cookies();
-  jar.set(TWOFA_COOKIE, signSession(user.id, Date.now() + COOKIE_TTL_MS), {
+  jar.set(TWOFA_COOKIE, signSession(user.id, sid, Date.now() + COOKIE_TTL_MS), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",

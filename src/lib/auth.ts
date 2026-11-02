@@ -18,8 +18,40 @@ export async function getSessionUser() {
 // Either a valid email-2FA cookie, or an authenticator-app (aal2) session we can trust (below).
 export async function twoFactorSatisfied(userId: string): Promise<boolean> {
   const jar = await cookies();
-  if (verifySession(jar.get(TWOFA_COOKIE)?.value, userId, Date.now())) return true;
+  const cookie = jar.get(TWOFA_COOKIE)?.value;
+  if (cookie && verifySession(cookie, userId, await currentSessionId(), Date.now())) return true;
   return trustedAal2();
+}
+
+/** This sign-in's Supabase session id (from the verified access token), or null. */
+export async function currentSessionId(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const sid = (data?.claims as { session_id?: unknown } | undefined)?.session_id;
+  return typeof sid === "string" && sid ? sid : null;
+}
+
+// Authenticator apps the admin set up from the portal (after passing 2FA there). Kept on
+// our side because Supabase lets a password-only session enroll a factor of its own.
+const trustedKey = (userId: string) => `totp_trusted:${userId}`;
+
+export async function trustedFactorIds(userId: string): Promise<string[]> {
+  const row = await prisma.setting.findUnique({ where: { key: trustedKey(userId) } });
+  try {
+    const ids = JSON.parse(row?.value ?? "[]");
+    return Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function setTrustedFactorIds(userId: string, ids: string[]): Promise<void> {
+  const value = JSON.stringify([...new Set(ids)]);
+  await prisma.setting.upsert({
+    where: { key: trustedKey(userId) },
+    update: { value },
+    create: { key: trustedKey(userId), value },
+  });
 }
 
 // aal2 alone isn't proof: Supabase lets a password-only (aal1) session ENROLL its first TOTP
@@ -48,9 +80,18 @@ export async function hasTrustedTotp(): Promise<boolean> {
     .map((m) => m.timestamp * 1000);
   if (firstFactorTs.length === 0) return false;
   const signedInAt = Math.min(...firstFactorTs);
-  const { data: factors } = await supabase.auth.mfa.listFactors();
+  const [{ data: factors }, { data: userData }] = await Promise.all([
+    supabase.auth.mfa.listFactors(),
+    supabase.auth.getUser(),
+  ]);
+  if (!userData.user) return false;
+  // Both: set up from the portal (on our trusted list), and before this sign-in. The
+  // timestamp alone wasn't enough: sign in, enroll, then sign in again, and the new
+  // factor would look "older" than the second sign-in.
+  const trusted = new Set(await trustedFactorIds(userData.user.id));
   return !!factors?.totp?.some(
-    (f) => f.status === "verified" && new Date(f.created_at).getTime() < signedInAt
+    (f) =>
+      f.status === "verified" && trusted.has(f.id) && new Date(f.created_at).getTime() < signedInAt
   );
 }
 

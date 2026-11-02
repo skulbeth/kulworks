@@ -9,6 +9,7 @@ import {
   uploadsEnabled,
   signedUploadUrl,
   claimUploads,
+  withUploadLock,
   MAX_FILES,
 } from "@/lib/uploads";
 
@@ -67,7 +68,15 @@ export async function POST(request: Request) {
     // (allowed type, under the size cap) before we attach it.
     // They're moved to their final paths before anything is saved; already moved means
     // this is a resend of an upload that went through (its reply was lost), so say ok.
-    const claim = await claimUploads("upload", files);
+    const saved = await withUploadLock(files, async (tx) => {
+      const claim = await claimUploads(tx, "upload", files);
+      if (claim.status !== "ok") return { claim } as const;
+      const upload = await tx.upload.create({
+        data: { name, contact, note, storagePaths: claim.paths },
+      });
+      return { claim, upload } as const;
+    });
+    const { claim } = saved;
     if (claim.status === "missing") {
       return NextResponse.json(
         { ok: false, error: `Photo ${claim.index + 1} didn't upload. Please add it again.` },
@@ -75,10 +84,15 @@ export async function POST(request: Request) {
       );
     }
     if (claim.status === "duplicate") return NextResponse.json({ ok: true });
+    if (claim.status === "retry") {
+      return NextResponse.json(
+        { ok: false, error: "Couldn't save your photos just now. Please press send again." },
+        { status: 503 }
+      );
+    }
+    // claim is "ok" here, so the upload was saved in the same step.
+    const { upload } = saved as Extract<typeof saved, { upload: unknown }>;
     const paths = claim.paths;
-    const upload = await prisma.upload.create({
-      data: { name, contact, note, storagePaths: paths },
-    });
 
     // Push alert after the response is sent: a slow push service must not hold up the client.
     after(() =>

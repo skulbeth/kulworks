@@ -384,7 +384,7 @@ enum DocStatus {
 
 model Invoice {
   id         String        @id @default(cuid())
-  token      String        @unique @default(cuid()) // unguessable public view URL
+  token      String        @unique @default(uuid()) // unguessable public view URL (random v4; older rows are cuids)
   number     String // human-facing, e.g. INV-0001 / Q-0001
   type       DocType       @default(INVOICE)
   status     DocStatus     @default(DRAFT)

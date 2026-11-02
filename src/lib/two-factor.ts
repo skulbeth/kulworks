@@ -7,31 +7,42 @@ export const COOKIE_TTL_MS = 12 * 60 * 60 * 1000; // re-verify email 2FA at most
 export const CODE_TTL_MS = 10 * 60 * 1000; // emailed code is valid 10 minutes
 
 // Server-only secret used to sign the cookie. Reusing the Supabase service key avoids
-// introducing another env var; it never leaves the server.
+// introducing another env var; it never leaves the server. No fallback: a guessable key
+// would let anyone forge "passed 2FA" for any user.
 function secret() {
-  return process.env.SUPABASE_SECRET_KEY || "kulworks-dev-fallback-secret";
+  const s = process.env.SUPABASE_SECRET_KEY;
+  if (!s) throw new Error("SUPABASE_SECRET_KEY is not set");
+  return s;
 }
 
 function hmac(payload: string) {
   return crypto.createHmac("sha256", secret()).update(payload).digest("hex");
 }
 
-// Build the cookie value: userId.expiryMs.signature
-export function signSession(userId: string, expMs: number): string {
-  const payload = `${userId}.${expMs}`;
+// Build the cookie value: userId.sessionId.expiryMs.signature. The Supabase session id
+// ties it to this one sign-in: a copied cookie is useless with any other session, and
+// signing out (which ends the session) kills it.
+export function signSession(userId: string, sessionId: string, expMs: number): string {
+  const payload = `${userId}.${sessionId}.${expMs}`;
   return `${payload}.${hmac(payload)}`;
 }
 
-// Verify a cookie value belongs to this user and hasn't expired or been tampered with.
-export function verifySession(value: string | undefined, userId: string, now: number): boolean {
-  if (!value) return false;
+// Verify a cookie value belongs to this user AND session and hasn't expired or been
+// tampered with.
+export function verifySession(
+  value: string | undefined,
+  userId: string,
+  sessionId: string | null,
+  now: number
+): boolean {
+  if (!value || !sessionId) return false;
   const parts = value.split(".");
-  if (parts.length !== 3) return false;
-  const [uid, expStr, sig] = parts;
-  if (uid !== userId) return false;
+  if (parts.length !== 4) return false;
+  const [uid, sid, expStr, sig] = parts;
+  if (uid !== userId || sid !== sessionId) return false;
   const exp = Number(expStr);
   if (!Number.isFinite(exp) || exp < now) return false;
-  const expected = hmac(`${uid}.${expStr}`);
+  const expected = hmac(`${uid}.${sid}.${expStr}`);
   if (sig.length !== expected.length) return false;
   return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
 }

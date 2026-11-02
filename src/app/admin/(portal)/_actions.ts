@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
-import { requireProfile } from "@/lib/auth";
+import { requireProfile, currentSessionId, trustedFactorIds, setTrustedFactorIds } from "@/lib/auth";
+import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 import { logError } from "@/lib/log-error";
 import { resend, FROM, sendMail, mailSent, addSubscriberToAudience } from "@/lib/email";
 import { uploadsEnabled, setUploadsEnabled, removeUploadFiles } from "@/lib/uploads";
@@ -54,9 +55,10 @@ function int(fd: FormData, k: string): number | null {
   const n = num(fd, k);
   return n === null ? null : Math.trunc(n);
 }
-// Counts, money and hours on a project can't be negative; a stray minus is dropped.
-function nn(n: number | null): number | null {
-  return n !== null && n < 0 ? null : n;
+// Counts, money and hours on a project can't be negative; a stray minus is ignored
+// (undefined = leave what's stored), not saved and not used to blank the field.
+function nn(n: number | null): number | null | undefined {
+  return n !== null && n < 0 ? undefined : n;
 }
 function date(fd: FormData, k: string): Date | null {
   const v = s(fd, k);
@@ -1004,21 +1006,38 @@ export async function changeOwnPassword(formData: FormData) {
 
 // Any admin turns their own 2FA on/off. Turning it on marks the CURRENT session as verified
 // (so you aren't immediately bounced); the code requirement then applies at your next login.
+// After an authenticator app is verified from the portal: put it on this admin's trusted
+// list (only apps on it can stand in for the emailed code at sign-in). Reaching here
+// already took a full sign-in, 2FA included, so a password alone can't add one.
+export async function trustTotpFactor(factorId: string) {
+  const { user } = await requireProfile();
+  const supabase = await createSupabaseServer();
+  const { data } = await supabase.auth.mfa.listFactors();
+  const verified = (data?.totp ?? []).filter((x) => x.status === "verified");
+  if (!verified.some((x) => x.id === factorId)) return { ok: false as const };
+  // Only apps that still exist, plus this one.
+  const live = new Set(verified.map((x) => x.id));
+  const keep = (await trustedFactorIds(user.id)).filter((id) => live.has(id));
+  await setTrustedFactorIds(user.id, [...keep, factorId]);
+  return { ok: true as const };
+}
+
 export async function setTwoFactorEnabled(formData: FormData) {
   const { user, profile } = await requireProfile();
   const enable = formData.get("enable") === "true";
   await prisma.profile.update({ where: { id: profile.id }, data: { twoFactorEnabled: enable } });
 
   const jar = await cookies();
-  if (enable) {
-    jar.set(TWOFA_COOKIE, signSession(user.id, Date.now() + COOKIE_TTL_MS), {
+  const sid = await currentSessionId();
+  if (enable && sid) {
+    jar.set(TWOFA_COOKIE, signSession(user.id, sid, Date.now() + COOKIE_TTL_MS), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: Math.floor(COOKIE_TTL_MS / 1000),
     });
-  } else {
+  } else if (!enable) {
     jar.delete(TWOFA_COOKIE);
   }
   await logAudit(profile.email, enable ? "team.2fa.enable" : "team.2fa.disable", profile.email);

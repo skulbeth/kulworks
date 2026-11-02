@@ -15,6 +15,7 @@ import {
   signedUploadUrl,
   grantValid,
   claimUploads,
+  withUploadLock,
 } from "@/lib/uploads";
 
 export const runtime = "nodejs";
@@ -120,7 +121,32 @@ export async function POST(request: Request) {
     // Every photo must really be in the bucket (right type and size); they're moved to
     // their final paths BEFORE anything is saved. If they were already moved, this is a
     // resend of an order that went through (its reply was lost): say ok, save nothing.
-    const claim = await claimUploads("order", files);
+    // Claim and save under one lock (see withUploadLock).
+    const saved = await withUploadLock(files, async (tx) => {
+      const claim = await claimUploads(tx, "order", files);
+      if (claim.status !== "ok") return { claim } as const;
+      const existing = await tx.client.findUnique({ where: { email }, select: { phone: true } });
+      const client = await tx.client.upsert({
+        where: { email },
+        create: { name, email, phone },
+        // Fill a missing phone, never overwrite the one on file.
+        update: phone && !existing?.phone ? { phone } : {},
+      });
+      const submission = await tx.submission.create({
+        data: {
+          name,
+          email,
+          phone,
+          projectType: template.name,
+          message,
+          sessionId,
+          clientId: client.id,
+          storagePaths: claim.paths,
+        },
+      });
+      return { claim, client, submission } as const;
+    });
+    const { claim } = saved;
     if (claim.status === "missing") {
       return NextResponse.json(
         { ok: false, error: `"${files[claim.index].slot}" didn't upload. Please attach it again.` },
@@ -128,28 +154,15 @@ export async function POST(request: Request) {
       );
     }
     if (claim.status === "duplicate") return NextResponse.json({ ok: true });
+    if (claim.status === "retry") {
+      return NextResponse.json(
+        { ok: false, error: "Couldn't save your photos just now. Please press send again." },
+        { status: 503 }
+      );
+    }
+    // claim is "ok" here, so the order was saved in the same step.
+    const { client, submission } = saved as Extract<typeof saved, { submission: unknown }>;
     const paths = claim.paths;
-
-    const existing = await prisma.client.findUnique({ where: { email }, select: { phone: true } });
-    const client = await prisma.client.upsert({
-      where: { email },
-      create: { name, email, phone },
-      // Fill a missing phone, never overwrite the one on file.
-      update: phone && !existing?.phone ? { phone } : {},
-    });
-
-    const submission = await prisma.submission.create({
-      data: {
-        name,
-        email,
-        phone,
-        projectType: template.name,
-        message,
-        sessionId,
-        clientId: client.id,
-        storagePaths: paths,
-      },
-    });
 
     // Push alert after the response is sent: a slow push service must not hold up the client.
     after(() =>

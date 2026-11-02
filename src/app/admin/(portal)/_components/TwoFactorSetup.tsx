@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { setTwoFactorEnabled } from "../_actions";
+import { setTwoFactorEnabled, trustTotpFactor } from "../_actions";
 
 // Two-factor for the logged-in admin. A master switch turns 2FA on/off; when on, you get a
 // code by EMAIL by default, and can optionally add an authenticator APP for app-based codes.
@@ -57,8 +57,14 @@ export default function TwoFactorSetup({ enabled }: { enabled: boolean }) {
       return setError(ch.error.message);
     }
     const v = await supabase.auth.mfa.verify({ factorId, challengeId: ch.data.id, code });
+    if (v.error) {
+      setBusy(false);
+      return setError(v.error.message);
+    }
+    // Only an app on the server's trusted list can replace the emailed code at sign-in.
+    const t = await trustTotpFactor(factorId).catch(() => ({ ok: false as const }));
     setBusy(false);
-    if (v.error) return setError(v.error.message);
+    if (!t.ok) return setError("The app was added but couldn't be saved as trusted. Remove it and try again.");
     setQr(null);
     setCode("");
     setApp("on");
