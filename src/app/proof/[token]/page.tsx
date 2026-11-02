@@ -5,6 +5,9 @@ import { signProofPaths, itemLabel, isProofItemUpdated } from "@/lib/proofs";
 import { site } from "@/data/site";
 import ProofViewer, { type ViewerItem } from "./ProofViewer";
 import MessageSam from "@/components/MessageSam";
+import PayOptions from "@/components/PayOptions";
+import { projectBilling } from "@/lib/billing";
+import { fmtMoney } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 // Private review page. Never index it.
@@ -67,12 +70,9 @@ export default async function ProofPage({
       })),
     }));
 
-  // Their quote is the hub page for the job; link back to it.
-  const quote = await prisma.invoice.findFirst({
-    where: { projectId: proof.projectId, type: "QUOTE", deletedAt: null, status: { in: ["SENT", "PAID"] } },
-    orderBy: { createdAt: "desc" },
-    select: { token: true, number: true },
-  });
+  // Payment for the job right here (the quote page is still the hub), and the link back.
+  const { hub, docs } = await projectBilling(proof.projectId);
+  const unpaid = docs.filter((d) => !d.paid);
 
   return (
     <>
@@ -86,10 +86,41 @@ export default async function ProofPage({
       items={items}
     />
       <section className="mx-auto max-w-2xl px-5 pb-12">
-        {quote && (
+        {docs.length > 0 && (
+          <div className="mt-4 rounded-2xl border border-border bg-surface p-5">
+            <p className="font-bold">Payment</p>
+            <ul className="mt-3 space-y-5">
+              {docs.map((d) => (
+                <li key={d.token}>
+                  {d.paid ? (
+                    <p className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm font-semibold text-green-600">
+                      {d.kind === "Invoice" ? d.number : `${d.kind} (${d.number})`}: {fmtMoney(d.amount)} paid. Thank you!
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-sm">
+                        <span className="font-semibold">
+                          {d.kind === "Invoice" ? d.number : `${d.kind} (${d.number})`}: {fmtMoney(d.amount)} due
+                        </span>{" "}
+                        <a href={`/invoice/${d.token}/`} className="inline-block py-1 text-blue hover:underline">
+                          See the details
+                        </a>
+                      </p>
+                      <PayOptions amount={d.amount} note={`${site.name} ${d.number}`} />
+                    </div>
+                  )}
+                </li>
+              ))}
+            </ul>
+            {unpaid.length === 0 && (
+              <p className="mt-3 text-xs text-muted">Everything billed so far is paid.</p>
+            )}
+          </div>
+        )}
+        {hub && (
           <p className="mt-2 text-sm">
-            <a href={`/invoice/${quote.token}/`} className="inline-block py-2 font-semibold text-blue hover:underline">
-              View your quote ({quote.number}) and payments
+            <a href={`/invoice/${hub.token}/`} className="inline-block py-2 font-semibold text-blue hover:underline">
+              View your {hub.number.startsWith("Q") ? "quote" : "invoice"} ({hub.number})
             </a>
           </p>
         )}
