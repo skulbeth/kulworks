@@ -274,6 +274,12 @@ export default async function AnalyticsPage({
                 {x.label}
               </Link>
             ))}
+            <Link
+              href="/admin/chat-logs/"
+              className="rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-semibold text-muted transition-colors hover:border-blue hover:text-blue"
+            >
+              Rules Helper chats →
+            </Link>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-3">

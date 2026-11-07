@@ -89,6 +89,7 @@ the important ones).
 | `Activity` | Timeline: notes, emails-sent, calls, status changes, reminders (`remindAt`, `done`, `calendarEventId`) |
 | `Subscriber` | Newsletter list (+ `resendContactId`) |
 | `PageView` | Analytics (path, referrer, geo, device, sessionId) |
+| `ChatLog` | Role to Reign "Rules Helper" chatbot questions + answers + outcome, written server-to-server by roletoreign.com via `/api/chatlog` (`CHATLOG_INGEST_KEY`, set in BOTH Vercel projects). Admin: Analytics → Rules Helper chats (`/admin/chat-logs`, JSON export) |
 | `RateLimit` | Sliding-window rate-limit hits |
 | `AuditLog` | Who did what in admin |
 | `ErrorLog` | Captured server errors |

@@ -374,6 +374,30 @@ model PageView {
   @@index([site, createdAt])
 }
 
+// Every question asked of the Role to Reign "Rules Helper" chatbot (roletoreign.com),
+// with the answer it gave and how it was handled. Written server-to-server by the
+// roletoreign app (shared key). Kept so the bot can be audited, improved, and one day
+// replaced by a free or self-built model trained/tested on real player questions.
+model ChatLog {
+  id          String   @id @default(cuid())
+  site        String   @default("roletoreign")
+  question    String
+  answer      String?
+  // answered | refused_filter (blocked before the AI) | refused_topic (topic gate)
+  // | refused_model (AI declined) | filtered_answer (answer replaced) | error
+  outcome     String
+  model       String?
+  latencyMs   Int?
+  turn        Int      @default(1) // position in the conversation (1 = first question)
+  sessionId   String? // anonymous Rules Helper session id
+  visitorHash String? // short salted hash of IP; raw IP never stored
+  country     String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([outcome, createdAt])
+}
+
 // ── Quotes & Invoices (a document sent to a client; INVOICE also carries pay links) ──
 enum DocType {
   QUOTE

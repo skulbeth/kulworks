@@ -14,7 +14,7 @@ const tabs: { href: string; label: string; siblings?: string[] }[] = [
   { href: "/admin/submissions/", label: "Inbox", siblings: ["/admin/uploads"] },
   { href: "/admin/projects/", label: "Work", siblings: ["/admin/clients", "/admin/testimonials"] },
   { href: "/admin/subscribers/", label: "Newsletter", siblings: ["/admin/newsletter"] },
-  { href: "/admin/analytics/", label: "Analytics" },
+  { href: "/admin/analytics/", label: "Analytics", siblings: ["/admin/chat-logs"] },
   { href: "/admin/team/", label: "Team" },
   { href: "/admin/archive/", label: "Archive" },
 ];
