@@ -5,8 +5,7 @@ import { signProofPaths, itemLabel, isProofItemUpdated } from "@/lib/proofs";
 import { site } from "@/data/site";
 import ProofViewer, { type ViewerItem } from "./ProofViewer";
 import MessageSam from "@/components/MessageSam";
-import PayOptions from "@/components/PayOptions";
-import { projectBilling } from "@/lib/billing";
+import { loadJob, jobPath } from "@/lib/job";
 import { fmtMoney } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -70,9 +69,12 @@ export default async function ProofPage({
       })),
     }));
 
-  // Payment for the job right here (the quote page is still the hub), and the link back.
-  const { hub, docs } = await projectBilling(proof.projectId);
-  const unpaid = docs.filter((d) => !d.paid);
+  // Payment lives on the job page (the quote link), worked out by lib/job.ts like
+  // everywhere else. Here: the way back to it, and a nudge once an invoice is due.
+  const job = await loadJob(proof.projectId);
+  const hub = job?.hub ?? null;
+  const due = job?.unpaid.filter((r) => !r.isQuote) ?? [];
+  const dueTotal = due.reduce((n, r) => n + r.amount, 0);
 
   return (
     <>
@@ -86,41 +88,22 @@ export default async function ProofPage({
       items={items}
     />
       <section className="mx-auto max-w-2xl px-5 pb-12">
-        {docs.length > 0 && (
-          <div className="mt-4 rounded-2xl border border-border bg-surface p-5">
-            <p className="font-bold">Payment</p>
-            <ul className="mt-3 space-y-5">
-              {docs.map((d) => (
-                <li key={d.token}>
-                  {d.paid ? (
-                    <p className="rounded-xl border border-green-500/40 bg-green-500/10 px-4 py-3 text-sm font-semibold text-green-600">
-                      {d.kind === "Invoice" ? d.number : `${d.kind} (${d.number})`}: {fmtMoney(d.amount)} paid. Thank you!
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      <p className="text-sm">
-                        <span className="font-semibold">
-                          {d.kind === "Invoice" ? d.number : `${d.kind} (${d.number})`}: {fmtMoney(d.amount)} due
-                        </span>{" "}
-                        <a href={`/invoice/${d.token}/`} className="inline-block py-1 text-blue hover:underline">
-                          See the details
-                        </a>
-                      </p>
-                      <PayOptions amount={d.amount} note={`${site.name} ${d.number}`} />
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-            {unpaid.length === 0 && (
-              <p className="mt-3 text-xs text-muted">Everything billed so far is paid.</p>
-            )}
+        {hub && due.length > 0 && (
+          <div className="mt-4 rounded-2xl border border-blue/40 bg-blue/10 p-5 text-sm">
+            <p className="font-bold">{proof.approvedAt ? "Thanks for approving! " : ""}Your invoice is ready: {fmtMoney(dueTotal)}</p>
+            <p className="mt-0.5 text-muted">Pay it with Venmo or Zelle on your job page.</p>
+            <a
+              href={`${jobPath(hub.token)}#pay`}
+              className="min-h-11 mt-3 inline-flex items-center rounded-full bg-primary px-5 py-2 font-bold text-black hover:bg-primary-hover"
+            >
+              Pay on my job page
+            </a>
           </div>
         )}
         {hub && (
           <p className="mt-2 text-sm">
-            <a href={`/invoice/${hub.token}/`} className="inline-block py-2 font-semibold text-blue hover:underline">
-              View your {hub.number.startsWith("Q") ? "quote" : "invoice"} ({hub.number})
+            <a href={jobPath(hub.token)} className="inline-block py-2 font-semibold text-blue hover:underline">
+              Back to your job page ({hub.number}): quote, files and payment
             </a>
           </p>
         )}

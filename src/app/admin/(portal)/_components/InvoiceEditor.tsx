@@ -14,6 +14,8 @@ export type EditingDoc = {
   type: "INVOICE" | "QUOTE";
   taxRate: number;
   depositPct: number | null;
+  proofFirst?: boolean;
+  dueDate?: string | null; // yyyy-mm-dd, so saving a draft doesn't wipe it
   notes: string | null;
   items: { description: string; quantity: number; unitPrice: number }[];
 };
@@ -163,8 +165,22 @@ export default function InvoiceEditor({
         </label>
         <label className="text-xs text-muted">
           Due
-          <input type="date" name="dueDate" className={`ml-1 ${field}`} />
+          <input type="date" name="dueDate" defaultValue={editing?.dueDate ?? ""} className={`ml-1 ${field}`} />
         </label>
+        {type === "QUOTE" && (
+          <label
+            className="flex items-center gap-1.5 text-xs text-muted"
+            title="On: the invoice goes up (and is emailed) when the client approves their proof. Off: no proof on this job, so it goes up the moment they accept."
+          >
+            <input
+              type="checkbox"
+              name="proofFirst"
+              defaultChecked={editing?.proofFirst ?? true}
+              className="h-3.5 w-3.5 accent-primary"
+            />
+            Sample proof before payment
+          </label>
+        )}
       </div>
 
       <div className="space-y-2">

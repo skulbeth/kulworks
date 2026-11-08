@@ -12,7 +12,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireProfile } from "@/lib/auth";
 import { removeUploadFiles } from "@/lib/uploads";
-import { sendMail } from "@/lib/email";
+import { sendToClient } from "@/lib/email";
+import { jobHubToken, jobPath } from "@/lib/job";
 import { site } from "@/data/site";
 import {
   newProofToken,
@@ -225,6 +226,7 @@ export async function notifyProofClient(formData: FormData) {
   const updated = shown.map((i, n) => ({ i, n: n + 1 })).filter(({ i }) => isProofItemUpdated(i));
   const first = proof.project.client.name.trim().split(/\s+/)[0] || "there";
   const url = publicProofUrl(site.url, proof.token);
+  const hub = await jobHubToken(proof.projectId);
   const many = updated.length === 1 ? "" : "s";
   const text = [
     `Hi ${first},`,
@@ -240,19 +242,19 @@ export async function notifyProofClient(formData: FormData) {
       : `Click any card to see it up close. To ask for a change, click the spot on the card and write what it should say, then press Send my notes. When everything looks right, press Approve all.`,
     "",
     url,
+    ...(hub ? ["", "Your quote, files and invoice are all on your job page:", `${site.url}${jobPath(hub)}`] : []),
     "",
     "Thanks,",
     "Sam",
     "Kulworks",
   ].join("\n");
 
-  const r = await sendMail({
+  const r = await sendToClient({
     to: proof.project.client.email,
     subject: updated.length ? `Updated card${many} ready: ${proof.title}` : `Your card proof is ready: ${proof.title}`,
     text,
-    replyTo: process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com",
   });
-  // sendMail returns {error} instead of throwing, and {skipped} with no API key (fine
+  // sendToClient returns {error} instead of throwing, and {skipped} with no API key (fine
   // in local dev, a failure in production). Either way: say so, record nothing.
   const failed =
     ("error" in r && !!r.error) || ("skipped" in r && r.skipped && process.env.NODE_ENV === "production");

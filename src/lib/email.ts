@@ -13,6 +13,7 @@ export async function sendMail(opts: {
   subject: string;
   text: string;
   replyTo?: string;
+  bcc?: string | string[];
 }) {
   if (!resend) {
     console.warn("[email] RESEND_API_KEY not set, skipping:", opts.subject);
@@ -25,6 +26,7 @@ export async function sendMail(opts: {
       subject: opts.subject,
       text: opts.text,
       replyTo: opts.replyTo,
+      ...(opts.bcc ? { bcc: opts.bcc } : {}),
     });
     if (error) {
       await logMailFailure(error.message || String(error.name), opts.subject);
@@ -36,6 +38,17 @@ export async function sendMail(opts: {
     await logMailFailure(message, opts.subject);
     return { error: { message, name: "send_threw" } };
   }
+}
+
+/**
+ * Anything that goes to a CLIENT: from the shop address, replies come back to contact@
+ * (Mailgun forwards it to Sam's Gmail), and a BCC to contact@ so Sam's inbox holds what
+ * was sent (Resend sends never land in Gmail's Sent folder). One sender so every client
+ * email behaves the same way.
+ */
+export function sendToClient(opts: { to: string; subject: string; text: string }) {
+  const shop = process.env.CLIENT_MAIL_BCC || "contact@kulworks.com";
+  return sendMail({ ...opts, replyTo: shop, bcc: shop });
 }
 
 /** Did sendMail actually hand the email to Resend? (Skipped counts only outside production.) */

@@ -17,15 +17,20 @@ export async function ensureProjectFolder(projectId: string): Promise<{ id: stri
   if (!driveConfigured()) return null;
 
   try {
-    // Their request may already have a folder (they ticked the box): use that one.
-    const sub = await prisma.submission.findFirst({
-      where: {
-        driveFolderUrl: { not: null },
-        OR: [{ projectId }, { email: project.client.email }],
-      },
-      orderBy: { createdAt: "desc" },
-      select: { driveFolderUrl: true },
-    });
+    // Their request may already have a folder (they ticked the box): use that one. This
+    // job's own request first; a request of theirs not tied to any job second (never a
+    // folder that belongs to another of their jobs).
+    const sub =
+      (await prisma.submission.findFirst({
+        where: { driveFolderUrl: { not: null }, projectId },
+        orderBy: { createdAt: "desc" },
+        select: { driveFolderUrl: true },
+      })) ??
+      (await prisma.submission.findFirst({
+        where: { driveFolderUrl: { not: null }, projectId: null, email: { equals: project.client.email, mode: "insensitive" } },
+        orderBy: { createdAt: "desc" },
+        select: { driveFolderUrl: true },
+      }));
     let url = sub?.driveFolderUrl ?? null;
     let id = folderIdFromUrl(url);
     if (!id) {

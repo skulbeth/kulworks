@@ -15,7 +15,9 @@ import {
   convertQuoteToInvoice,
   createBalanceInvoice,
   setQuoteValidUntil,
+  makeProjectFolder,
 } from "../../_actions";
+import { jobFolderUrl, pickHub } from "@/lib/job";
 import InvoiceEditor from "../../_components/InvoiceEditor";
 import { computeTotals, docLabel, splitDeposit, quoteExpired, fmtValidDate, isBalanceDoc } from "@/lib/invoice";
 import { site } from "@/data/site";
@@ -96,8 +98,10 @@ export default async function ProjectDetailPage({
     ...project.proofs.map((p) => proofPath(p.token)),
   ]);
 
-  // Shared artwork folder, if the submission that started this project made one.
-  const driveFolderUrl = project.submissions[0]?.driveFolderUrl ?? null;
+  // The job's one Drive folder (lib/job.ts): the project's own, else the one their request made.
+  const driveFolderUrl = jobFolderUrl(project);
+  // The client's one page for the job: every email and link points here.
+  const hub = pickHub(project.invoices);
 
   const totalPaid = project.payments.reduce((sum, p) => sum + p.amount, 0);
   const basis = project.finalAmount ?? project.quotedAmount ?? null;
@@ -218,6 +222,34 @@ export default async function ProjectDetailPage({
       <section className="rounded-xl border border-border bg-surface p-4">
         <h2 className="mb-3 text-lg font-bold">Quotes &amp; Invoices</h2>
 
+        {/* The job page + folder: the two things every client message points at. */}
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border bg-surface2 px-3 py-2 text-sm">
+          <span className="font-semibold">Job page</span>
+          {hub ? (
+            <>
+              <a href={`/invoice/${hub.token}/`} target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">
+                {hub.number} →
+              </a>
+              <CopyButton text={`${site.url}/invoice/${hub.token}/`} label="Copy link" />
+            </>
+          ) : (
+            <span className="text-xs text-muted">appears once a quote (or invoice) is sent</span>
+          )}
+          <span className="ml-auto font-semibold">Client folder</span>
+          {driveFolderUrl ? (
+            <a href={driveFolderUrl} target="_blank" rel="noopener noreferrer" className="text-blue hover:underline">
+              Open in Drive →
+            </a>
+          ) : (
+            <form action={makeProjectFolder}>
+              <input type="hidden" name="projectId" value={project.id} />
+              <SubmitButton pendingText="Making..." className="rounded-full border border-border px-3 py-1 text-xs font-semibold hover:border-blue hover:text-blue">
+                Make + share folder
+              </SubmitButton>
+            </form>
+          )}
+        </div>
+
         {project.invoices.length > 0 && (
           <ul className="mb-4 space-y-2">
             {project.invoices.map((inv) => {
@@ -287,6 +319,8 @@ export default async function ProjectDetailPage({
                                 type: inv.type as "INVOICE" | "QUOTE",
                                 taxRate: inv.taxRate,
                                 depositPct: inv.depositPct,
+                                proofFirst: inv.proofFirst,
+                                dueDate: inv.dueDate ? inv.dueDate.toISOString().slice(0, 10) : null,
                                 notes: inv.notes,
                                 items: inv.items.map((it) => ({
                                   description: it.description,
@@ -301,12 +335,6 @@ export default async function ProjectDetailPage({
 
                       <form action={sendInvoiceDoc} className="flex items-center gap-2">
                         <input type="hidden" name="id" value={inv.id} />
-                        {driveFolderUrl && (
-                          <label className="flex items-center gap-1 text-xs text-muted" title={driveFolderUrl}>
-                            <input type="checkbox" name="includeDrive" defaultChecked className="h-3.5 w-3.5 accent-primary" />
-                            with Drive folder
-                          </label>
-                        )}
                         <ConfirmButton
                           message={`Email ${docLabel(inv.type).toLowerCase()} ${inv.number} to ${project.client.email}?`}
                           className="rounded-full border border-border px-3 py-1 text-xs font-semibold hover:border-blue hover:text-blue"
@@ -357,12 +385,12 @@ export default async function ProjectDetailPage({
                           <input type="hidden" name="id" value={inv.id} />
                           <select
                             name="method"
-                            defaultValue="PAYPAL"
+                            defaultValue="VENMO"
                             className="rounded-lg border border-border bg-surface px-2 py-1 text-xs"
                           >
-                            <option value="PAYPAL">PayPal</option>
                             <option value="VENMO">Venmo</option>
                             <option value="ZELLE">Zelle</option>
+                            <option value="PAYPAL">PayPal</option>
                             <option value="CASH">Cash</option>
                             <option value="CARD">Card</option>
                             <option value="CHECK">Check</option>
@@ -557,16 +585,22 @@ export default async function ProjectDetailPage({
 function QuoteLine({
   inv,
 }: {
-  inv: { status: string; validUntil: Date | null; acceptedAt: Date | null; extendRequestedAt: Date | null };
+  inv: { status: string; validUntil: Date | null; acceptedAt: Date | null; extendRequestedAt: Date | null; proofFirst: boolean };
 }) {
+  // When the invoice goes up on its own (lib/auto-invoice.ts).
+  const billing = (
+    <span className="font-normal text-muted">
+      {" · "}invoice {inv.proofFirst ? "goes up when the proof is approved" : "goes up on accept (no proof)"}
+    </span>
+  );
   if (inv.acceptedAt) {
-    return <p className="mt-1 text-xs font-semibold text-green-600">Client accepted {fmtDateTime(inv.acceptedAt)}</p>;
+    return <p className="mt-1 text-xs font-semibold text-green-600">Client accepted {fmtDateTime(inv.acceptedAt)}{billing}</p>;
   }
   if (!inv.validUntil) {
-    return inv.status === "DRAFT" ? null : <p className="mt-1 text-xs text-muted">No expiry set</p>;
+    return <p className="mt-1 text-xs text-muted">{inv.status === "DRAFT" ? "Draft" : "No expiry set"}{billing}</p>;
   }
   if (!quoteExpired(inv.validUntil)) {
-    return <p className="mt-1 text-xs text-muted">Good through {fmtValidDate(inv.validUntil)}</p>;
+    return <p className="mt-1 text-xs text-muted">Good through {fmtValidDate(inv.validUntil)}{billing}</p>;
   }
   return (
     <p className="mt-1 text-xs font-semibold text-gold">

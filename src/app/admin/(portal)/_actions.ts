@@ -7,9 +7,9 @@ import { prisma } from "@/lib/prisma";
 import { requireProfile, currentSessionId, trustedFactorIds, setTrustedFactorIds } from "@/lib/auth";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 import { logError } from "@/lib/log-error";
-import { resend, FROM, sendMail, mailSent, addSubscriberToAudience } from "@/lib/email";
+import { resend, FROM, sendMail, sendToClient, mailSent, addSubscriberToAudience } from "@/lib/email";
 import { uploadsEnabled, setUploadsEnabled, removeUploadFiles } from "@/lib/uploads";
-import { createClientFolder, driveConfigured } from "@/lib/google-drive";
+import { createClientFolder, driveConfigured, folderIdFromUrl } from "@/lib/google-drive";
 import { deliveryLabel, cardBacksLabel } from "@/lib/order-details";
 import { fetchClientMessages } from "@/lib/gmail";
 import { syncProjectEvents, syncReminderEvent, deleteEvent } from "@/lib/google-calendar";
@@ -27,6 +27,8 @@ import {
 } from "@/lib/invoice";
 import { site } from "@/data/site";
 import { createNumberedDoc } from "@/lib/doc-number";
+import { mainInvoiceWhere, copyQuoteToInvoice, jobHubToken, jobPath, loadJob } from "@/lib/job";
+import { ensureProjectFolder } from "@/lib/project-folder";
 
 const SITE_URL = "https://kulworks.com";
 
@@ -223,6 +225,9 @@ export async function convertSubmissionToProject(formData: FormData) {
       stage: "LEAD",
       clientId,
       requested: sub.message,
+      // The folder their request made becomes the job's folder (one place, see lib/job.ts).
+      driveFolderUrl: sub.driveFolderUrl,
+      driveFolderId: folderIdFromUrl(sub.driveFolderUrl),
       // Carry over what the form asked up front, so nobody re-types it.
       dueDate: sub.dueDate,
       shipStreet: sub.shipStreet,
@@ -1072,7 +1077,7 @@ export async function sendClientEmail(formData: FormData) {
     }
   }
 
-  const sent = await sendMail({ to: client.email, replyTo: site.email, subject, text: body });
+  const sent = await sendToClient({ to: client.email, subject, text: body });
   // A failed send must not be logged as sent.
   if (!mailSent(sent)) redirect(`/admin/clients/${clientId}/?error=email`);
 
@@ -1244,11 +1249,11 @@ export async function sendProjectUpdate(formData: FormData) {
   });
   if (!project) return;
 
-  const sent = await sendMail({
+  const hub = await jobHubToken(projectId);
+  const sent = await sendToClient({
     to: project.client.email,
-    replyTo: site.email,
     subject: `Update on your Kulworks project: ${project.title}`,
-    text: `Hi ${project.client.name},\n\n${message}\n\nKulworks`,
+    text: `Hi ${project.client.name},\n\n${message}\n\n${hub ? `Everything for this job is on your job page:\n${SITE_URL}${jobPath(hub)}\n\n` : ""}Kulworks`,
   });
   if (!mailSent(sent)) redirect(`/admin/projects/${projectId}/?error=email`);
   await prisma.activity.create({
@@ -1296,9 +1301,8 @@ export async function notifyProjectStarted(formData: FormData) {
   );
   const text = lines.join("\n");
 
-  const sent = await sendMail({
+  const sent = await sendToClient({
     to: project.client.email,
-    replyTo: site.email,
     subject: `We've started your Kulworks project: ${project.title}`,
     text,
   });
@@ -1360,6 +1364,7 @@ export async function createInvoiceDoc(formData: FormData) {
         clientId: project!.clientId,
         taxRate: num(formData, "taxRate") ?? 0,
         depositPct: num(formData, "depositPct"),
+        proofFirst: type === "QUOTE" ? formData.get("proofFirst") === "on" : true,
         dueDate: date(formData, "dueDate") ?? undefined,
         notes: s(formData, "notes"),
         items: { create: items },
@@ -1489,6 +1494,7 @@ export async function updateInvoiceDoc(formData: FormData) {
       type: (s(formData, "type") === "QUOTE" ? "QUOTE" : "INVOICE") as never,
       taxRate: num(formData, "taxRate") ?? 0,
       depositPct: num(formData, "depositPct"),
+      proofFirst: s(formData, "type") === "QUOTE" ? formData.get("proofFirst") === "on" : true,
       dueDate: date(formData, "dueDate") ?? null,
       notes: keepBalanceMarker(inv.notes, s(formData, "notes")),
       // Replace the lines wholesale; they are only meaningful as a set.
@@ -1531,6 +1537,8 @@ export async function quoteFromSubmission(formData: FormData) {
         stage: "QUOTED",
         clientId,
         requested: sub.message,
+        driveFolderUrl: sub.driveFolderUrl,
+        driveFolderId: folderIdFromUrl(sub.driveFolderUrl),
       },
     });
     projectId = project.id;
@@ -1571,7 +1579,8 @@ export async function quoteFromSubmission(formData: FormData) {
   redirect(`/admin/projects/${projectId}/?done=quote-started#doc-${invoice.id}`);
 }
 
-// Email the quote/invoice to the client (link to the public view+pay page). Manual only.
+// Email the quote/invoice to the client. Manual only. Every email points at the job page
+// (the quote link), where the quote, upload box, proof and payment all live.
 export async function sendInvoiceDoc(formData: FormData) {
   const { profile } = await requireProfile();
   const id = s(formData, "id");
@@ -1584,9 +1593,12 @@ export async function sendInvoiceDoc(formData: FormData) {
 
   const { total } = computeTotals(inv.items, inv.taxRate);
   const { dueNow, balance, hasSplit } = splitDeposit(total, inv.depositPct);
-  const url = `${SITE_URL}/invoice/${inv.token}/`;
   const isQuote = inv.type === "QUOTE";
   const isPaid = inv.status === "PAID";
+  // A quote IS the job page. An invoice points at its job's page (falls back to its own
+  // page for a job billed without a quote).
+  const hubToken = isQuote ? inv.token : (await jobHubToken(inv.projectId)) ?? inv.token;
+  const url = `${SITE_URL}${jobPath(hubToken)}`;
   // A quote's clock starts the first time it goes out; resending keeps the date,
   // unless it has already run out. Resending an expired quote is a fresh offer, and
   // an email promising "good through" a past date would land on an expired page.
@@ -1595,46 +1607,69 @@ export async function sendInvoiceDoc(formData: FormData) {
       ? inv.validUntil
       : defaultValidUntil()
     : null;
+  const first = inv.client.name.trim().split(/\s+/)[0] || "there";
 
-  // The shared Drive folder lives on the submission that started the project, so
-  // the one email can carry artwork, money and the address ask together.
-  const linkedSub = await prisma.submission.findFirst({
-    where: { projectId: inv.projectId, driveFolderUrl: { not: null } },
-    orderBy: { createdAt: "desc" },
-    select: { driveFolderUrl: true },
-  });
-  const includeDrive = formData.get("includeDrive") === "on" && !!linkedSub?.driveFolderUrl;
+  const lines: (string | null)[] = isQuote
+    ? [
+        `Hi ${first},`,
+        "",
+        `Here's your quote for "${inv.project.title}" (${inv.number}).`,
+        "",
+        `Total: $${total.toFixed(2)}`,
+        hasSplit ? `To book it: $${dueNow.toFixed(2)} deposit now, $${balance.toFixed(2)} on completion.` : null,
+        validUntil ? `Good through ${fmtValidDate(validUntil)}.` : null,
+        "",
+        "Everything for this job lives on one page: the quote, a spot to upload your files, your proof, and your invoice when it's ready.",
+        url,
+        "",
+        `If it looks right, tap "Looks good" on the page and you'll get a spot right there to upload your files (or just reply with them).`,
+        ...(inv.proofFirst
+          ? [
+              "",
+              "Once your art arrives:",
+              "1. I prep the files and print one sample.",
+              "2. I upload photos to a private approval page on my site, linked right on your job page.",
+              "3. Once you approve, I print the rest and ship. Printing takes about 2 to 3 days after approval.",
+              hasSplit ? null : "Payment is due once you approve the sample.",
+            ]
+          : []),
+        "",
+        "Thanks,",
+        "Sam",
+        "Kulworks",
+      ]
+    : [
+        `Hi ${first},`,
+        "",
+        isPaid
+          ? `Here's your receipt for "${inv.project.title}" (${inv.number}): $${(hasSplit ? dueNow : total).toFixed(2)} paid. Thank you!`
+          : `Your invoice for "${inv.project.title}" is ready (${inv.number}).`,
+        "",
+        isPaid
+          ? null
+          : hasSplit
+          ? `Deposit due now: $${dueNow.toFixed(2)} (the $${balance.toFixed(2)} balance is billed when your order is ready)`
+          : `Amount due: $${total.toFixed(2)}`,
+        !isPaid && inv.dueDate ? `Due: ${inv.dueDate.toLocaleDateString("en-US", { timeZone: "UTC" })}` : null,
+        isPaid ? null : "",
+        isPaid ? "Your job page:" : "You can pay with Venmo or Zelle right on your job page:",
+        url,
+        "",
+        "Thanks,",
+        "Sam",
+        "Kulworks",
+      ];
 
-  const lines = [
-    `Hi ${inv.client.name},`,
-    "",
-    isQuote
-      ? `Here's your quote from Kulworks (${inv.number}) for "${inv.project.title}":`
-      : `Here's your invoice from Kulworks (${inv.number}) for "${inv.project.title}":`,
-    "",
-    `Total: $${total.toFixed(2)}`,
-    hasSplit ? `To book it: $${dueNow.toFixed(2)} now, $${balance.toFixed(2)} on completion.` : "",
-    inv.dueDate ? `Due: ${inv.dueDate.toLocaleDateString("en-US")}` : "",
-    validUntil ? `This quote is good through ${fmtValidDate(validUntil)}.` : "",
-    "",
-    !isPaid && (hasSplit || !isQuote) ? "View and pay it here:" : "View it here:",
-    url,
-    "",
-    "That same page has a short form for your shipping address, so we have everything we need to start.",
-    includeDrive ? "" : null,
-    includeDrive ? "Your artwork folder (upload files or review proofs here):" : null,
-    includeDrive ? linkedSub!.driveFolderUrl! : null,
-    "",
-    "Thank you!",
-    "Kulworks",
-  ].filter((l) => l !== null && l !== "") as string[];
-
-  await sendMail({
+  const sent = await sendToClient({
     to: inv.client.email,
-    replyTo: site.email,
-    subject: `Your Kulworks ${isQuote ? "quote" : "invoice"}: ${inv.number}`,
-    text: lines.join("\n"),
+    subject: isQuote
+      ? `Your Kulworks quote: ${inv.number}`
+      : isPaid
+      ? `Your Kulworks receipt: ${inv.number}`
+      : `Your Kulworks invoice: ${inv.number}`,
+    text: lines.filter((l) => l !== null).join("\n"),
   });
+  if (!mailSent(sent)) redirect(`/admin/projects/${inv.projectId}/?error=email`);
   await prisma.invoice.update({
     where: { id },
     data: {
@@ -1646,7 +1681,7 @@ export async function sendInvoiceDoc(formData: FormData) {
   await prisma.activity.create({
     data: {
       type: "EMAIL_SENT",
-      body: `${docLabel(inv.type)} ${inv.number} emailed to ${inv.client.email} ($${total.toFixed(2)}).`,
+      body: `${docLabel(inv.type)} ${inv.number} emailed to ${inv.client.email} ($${total.toFixed(2)}), linking the job page.`,
       projectId: inv.projectId,
       clientId: inv.clientId,
       authorId: profile.id,
@@ -1673,14 +1708,7 @@ export async function markInvoicePaid(formData: FormData) {
   // Once a quote has its invoice, the deposit is collected there. Checked here too (not
   // just by hiding the button) so a stale tab can't record the same deposit twice.
   if (inv.type === "QUOTE") {
-    const converted = await prisma.invoice.count({
-      where: {
-        sourceQuoteId: inv.id,
-        deletedAt: null,
-        status: { not: "VOID" },
-        OR: [{ notes: null }, { NOT: { notes: { startsWith: BALANCE_PREFIX } } }],
-      },
-    });
+    const converted = await prisma.invoice.count({ where: mainInvoiceWhere(inv.id) });
     if (converted > 0) redirect(`/admin/projects/${inv.projectId}/?error=already-converted`);
   }
   // On a split, this document only collects the deposit; the balance is billed on
@@ -1713,6 +1741,14 @@ export async function markInvoicePaid(formData: FormData) {
       authorId: profile.id,
     },
   });
+  // Paid up = the job is on. Nothing billed is left open -> move an early stage to In production.
+  const job = await loadJob(inv.projectId);
+  if (job && job.unpaid.length === 0 && ["LEAD", "QUOTED", "APPROVED"].includes(job.project.stage)) {
+    await prisma.project.update({ where: { id: inv.projectId }, data: { stage: "IN_PRODUCTION" } });
+    await prisma.activity.create({
+      data: { type: "STATUS_CHANGE", body: "Paid up: stage moved to In production.", projectId: inv.projectId, clientId: inv.clientId, authorId: profile.id },
+    });
+  }
   await logAudit(profile.email, "invoice.paid", `${inv.number} $${total.toFixed(2)} (${method})`);
   revalidateAdmin();
   redirect(`/admin/projects/${inv.projectId}/?done=doc-paid`);
@@ -1731,7 +1767,8 @@ export async function voidInvoiceDoc(formData: FormData) {
   redirect(`/admin/projects/${inv.projectId}/?done=doc-void`);
 }
 
-// Turn an approved quote into an invoice (copies the line items).
+// Turn a quote into an invoice by hand (a DRAFT to check before Send). The automatic
+// path (lib/auto-invoice.ts) uses the same copier, so both make the same invoice.
 export async function convertQuoteToInvoice(formData: FormData) {
   const { profile } = await requireProfile();
   const id = s(formData, "id");
@@ -1744,47 +1781,29 @@ export async function convertQuoteToInvoice(formData: FormData) {
     redirect(`/admin/projects/${q.projectId}/?error=quote-deposit-paid`);
   }
   // One invoice per quote. A second click would bill the client twice.
-  const already = await prisma.invoice.findFirst({
-    where: {
-      sourceQuoteId: q.id,
-      deletedAt: null,
-      status: { not: "VOID" },
-      // A null note is "not a balance" too; NOT on its own would skip those rows.
-      OR: [{ notes: null }, { NOT: { notes: { startsWith: BALANCE_PREFIX } } }],
-    },
-    select: { number: true },
-  });
-  if (already) {
+  if (await prisma.invoice.count({ where: mainInvoiceWhere(q.id) })) {
     redirect(`/admin/projects/${q.projectId}/?error=already-converted`);
   }
-
-  const { number } = await createNumberedDoc("INVOICE", (number, tx) =>
-    tx.invoice.create({
-      data: {
-        number,
-        type: "INVOICE",
-        status: "DRAFT",
-        projectId: q.projectId,
-        clientId: q.clientId,
-        taxRate: q.taxRate,
-        depositPct: q.depositPct, // keep the split; converting shouldn't quietly bill in full
-        sourceQuoteId: q.id, // so the quote page can show this invoice once it is sent
-        dueDate: q.dueDate ?? undefined,
-        notes: q.notes,
-        items: {
-          create: q.items.map((it, i) => ({
-            description: it.description,
-            quantity: it.quantity,
-            unitPrice: it.unitPrice,
-            position: i,
-          })),
-        },
-      },
-    })
+  const { number, doc } = await createNumberedDoc("INVOICE", async (number, tx) =>
+    (await tx.invoice.count({ where: mainInvoiceWhere(q.id) })) ? null : copyQuoteToInvoice(tx, q, number, "DRAFT")
   );
+  if (!doc) redirect(`/admin/projects/${q.projectId}/?error=already-converted`);
   await logAudit(profile.email, "invoice.convert", `${q.number} → ${number}`);
   revalidateAdmin();
   redirect(`/admin/projects/${q.projectId}/?done=doc-converted`);
+}
+
+// The job's Drive folder from the admin: same folder the client's Looks good makes
+// (adopts the one their request made, else makes "C - <client> - <project>"), shared with them.
+export async function makeProjectFolder(formData: FormData) {
+  const { profile } = await requireProfile();
+  const projectId = s(formData, "projectId");
+  if (!projectId) return;
+  const folder = await ensureProjectFolder(projectId);
+  if (!folder) redirect(`/admin/projects/${projectId}/?error=folder`);
+  await logAudit(profile.email, "project.folder", folder.url);
+  revalidateAdmin();
+  redirect(`/admin/projects/${projectId}/?done=folder`);
 }
 
 // Set (or extend) how long a quote holds. Allowed on sent quotes too: extending

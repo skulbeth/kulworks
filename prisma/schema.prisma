@@ -438,6 +438,10 @@ model Invoice {
   // Invoices made from a quote (convert, or the balance half of a split) point back
   // to it, so the quote link stays the client's one page for the whole job.
   sourceQuoteId     String?
+  // Quotes only: true = a sample proof gets approved before anything is billed (card jobs);
+  // the invoice goes up when every proof is approved. false = no proof (3D prints, tokens):
+  // the invoice goes up the moment the client accepts.
+  proofFirst        Boolean   @default(true)
   deletedAt  DateTime? // soft delete — archived, never hard-deleted
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
