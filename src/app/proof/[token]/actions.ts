@@ -13,6 +13,7 @@ import { sendMail } from "@/lib/email";
 import { notify } from "@/lib/notify";
 import { rateLimit } from "@/lib/rate-limit";
 import { itemLabel, publicProofUrl } from "@/lib/proofs";
+import { ensureInvoiceForProject } from "@/lib/auto-invoice";
 import { site } from "@/data/site";
 
 const MAX_NOTE = 2000;
@@ -224,6 +225,13 @@ async function claimApproval(proof: LiveProof, now: Date): Promise<boolean> {
       clientId: proof.project.clientId,
     },
   });
+  // Accepted quote + approved proof = time to pay: the invoice goes up now, so the
+  // page refreshes with Pay now on it. A failure here never undoes the approval.
+  try {
+    if (await ensureInvoiceForProject(proof.projectId)) revalidatePath("/invoice/[token]", "page");
+  } catch (e) {
+    console.error("[proof] auto invoice failed:", e);
+  }
   return true;
 }
 

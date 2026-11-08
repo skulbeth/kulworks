@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 import { requireProfile, currentSessionId, trustedFactorIds, setTrustedFactorIds } from "@/lib/auth";
 import { createClient as createSupabaseServer } from "@/lib/supabase/server";
 import { logError } from "@/lib/log-error";
@@ -27,6 +26,7 @@ import {
   keepBalanceMarker,
 } from "@/lib/invoice";
 import { site } from "@/data/site";
+import { createNumberedDoc } from "@/lib/doc-number";
 
 const SITE_URL = "https://kulworks.com";
 
@@ -1336,23 +1336,6 @@ function lineItems(fd: FormData) {
     });
   }
   return out;
-}
-
-// Create a numbered quote/invoice. The number is picked and the row written inside one
-// transaction holding a lock, so two docs made at once (double click, two tabs) can't
-// both get the same Q-/INV- number.
-async function createNumberedDoc<T>(
-  type: "QUOTE" | "INVOICE",
-  create: (number: string, tx: Prisma.TransactionClient) => Promise<T>
-): Promise<{ number: string; doc: T }> {
-  return prisma.$transaction(async (tx) => {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(4207001)`;
-    const rows = await tx.invoice.findMany({ where: { type: type as never }, select: { number: true } });
-    // Highest number in use + 1 (not a count, which repeats a number if a row is ever removed).
-    const top = rows.reduce((m, r) => Math.max(m, Number(r.number.match(/(\d+)$/)?.[1] ?? 0)), 0);
-    const number = `${type === "QUOTE" ? "Q" : "INV"}-${String(top + 1).padStart(4, "0")}`;
-    return { number, doc: await create(number, tx) };
-  });
 }
 
 // Create a quote or invoice (DRAFT) for a project.

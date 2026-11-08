@@ -16,6 +16,7 @@ import { sendMail } from "@/lib/email";
 import { notify, projectUrl } from "@/lib/notify";
 import { computeTotals, quoteExpired, fmtValidDate } from "@/lib/invoice";
 import { ensureProjectFolder } from "@/lib/project-folder";
+import { ensureInvoiceForProject } from "@/lib/auto-invoice";
 import { site } from "@/data/site";
 
 const NOTIFY_TO = () => process.env.QUOTE_NOTIFY_EMAIL || "kulworksdesign@gmail.com";
@@ -156,6 +157,14 @@ export async function acceptQuote(formData: FormData) {
       "Reply to this email to answer them directly.",
     ].join("\n"),
   });
+
+  // Proof already approved (the art was settled before they pressed this)? Then the
+  // invoice goes up now and the page they land back on has Pay now on it.
+  try {
+    await ensureInvoiceForProject(q.projectId);
+  } catch (e) {
+    console.error("[quote] auto invoice failed:", e);
+  }
 
   revalidatePath(`/invoice/${q.token}`);
   revalidatePath("/admin", "layout");
