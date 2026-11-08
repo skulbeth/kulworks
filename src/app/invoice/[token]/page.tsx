@@ -140,7 +140,7 @@ export default async function JobPage({
                 : unpaidInvoice.kind === "Balance"
                 ? "Your balance invoice is ready"
                 : "Your invoice is ready"}
-              : {fmtMoney(unpaidInvoice.amount)}
+              {`: ${fmtMoney(unpaidInvoice.amount)}`}
             </p>
             <p className="mt-0.5 text-muted">Pay it below with Venmo or Zelle.</p>
             <a href="#pay" className={cta}>Pay now</a>
