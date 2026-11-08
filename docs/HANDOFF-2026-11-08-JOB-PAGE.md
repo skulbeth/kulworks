@@ -53,4 +53,6 @@ quote / invoice / proof / folder pieces built over time duplicate each other and
 - [x] submission -> project (convert + quoteFromSubmission) copies the submission's folder onto the project;
       ensureProjectFolder adopts only this job's submission folder (or an unattached one), never another job's
 - [x] tsc + build clean; pure tests 17/17 (scratchpad harness/pure.test.mjs)
-- [ ] Sam runs db:deploy; DB e2e test; push; data fix Aaron; verify live
+- [x] Sam ran db:deploy; DB e2e 17/17 + local page checks (throwaway rows deleted); pushed 3ba92ae + 0d332e3 LIVE; verified Q-0003/Q-0010/INV-0010 redirect live
+- [x] Aaron fixed by Sam running a one-off script (deleted after): Q-0001 PAID 10-16 + proofFirst off, INV-0005 linked. Live: Deposit Paid, Balance $65 Due.
+- Open: Shontel Q-0006 probably should be proofFirst OFF (Sam to untick). Step chips for jobs accepted outside the page (Aaron) show Accepted undone.
