@@ -31,7 +31,7 @@ export const guides: Guide[] = [
     description:
       "What custom card printing costs: setup fees, per-card rates, sizes, quantity discounts, design, and finishing, with a real example deck priced out.",
     datePublished: "2026-07-24",
-    dateModified: "2026-10-25", // tarot rate $0.60 added; poker $0.30 + bulk tiers trimmed 10-22
+    dateModified: "2026-11-12", // 11-12 rates raised: poker $0.40, tarot $0.70 (were $0.30 / $0.60)
     readMinutes: 4,
     intro:
       "Price is usually the first question, and the honest answer is that it depends on a few things. Here is what actually drives the cost of a custom card order, with real numbers, so you can ballpark your project before you ask for a quote.",
@@ -39,14 +39,14 @@ export const guides: Guide[] = [
       {
         h: "What goes into the price",
         body: [
-          "A few things set the price. There is a one-time setup fee per project that covers getting your files ready to run on the press, and then a per-card rate. For print-ready poker-size cards that rate is $0.30 each, and there is no minimum, so a single deck, or even a single card, is fine.",
-          "Card size and quantity move the number too. Tarot size is about twice the poker price, at $0.60 a card, while bigger runs earn a discount on printing: 5% at 500 cards and 10% at 1,000, though the total never works out to less than the per-card rate ($0.30 poker, $0.60 tarot). Design work, if your files are not already print-ready, plus finishing like a box or sleeves and delivery, are add-ons priced to the project.",
+          "A few things set the price. There is a one-time setup fee per project that covers getting your files ready to run on the press, and then a per-card rate. For print-ready poker-size cards that rate is $0.40 each, and there is no minimum, so a single deck, or even a single card, is fine.",
+          "Card size and quantity move the number too. Tarot size is $0.70 a card, while bigger runs earn a discount on printing: 5% at 500 cards and 10% at 1,000, though the total never works out to less than the per-card rate ($0.40 poker, $0.70 tarot). Design work, if your files are not already print-ready, plus finishing like a box or sleeves and delivery, are add-ons priced to the project.",
         ],
       },
       {
         h: "A rough example",
         body: [
-          "Say you want a single poker-size prototype deck of 54 cards and your files are print-ready. That is a $25 setup fee plus $0.30 per card, so $41.20 for the printing. Add a custom 3D-printed box for $9 if you want the deck to feel finished, and a complete one-off prototype deck comes to $50.20, before delivery. Larger runs cost more in total but less per card.",
+          "Say you want a single poker-size prototype deck of 54 cards and your files are print-ready. That is a $25 setup fee plus $0.40 per card, so $46.60 for the printing. Add a custom 3D-printed box for $9 if you want the deck to feel finished, and a complete one-off prototype deck comes to $55.60, before delivery. Larger runs cost more in total but less per card.",
         ],
       },
       {
@@ -168,7 +168,7 @@ export const guides: Guide[] = [
           "Bridge is a touch narrower, about 2.25 by 3.5 inches (57 by 89 mm). The slimmer width makes a large hand easier to hold and fan.",
           "Tarot is larger overall, about 2.75 by 4.75 inches (70 by 121 mm). The extra space gives illustration more room to breathe.",
           "Giant or jumbo cards are oversized, often around 3.5 by 5 inches or larger, built to be seen from a distance.",
-          "We print poker and tarot as standard sizes, with prices in the card calculator: $0.30 a card for poker and $0.60 for tarot. Bridge, giant, and oracle sizes are custom orders, so ask for a quote.",
+          "We print poker and tarot as standard sizes, with prices in the card calculator: $0.40 a card for poker and $0.70 for tarot. Bridge, giant, and oracle sizes are custom orders, so ask for a quote.",
         ],
       },
       {

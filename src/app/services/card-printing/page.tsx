@@ -37,7 +37,7 @@ export default function CardPrintingHub() {
           <CardPrintingAccordion />
           <p className="mt-8 text-sm text-muted">
             Need a size you don&apos;t see here? We print{" "}
-            <span className="text-foreground">tarot cards</span> as a standard size ($0.60 a card),
+            <span className="text-foreground">tarot cards</span> as a standard size ($0.70 a card),
             and{" "}
             <span className="text-foreground">bridge, giant, and jumbo cards</span> on custom order.{" "}
             <a href="/contact/?type=card-printing" className="font-semibold text-blue hover:underline">

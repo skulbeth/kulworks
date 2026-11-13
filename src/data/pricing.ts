@@ -29,10 +29,10 @@ export const pricing: PriceGroup[] = [
     intro: "Poker and tarot size cards. No minimums, so a single deck, or even a single card, is fine.",
     items: [
       { label: "Setup fee (one-time, per project)", price: "$25" },
-      { label: "Per card, poker size (print-ready files)", price: "$0.30" },
-      { label: "Per card, tarot size (print-ready files)", price: "$0.60" },
+      { label: "Per card, poker size (print-ready files)", price: "$0.40" },
+      { label: "Per card, tarot size (print-ready files)", price: "$0.70" },
       { label: "Custom sizes (bridge, giant, oracle)", price: "By quote, on request" },
-      { label: "Bulk discount (on printing)", price: "5% at 500 cards, 10% at 1,000 (never under the per-card rate overall: $0.30 poker, $0.60 tarot)" },
+      { label: "Bulk discount (on printing)", price: "5% at 500 cards, 10% at 1,000 (never under the per-card rate overall: $0.40 poker, $0.70 tarot)" },
       { label: "Super rush (your project goes to the front of the queue)", price: "$25 flat" },
       { label: "Delivery", price: "Local pickup free. Shipping is added to the invoice: in the US usually under $15 for a run of about 120 cards, Canada and Mexico about $25, nowhere further. Travel fee for far meetups" },
     ],

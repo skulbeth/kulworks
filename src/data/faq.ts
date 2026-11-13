@@ -23,8 +23,8 @@ export const faqs: Faq[] = [
     q: "What card sizes do you print?",
     a: "Poker and tarot are our standard sizes, both priced in the card calculator. Other sizes are available as a custom order, just ask:",
     bullets: [
-      "Poker (standard, $0.30 a card): 2.5 x 3.5 in / 63 x 88 mm",
-      "Tarot (standard, $0.60 a card): 2.75 x 4.75 in / 70 x 121 mm",
+      "Poker (standard, $0.40 a card): 2.5 x 3.5 in / 63 x 88 mm",
+      "Tarot (standard, $0.70 a card): 2.75 x 4.75 in / 70 x 121 mm",
       "Giant / jumbo (custom order): about 3.5 x 5 in / 89 x 127 mm",
     ],
   },

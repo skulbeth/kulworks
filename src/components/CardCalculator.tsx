@@ -14,11 +14,12 @@ import { SUPER_RUSH_FEE, SUPER_RUSH_LABEL, FEES_NOTE, SHIP_COUNTRIES, shipCountr
 // Keep in step with data/pricing.ts and data/guides.ts, which publish the same rates.
 // Poker: $0.13 until 2026-10-20, $0.25 until 2026-10-22. Tarot set 2026-10-25 at 2x poker
 // (about 9-10 fit a bed vs 18 poker, so twice the beds and hand placement).
+// 2026-11-12 (Sam): poker $0.30 -> $0.40, tarot $0.60 -> $0.70.
 // Floor (Sam, 2026-10-22): setup + printing never works out under the size's rate per card,
 // however big the run. The bulk discount stops where it would cross it.
 const SIZES = {
-  poker: { label: "Poker (2.5 x 3.5 in)", rate: 0.3 },
-  tarot: { label: "Tarot (2.75 x 4.75 in)", rate: 0.6 },
+  poker: { label: "Poker (2.5 x 3.5 in)", rate: 0.4 },
+  tarot: { label: "Tarot (2.75 x 4.75 in)", rate: 0.7 },
 } as const;
 type SizeKey = keyof typeof SIZES;
 
