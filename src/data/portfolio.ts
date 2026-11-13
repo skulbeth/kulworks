@@ -75,7 +75,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/studio/deck-printed-and-riffled.mp4",
       "/images/portfolio/cards/panic-cards-spread-still.webp",
     ],
-    alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, finished character and sports cards, a gold-foil ticket card, full-art hero cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
+    alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, finished character and sports cards, a golden ticket card, full-art hero cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
   },
   
   {

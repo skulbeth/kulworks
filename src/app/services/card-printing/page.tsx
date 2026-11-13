@@ -5,6 +5,7 @@ import SectionHeading from "@/components/SectionHeading";
 import JsonLd from "@/components/JsonLd";
 import CardPrintingAccordion from "@/components/CardPrintingAccordion";
 import { cardHub } from "@/data/cardCluster";
+import { cardSpecs } from "@/data/cardSpecs";
 import { cardHubServiceSchema, breadcrumbSchema } from "@/lib/structured-data";
 import { withSocial } from "@/lib/page-meta";
 
@@ -45,6 +46,25 @@ export default function CardPrintingHub() {
             </a>{" "}
             and we&apos;ll quote it.
           </p>
+        </Container>
+      </section>
+
+      {/* The questions most quote requests ask, answered before they have to. */}
+      <section id="what-our-cards-are" className="scroll-mt-24 border-b border-border bg-surface/30">
+        <Container className="py-12">
+          <SectionHeading
+            eyebrow="The details"
+            title="What our cards are"
+            intro="The straight answers to what people ask most, so you know what you're getting before you ask for a quote."
+          />
+          <dl className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {cardSpecs.map((s) => (
+              <div key={s.label} className="rounded-2xl border border-border bg-surface p-5">
+                <dt className="text-sm font-bold uppercase tracking-wide text-gold">{s.label}</dt>
+                <dd className="mt-2 text-sm text-muted">{s.body}</dd>
+              </div>
+            ))}
+          </dl>
         </Container>
       </section>
 

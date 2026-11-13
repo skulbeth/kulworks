@@ -34,7 +34,7 @@ export const faqs: Faq[] = [
   },
   {
     q: "Do you have a minimum order, or can you print a single deck?",
-    a: "We take one-off jobs and short runs. A single prototype deck is fine, and so is a small batch for a club, store, or event.",
+    a: "No minimum. A single deck is fine, and we're set up for 1 to 5 decks. Planning a bigger run? Send it anyway. We'll look over your project and point you to the best printer for it. We know them all.",
   },
   {
     q: "What is UV card and tile printing?",
@@ -74,7 +74,19 @@ export const faqs: Faq[] = [
   },
   {
     q: "Do you make custom card boxes and offer sleeves?",
-    a: "Yes. Because we print cards and run our own 3D printers, we can finish your deck in-house with custom 3D-printed card boxes and sleeve upgrades, offered in tiers to fit your project and budget.",
+    a: "Yes. For standard 52-card decks we can custom order printed tuck boxes. Any other deck gets a custom 3D-printed box made here, since we run our own 3D printers. Sleeves come in standard and premium. We don't shrink wrap.",
+  },
+  {
+    q: "What card stock and finish do you use?",
+    a: "White 310gsm card stock with rounded corners, which is standard playing-card weight, not extra-thick. Our UV finish sits between semi-gloss and satin, with a slight texture. It takes a Sharpie, so cards can be autographed.",
+  },
+  {
+    q: "Do you offer foil, holographic, or metallic cards?",
+    a: "No. We don't do foil, holographic, or metallic stock. Gold and shiny looks in your art are printed as flat color.",
+  },
+  {
+    q: "Will I see a proof before you print?",
+    a: "Yes. Every card order gets a proof to review and approve before anything prints.",
   },
   {
     q: "Do you print double-sided cards and custom card backs?",
