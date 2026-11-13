@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import InfoPopup from "@/components/InfoPopup";
 import ShippingWhy from "@/components/ShippingWhy";
+import { SIZES, SETUP_FEE, cardPrintingCost, usd, type SizeKey } from "@/lib/card-pricing";
 import { SUPER_RUSH_FEE, SUPER_RUSH_LABEL, FEES_NOTE, SHIP_COUNTRIES, shipCountryOf, isTightDate, todayISO } from "@/lib/order-details";
 
 /**
@@ -10,27 +11,12 @@ import { SUPER_RUSH_FEE, SUPER_RUSH_LABEL, FEES_NOTE, SHIP_COUNTRIES, shipCountr
  * estimates, not quotes. Adjust the rate constants below if pricing changes.
  */
 
-// Standard sizes with a published rate; bridge, giant and oracle stay custom and quote-only.
-// Keep in step with data/pricing.ts and data/guides.ts, which publish the same rates.
-// Poker: $0.13 until 2026-10-20, $0.25 until 2026-10-22. Tarot set 2026-10-25 at 2x poker
-// (about 9-10 fit a bed vs 18 poker, so twice the beds and hand placement).
-// 2026-11-12 (Sam): poker $0.30 -> $0.40, tarot $0.60 -> $0.70.
-// Floor (Sam, 2026-10-22): setup + printing never works out under the size's rate per card,
-// however big the run. The bulk discount stops where it would cross it.
-const SIZES = {
-  poker: { label: "Poker (2.5 x 3.5 in)", rate: 0.4 },
-  tarot: { label: "Tarot (2.75 x 4.75 in)", rate: 0.7 },
-} as const;
-type SizeKey = keyof typeof SIZES;
-
-const SETUP_FEE = 25; // one-time per project
+// Sizes, rates, setup fee and the bulk discount live in lib/card-pricing (shared with the
+// quick estimate on the quote form).
 const LAYOUT_FEE = 40; // per layout we design (front or back); each is a template all cards share
 const BOX_BASE = 9; // custom 3D-printed box for a deck under 100 cards
 const BOX_PER_100 = 18; // larger decks: $18 per 100 cards (total)
 const SLEEVE_PER_100: Record<string, number> = { standard: 10, premium: 15 };
-
-const usd = (n: number) =>
-  n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 
 export default function CardCalculator() {
   const [sizeKey, setSizeKey] = useState<SizeKey>("poker");
@@ -57,14 +43,7 @@ export default function CardCalculator() {
 
   const size = SIZES[sizeKey];
   const MIN_PER_CARD = size.rate;
-  const printing = totalCards * size.rate;
-
-  // Bulk discount on printing (setup fee always stays). Trimmed 2026-10-22 from
-  // 5% @ 250 / 10% @ 500 / 12.5% @ 800. Keep in step with data/pricing.ts and data/guides.ts.
-  const bulkRate = totalCards >= 1000 ? 0.1 : totalCards >= 500 ? 0.05 : 0;
-  const maxDiscount = Math.max(0, SETUP_FEE + printing - MIN_PER_CARD * totalCards);
-  const bulkDiscount = Math.min(printing * bulkRate, maxDiscount);
-  const bulkCapped = bulkRate > 0 && printing * bulkRate > maxDiscount;
+  const { printing, bulkRate, bulkDiscount, bulkCapped } = cardPrintingCost(sizeKey, totalCards);
 
   // Design: $40 per layout, for as many distinct front and back layouts as needed.
   const frontN = Math.max(0, Math.floor(frontLayouts) || 0);

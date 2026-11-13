@@ -6,6 +6,8 @@ import { services } from "@/data/services";
 import { site } from "@/data/site";
 import TurnstileWidget from "@/components/TurnstileWidget";
 import ShippingWhy from "@/components/ShippingWhy";
+import QuickCardEstimate from "@/components/QuickCardEstimate";
+import { ESTIMATE_MARKER } from "@/lib/card-pricing";
 import {
   DELIVERY_OPTIONS,
   CARD_BACK_OPTIONS,
@@ -241,6 +243,15 @@ function FormInner() {
         {/* Submitted as a single, readable field */}
         <input type="hidden" name="projectType" value={selectedTypes.join(", ")} />
       </fieldset>
+
+      {/* Card orders that didn't come from the calculator get a price before they send. */}
+      {isCardOrder && !message.includes(ESTIMATE_MARKER) && (
+        <QuickCardEstimate
+          onAdd={(summary) =>
+            setMessage((m) => (m.trim() ? m.trimEnd() + "\n\n" + summary : summary))
+          }
+        />
+      )}
 
       <div>
         <label className={label} htmlFor="message">Project details</label>
