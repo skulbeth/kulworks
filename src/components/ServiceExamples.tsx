@@ -23,7 +23,8 @@ export default function ServiceExamples({
       aria-label={`See all ${count} ${title} examples in the portfolio`}
       className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-surface/60 px-6 py-3 text-base font-semibold text-foreground transition-colors hover:border-blue hover:text-blue"
     >
-      See all {count} examples &rarr;
+      {/* One string: inline-flex makes each text node its own item and drops the spaces. */}
+      {`See all ${count} examples →`}
     </Link>
   );
 }
