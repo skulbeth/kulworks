@@ -10,6 +10,7 @@ import { examplesForService, portfolioHrefForService } from "@/data/portfolio";
 import ServiceExamples from "@/components/ServiceExamples";
 import ServiceImage from "@/components/ServiceImage";
 import { withSocial } from "@/lib/page-meta";
+import { cardSpecs } from "@/data/cardSpecs";
 
 export const metadata: Metadata = withSocial({
   title: "Services: Card & Board Game Printing, Tiles & 3D",
@@ -117,13 +118,35 @@ export default function ServicesPage() {
                     </a>
                   )}
                 </div>
-                <ServiceImage
-                  label={`${s.name} sample`}
-                  src={s.image}
-                  alt={`${s.name} sample from Kulworks`}
-                  images={examplesForService(s.id)}
-                  title={s.name}
-                />
+                <div>
+                  <ServiceImage
+                    label={`${s.name} sample`}
+                    src={s.image}
+                    alt={`${s.name} sample from Kulworks`}
+                    images={examplesForService(s.id)}
+                    title={s.name}
+                  />
+                  {/* Brief "What our cards are" beside the card photo; full version on the card hub. */}
+                  {s.id === "card-printing" && (
+                    <div className="mt-4 rounded-xl border border-border bg-surface p-4">
+                      <p className="text-xs font-bold uppercase tracking-wider text-gold">What our cards are</p>
+                      <dl className="mt-2 grid gap-x-4 gap-y-1.5 text-sm sm:grid-cols-[auto_1fr]">
+                        {cardSpecs.map((c) => (
+                          <div key={c.label} className="contents">
+                            <dt className="font-semibold text-foreground">{c.label}</dt>
+                            <dd className="mb-1 text-muted sm:mb-0">{c.short}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                      <a
+                        href="/services/card-printing/#what-our-cards-are"
+                        className="mt-3 inline-block text-sm font-semibold text-blue hover:underline"
+                      >
+                        All the details &rarr;
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             </RevealOnScroll>
           </Container>
