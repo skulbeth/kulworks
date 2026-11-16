@@ -34,6 +34,7 @@ const TAG: Partial<Record<NotifyKind, string>> = {
   proof_notes: "bg-gold/15 text-gold",
   message: "bg-gold/15 text-gold",
   email_reply: "bg-gold/15 text-gold",
+  printer: "bg-sky-500/15 text-sky-600",
 };
 const SHORT: Record<NotifyKind, string> = {
   lead: "Lead",
@@ -49,6 +50,7 @@ const SHORT: Record<NotifyKind, string> = {
   payment: "Paid",
   upload: "Upload",
   testimonial: "Review",
+  printer: "Printer",
   system: "System",
 };
 

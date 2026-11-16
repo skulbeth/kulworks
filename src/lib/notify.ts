@@ -22,6 +22,7 @@ export const NOTIFY_KINDS = {
   payment: { label: "Payment received (detected from a receipt email)", urgent: true },
   upload: { label: "Client uploaded files", urgent: false },
   testimonial: { label: "New testimonial", urgent: false },
+  printer: { label: "WP3040 printer (started, almost done, finished)", urgent: true },
   system: { label: "Test and system messages", urgent: false },
 } as const;
 
