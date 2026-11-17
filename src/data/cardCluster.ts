@@ -176,14 +176,14 @@ export const cardPages: CardPage[] = [
     slug: "trading-cards",
     navLabel: "Trading-Style Cards",
     image: "/images/portfolio/cards/sports-cards.webp",
-    cardBlurb: "Team, school, and collectible-style card sets.",
+    cardBlurb: "Custom sports cards, team sets, and collectible-style cards.",
     title: `Custom Trading-Style Card Printing in ${CITY}`,
     metaDescription:
-      "Custom trading-style card printing in San Antonio for sports teams, schools, clubs, and collectibles. Branded card sets, single sets to short runs.",
+      "Custom sports cards and trading-style card printing in San Antonio for teams, schools, clubs, and collectibles. Single sets to short runs.",
     eyebrow: "Card printing",
     h1: "Custom Trading-Style Card Printing",
     intro:
-      "Trading-style cards turn a roster, a season, or a brand into something people want to keep. We print custom card sets for sports teams, schools, clubs, and collectibles, with your photos and design front and back.",
+      "Trading-style cards turn a roster, a season, or a brand into something people want to keep. We print custom sports cards and card sets for teams, schools, clubs, and collectibles, with your photos and design front and back.",
     sections: [
       {
         h: "Make the season a keepsake",
@@ -205,6 +205,7 @@ export const cardPages: CardPage[] = [
       "Great for fundraisers and giveaways",
     ],
     keywords: [
+      "custom sports cards San Antonio",
       "custom trading cards San Antonio",
       "sports team card printing",
       "school team trading cards",
