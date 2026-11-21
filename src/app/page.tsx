@@ -19,6 +19,7 @@ export default function HomePage() {
     { label: "Cut, then stacked", src: "/images/studio/hex-cut-and-stacked.mp4", alt: "Pulling the clicker press handle to cut a UV-printed hex tile, lifting the board clear and popping the finished piece out of the die, then stacks of the completed run sorted across the bench" },
     { label: "Custom 3D-printed awards", src: "/images/studio/custom-awards-trio.webp", alt: "Three custom race awards designed and 3D printed by Kulworks: a number one, a runner medallion, and a tower topper on UV-printed black bases" },
     { label: "Cards printed and cured", src: "/images/studio/cards-printing-and-sheet.mp4", alt: "A card run curing under the UV lamps on the flatbed, then the finished sheet of full-colour character cards" },
+    { label: "A fresh sheet of face cards", src: "/images/studio/face-card-sheet-lift.mp4", alt: "A slow pan across a freshly UV-printed sheet of illustrated face cards on the flatbed" },
     { label: "A shelf of painted figures", src: "/images/studio/painted-minis-lineup.webp", alt: "A lineup of painted 3D-printed character figures" },
     { label: "Resin prints, plate to batch", src: "/images/studio/resin-plate-and-batch.mp4", alt: "Resin miniatures lifting off the build plate, then the finished batch laid out" },
     { label: "Boards printed both sides", src: "/images/studio/board-uv-and-double-sided.mp4", alt: "Navy and gold game board panels printing on the UV flatbed under the curing lamps, then a finished panel flipped to show both sides in register" },

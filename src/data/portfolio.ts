@@ -59,13 +59,23 @@ export const portfolio: PortfolioItem[] = [
     images: [
       "/images/portfolio/cards/cards-variety.webp",
       "/images/studio/cards-printing-and-sheet.mp4",
+      "/images/portfolio/cards/face-cards-in-hand.webp",
+      "/images/portfolio/cards/face-card-sheet.webp",
       "/images/portfolio/cards/panic-cards-printing-still.webp",
+      "/images/portfolio/cards/party-game-zero-card.webp",
+      "/images/portfolio/cards/holiday-trading-card.webp",
+      "/images/portfolio/cards/holiday-card-backs-bed.webp",
       "/images/portfolio/cards/orc-character-card.webp",
       "/images/portfolio/cards/golden-ticket.webp",
       "/images/portfolio/cards/sports-cards.webp",
       // Players' faces and names are blurred on the youth league cards.
       "/images/portfolio/cards/player-card-in-hand.webp",
       "/images/portfolio/cards/game-cards.webp",
+      "/images/portfolio/cards/word-game-card.webp",
+      "/images/portfolio/cards/four-decks-backs.webp",
+      "/images/portfolio/design/printed-deck-boxes.webp",
+      "/images/portfolio/cards/card-backs-on-bed.webp",
+      "/images/portfolio/cards/game-card-decks.webp",
       "/images/portfolio/cards/fan-hero-cards.webp",
       "/images/portfolio/cards/game-deck-fan-still.webp",
       "/images/portfolio/cards/keepsake-cards.webp",
@@ -75,7 +85,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/studio/deck-printed-and-riffled.mp4",
       "/images/portfolio/cards/panic-cards-spread-still.webp",
     ],
-    alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, finished character and sports cards, a golden ticket card, full-art hero cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
+    alt: "Custom cards by Kulworks: decks printing and curing on the UV flatbed, illustrated face cards fanned in hand and a full printed sheet of them, holiday trading cards, a word game deck with its printed deck boxes, finished character and sports cards, a golden ticket card, full-art hero cards, decks fanned and riffled by hand, and a client deck bagged ready to ship.",
   },
   
   {
@@ -91,6 +101,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/tiles/hex-press-and-stacks.mp4",
       "/images/portfolio/tiles/board-panels.webp",
       "/images/portfolio/tiles/board-tiles-still.webp",
+      "/images/portfolio/tiles/cards-on-hex-board.webp",
       "/images/portfolio/tiles/tokens-wood-stacks.webp",
       "/images/portfolio/tiles/tokens-printed-in-jig.webp",
       "/images/portfolio/design/tile-artwork-prep.webp",
@@ -158,7 +169,9 @@ export const portfolio: PortfolioItem[] = [
     src: "/images/portfolio/filament/helmet-prop.webp",
     images: [
       "/images/portfolio/filament/helmet-prop.webp",
+      "/images/portfolio/filament/mini-football-helmet.webp",
       "/images/portfolio/filament/custom-prop-armor.webp",
+      "/images/portfolio/filament/schedulers-board-sign.webp",
       "/images/portfolio/filament/fdm-city-upgrades.webp",
       "/images/portfolio/filament/lithophane-lamp.webp",
       "/images/portfolio/filament/spiral-lollipops.webp",
@@ -166,6 +179,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/3d-print-10.webp",
       "/images/portfolio/filament/3d-print-09.webp",
       "/images/portfolio/filament/flags-set.webp",
+      "/images/portfolio/filament/custom-token.webp",
       "/images/portfolio/filament/3d-print-06.webp",
       "/images/portfolio/filament/3d-print-01.webp",
       "/images/portfolio/filament/3d-print-05.webp",
@@ -176,7 +190,7 @@ export const portfolio: PortfolioItem[] = [
       "/images/portfolio/filament/race-awards-number-ones.webp",
       "/images/portfolio/filament/race-awards-medallions.webp",
     ],
-    alt: "Filament (FDM) 3D printing by Kulworks: a full-size gladiator helmet and prop armour, articulated figures, terrain and city pieces, a backlit lithophane lamp, a batch of spiral lollipop prints, game markers, functional parts, and full runs of custom awards.",
+    alt: "Filament (FDM) 3D printing by Kulworks: a full-size gladiator helmet and prop armour, a mini football helmet, a multi-colour office sign, articulated figures, terrain and city pieces, a backlit lithophane lamp, a batch of spiral lollipop prints, custom tokens, game markers, functional parts, and full runs of custom awards.",
   },
 
 ];

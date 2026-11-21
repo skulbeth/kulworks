@@ -256,7 +256,7 @@ export const cardPages: CardPage[] = [
   {
     slug: "boxes-and-upgrades",
     navLabel: "Custom Card Boxes & Other Upgrades",
-    image: "/images/portfolio/design/shapr3d-box-insert.webp",
+    image: "/images/portfolio/design/printed-deck-boxes.webp",
     cardBlurb: "Custom 3D-printed card boxes, sleeves, and other upgrades, in tiers.",
     title: `Custom Card Boxes & Other Upgrades in ${CITY}`,
     metaDescription:
