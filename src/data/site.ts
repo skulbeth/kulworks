@@ -89,6 +89,11 @@ export const site = {
   // Real, live profiles that help Google connect this site to the same entity.
   profiles: [
     "https://makerworld.com/en/@skulbeth",
+    // Google Business Profile (share link + its Knowledge Graph id, verified 2026-11-21).
+    "https://share.google/Z5oFMzV5wTcmlUtYL",
+    "https://www.google.com/search?kgmid=/g/11p300077v",
+    "https://www.tiktok.com/@kulworks",
+    "https://www.etsy.com/shop/KulWorks",
   ] as string[],
 
   // ---- Payments (invoice pay options) ----
