@@ -31,6 +31,9 @@ export const site = {
   // E.164 for schema; `telephoneDisplay` is the human-friendly version shown on the page.
   telephone: "+1-210-570-3328",
   telephoneDisplay: "(210) 570-3328",
+  // Google Business Profile "leave a review" link (from Ask for reviews). Used by the
+  // automatic review request emails (lib/review-requests.ts). Empty = those emails pause.
+  googleReviewUrl: "https://g.page/r/CbAMKJsFw2qrEBM/review",
 
   // ---- Location / service area (San Antonio first) ----
   // Home-based or no public storefront? Leave streetAddress empty and rely on

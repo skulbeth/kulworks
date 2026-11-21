@@ -474,6 +474,26 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+// Google review request emails. Queued when a project is marked Delivered/Closed (or
+// added by hand for past clients); the daily cron sends at most ONE due row per run, so
+// they go out one a day. status: QUEUED | SENT | FAILED | CANCELED.
+model ReviewRequest {
+  id        String    @id @default(cuid())
+  clientId  String
+  projectId String?
+  email     String
+  subject   String
+  body      String
+  sendAfter DateTime
+  status    String    @default("QUEUED")
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime  @default(now())
+
+  @@index([status, sendAfter])
+  @@index([clientId])
+}
+
 // Photo drop from the public /upload page (QR at trade shows). Images live in the
 // Supabase "uploads" bucket; storagePaths holds their paths.
 model Upload {

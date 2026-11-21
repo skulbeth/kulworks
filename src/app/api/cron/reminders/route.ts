@@ -8,6 +8,7 @@ import { sweepPendingUploads } from "@/lib/uploads";
 import { pruneRateLimits } from "@/lib/rate-limit";
 import { logError } from "@/lib/log-error";
 import { SHOP_TZ } from "@/lib/format";
+import { sendNextReviewRequest } from "@/lib/review-requests";
 
 export const runtime = "nodejs";
 
@@ -34,6 +35,12 @@ export async function GET(request: Request) {
     await pruneRateLimits();
   } catch (e) {
     await logError(e, "/api/cron/reminders:rate-limits");
+  }
+  // Google review request emails: at most one a day.
+  try {
+    await sendNextReviewRequest();
+  } catch (e) {
+    await logError(e, "/api/cron/reminders:review-requests");
   }
 
   const now = new Date();

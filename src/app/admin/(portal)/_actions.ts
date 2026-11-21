@@ -29,6 +29,7 @@ import { site } from "@/data/site";
 import { createNumberedDoc } from "@/lib/doc-number";
 import { mainInvoiceWhere, copyQuoteToInvoice, jobHubToken, jobPath, loadJob } from "@/lib/job";
 import { ensureProjectFolder } from "@/lib/project-folder";
+import { queueReviewRequestForProject } from "@/lib/review-requests";
 
 const SITE_URL = "https://kulworks.com";
 
@@ -329,6 +330,14 @@ export async function updateProject(formData: FormData) {
         authorId: profile.id,
       },
     });
+    // Finished job: queue the Google review request (once per client; sent by the daily cron).
+    if (stage === "DELIVERED" || stage === "CLOSED") {
+      try {
+        await queueReviewRequestForProject(id, profile.id);
+      } catch (e) {
+        await logError(e, "updateProject:queueReviewRequest");
+      }
+    }
   }
 
   // Push the due + delivery dates to the Kulworks calendar (best-effort), persisting the
