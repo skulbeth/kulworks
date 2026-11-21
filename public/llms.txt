@@ -1,0 +1,55 @@
+# Kulworks
+
+> Kulworks is a small maker shop in San Antonio, Texas, run by Sam Kulbeth. We make the physical pieces for other people's games and projects: custom printed cards, UV-printed tiles and boards, tokens, 3D-printed parts, resin miniatures and custom card boxes. Think of us as the middle man between your idea and a big factory run. You send the files, we print, cut and finish the components, and you get real pieces in hand fast, with no minimums.
+
+## What Kulworks does
+
+- Prototype and short-run game components for board game and card game designers, from a single test deck to a few hundred copies.
+- The step between print-and-play and mass production: test a real prototype, tweak it, print it again, then take it to a big manufacturer when you are ready. For large runs we help point you to the right printer.
+- Everything is made in-house on our own machines: a UV flatbed printer, a clicker press with steel-rule dies, FDM (filament) printers and an SLA resin printer.
+
+## Services
+
+- [Custom card printing](https://kulworks.com/services/card-printing/): poker size (2.5 x 3.5 in) and tarot size (2.75 x 4.75 in), custom fronts and backs, rounded corners, white 310gsm stock, UV finish between semi-gloss and satin that takes a Sharpie. No foil, holo or metallic.
+- [Game prototypes](https://kulworks.com/services/card-printing/game-prototypes/): prototype decks and components for designers, fast turnaround.
+- [Trading and sports cards](https://kulworks.com/services/card-printing/trading-cards/): custom trading-style cards for teams, schools, clubs and events.
+- [Card boxes and upgrades](https://kulworks.com/services/card-printing/boxes-and-upgrades/): custom 3D-printed deck boxes and sleeves.
+- [Card design](https://kulworks.com/services/card-printing/card-design/): card layout and print-ready file prep if you only have an idea or rough art.
+- [UV-printed tiles and boards](https://kulworks.com/services/): hex tiles, square tiles, tokens and game boards, printed in full color and die-cut in-house.
+- [3D printing](https://kulworks.com/services/): FDM parts, props, card trays and inserts, plus high-detail resin miniatures.
+- [3D modeling](https://kulworks.com/services/): custom models in Shapr3D for printable parts and pieces.
+
+## Pricing (USD, starting points)
+
+- Cards: $25 setup per project, then $0.40 per poker card or $0.70 per tarot card with print-ready files. 5% off printing at 500 cards, 10% at 1,000. No minimum, even a single deck is fine.
+- Super rush (front of the queue): $25 flat.
+- Card layout design: $40 per side. Custom deck box: $9 for a deck under 100 cards.
+- Tiles: about $160 delivered for 80 double-sided 1.5 in tiles. Other sizes are quoted by project; a new tile size needs its own cutting die, reused on repeat runs.
+- FDM printing: $0.15 per gram, $5 setup per part, $10 minimum. Resin: $15 setup, $3 per print hour, plus material.
+- Full details and a card price calculator: [Pricing](https://kulworks.com/pricing/)
+
+## How an order works
+
+1. Send your project through the [quote form](https://kulworks.com/contact/): what you need, quantities, sizes and deadline.
+2. We reply with questions and a price.
+3. Every card order gets a proof to review and approve before anything prints.
+4. Print-ready runs of about 120 cards usually ship in about 2 days. Most 3D prints are done in about two days.
+5. Local pickup in San Antonio is free. US shipping is usually under $15 for about 120 cards. Canada and Mexico about $25.
+
+## Who we work with
+
+Board game and card game designers, game stores, sports teams and clubs, schools, event and wedding planners, photographers and market sellers. Local to San Antonio and the Texas Hill Country, and shipping across the US.
+
+## More
+
+- [Portfolio](https://kulworks.com/portfolio/): past projects.
+- [Who it's for](https://kulworks.com/who-its-for/)
+- [Guides](https://kulworks.com/guides/): card costs, prepping card art, poker vs tarot sizes, print-and-play vs a real prototype, prototype vs short run.
+- [Testimonials](https://kulworks.com/testimonials/)
+- [About](https://kulworks.com/about/)
+
+## Contact
+
+- Email: contact@kulworks.com
+- Phone: (210) 570-3328
+- Location: San Antonio, Texas, USA
