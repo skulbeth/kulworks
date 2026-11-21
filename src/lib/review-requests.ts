@@ -29,7 +29,7 @@ export function reviewBody(firstName: string, personal?: string | null) {
     "",
     "{REVIEW_LINK}",
     "",
-    "Also, as a thank you to everyone who's ordered from me, you've got $10 off your next order, review or not. Just mention this email when you reach out.",
+    "Also, as a thank you to everyone who's ordered from me, you've got $10 off the setup fee on your next order (so it's just $15 instead of $25), review or not. Just mention this email when you reach out.",
     "",
     "Thanks so much!",
     "Sam",
