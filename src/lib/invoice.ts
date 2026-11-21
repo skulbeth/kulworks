@@ -80,3 +80,8 @@ export function keepBalanceMarker(oldNotes: string | null, newNotes: string | nu
   const marker = oldNotes.split(".")[0] + ".";
   return newNotes ? `${marker} ${newNotes}` : marker;
 }
+
+/** A deposit percent for display: 50 -> "50", 66.666... -> "66.7" (a $100-of-$150 deposit). */
+export function fmtPct(pct: number | null | undefined): string {
+  return String(Math.round((pct ?? 0) * 10) / 10);
+}

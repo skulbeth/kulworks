@@ -11,6 +11,7 @@ import {
   quoteExpired,
   fmtValidDate,
   isBalanceDoc,
+  fmtPct,
 } from "@/lib/invoice";
 import { loadJob, jobPath, type PayRow } from "@/lib/job";
 import { site } from "@/data/site";
@@ -232,7 +233,7 @@ export default async function JobPage({
           {hasSplit && (
             <>
               <div className="flex justify-between">
-                <span className="text-muted">{inv.status === "PAID" ? "Deposit paid" : `Deposit to book it (${inv.depositPct}%)`}</span>
+                <span className="text-muted">{inv.status === "PAID" ? "Deposit paid" : `Deposit to book it (${fmtPct(inv.depositPct)}%)`}</span>
                 <span className="tabular-nums">{fmtMoney(dueNow)}</span>
               </div>
               <div className="flex justify-between">

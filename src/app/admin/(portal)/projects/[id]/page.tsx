@@ -19,7 +19,7 @@ import {
 } from "../../_actions";
 import { jobFolderUrl, pickHub } from "@/lib/job";
 import InvoiceEditor from "../../_components/InvoiceEditor";
-import { computeTotals, docLabel, splitDeposit, quoteExpired, fmtValidDate, isBalanceDoc } from "@/lib/invoice";
+import { computeTotals, docLabel, splitDeposit, quoteExpired, fmtValidDate, isBalanceDoc, fmtPct } from "@/lib/invoice";
 import { site } from "@/data/site";
 import { docViews, invoicePath, proofPath, type DocViews } from "@/lib/doc-views";
 import {
@@ -287,7 +287,7 @@ export default async function ProjectDetailPage({
                       const sp = splitDeposit(total, inv.depositPct);
                       return sp.hasSplit ? (
                         <span className="text-xs text-blue">
-                          {inv.depositPct}% deposit: {fmtMoney(sp.dueNow)} now, {fmtMoney(sp.balance)} after
+                          {fmtPct(inv.depositPct)}% deposit: {fmtMoney(sp.dueNow)} now, {fmtMoney(sp.balance)} after
                         </span>
                       ) : null;
                     })()}

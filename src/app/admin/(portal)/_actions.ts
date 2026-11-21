@@ -24,6 +24,7 @@ import {
   quoteExpired,
   BALANCE_PREFIX,
   keepBalanceMarker,
+  fmtPct,
 } from "@/lib/invoice";
 import { site } from "@/data/site";
 import { createNumberedDoc } from "@/lib/doc-number";
@@ -1457,7 +1458,7 @@ export async function createBalanceInvoice(formData: FormData) {
         taxRate: 0,
         depositPct: null,
         sourceQuoteId: src.type === "QUOTE" ? src.id : src.sourceQuoteId,
-        notes: `${marker}. Deposit of ${src.depositPct}% was billed on ${src.number}; this is the remainder.`,
+        notes: `${marker}. Deposit of ${fmtPct(src.depositPct)}% was billed on ${src.number}; this is the remainder.`,
         items: {
           create: [
             {
