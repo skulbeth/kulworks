@@ -109,13 +109,21 @@ export async function sendNextReviewRequest() {
   }
 
   await prisma.reviewRequest.update({ where: { id: next.id }, data: { status: "SENT", sentAt: new Date() } });
-  await prisma.activity.create({
-    data: {
-      type: "EMAIL_SENT",
-      body: `Sent the Google review request email to ${next.email}.`,
-      projectId: next.projectId,
-      clientId: next.clientId,
-    },
-  });
+  // Hand-queued past clients may not be in the CRM (clientId "ext:<email>"), so only
+  // link the timeline entry to records that exist.
+  const client = await prisma.client.findUnique({ where: { id: next.clientId }, select: { id: true } });
+  const project = next.projectId
+    ? await prisma.project.findUnique({ where: { id: next.projectId }, select: { id: true } })
+    : null;
+  if (client || project) {
+    await prisma.activity.create({
+      data: {
+        type: "EMAIL_SENT",
+        body: `Sent the Google review request email to ${next.email}.`,
+        projectId: project?.id ?? null,
+        clientId: client?.id ?? null,
+      },
+    });
+  }
   return { sent: 1, to: next.email };
 }
