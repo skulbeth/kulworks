@@ -89,6 +89,10 @@ export const faqs: Faq[] = [
     a: "Yes. Every card order gets a proof to review and approve before anything prints.",
   },
   {
+    q: "Do you accept returns?",
+    a: "Since everything is made custom to your design and you approve a proof before it prints, we can't take returns. If something is wrong on our end or arrives damaged, send us photos within 7 days of delivery and we'll reprint or fix it. The full details are in our Terms.",
+  },
+  {
     q: "Do you print double-sided cards and custom card backs?",
     a: "Yes. We print full custom faces and a custom back, or a custom back with standard faces, whatever your project needs.",
   },
